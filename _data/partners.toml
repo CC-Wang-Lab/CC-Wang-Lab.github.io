@@ -1,0 +1,406 @@
+# Organizations the lab has worked with.
+#
+# =============================================================================
+#  READ THIS BEFORE THE SITE GOES PUBLIC
+# =============================================================================
+#
+#  These names were transcribed by Claude from the lab's own collage slide on
+#  2026-08-19. THEY HAVE NOT BEEN CHECKED BY ANYONE. Two jobs before launch:
+#
+#  1. CORRECT THE LIST. Some names were read from a small image and may be
+#     wrong or misspelled. Rows marked `check = true` are the uncertain ones.
+#
+#  2. THE NDA CHECK. This is the one that matters. Trademark law is not the
+#     real exposure here; contract law is. A non-disclosure agreement often
+#     forbids revealing that the relationship exists at all, and no fair-use
+#     argument fixes a contract breach. Prof. Wang's office must mark every
+#     organization whose agreement forbids disclosure, and those rows must be
+#     DELETED, not commented out.
+#
+#  The section heading is "Organizations we have worked with", never "Our
+#  clients" and never "Trusted by". Those imply endorsement, which is the one
+#  thing that turns a factual reference into a trademark problem.
+# =============================================================================
+#
+# `logo` is optional. With a file, the logo renders; without one, the NAME
+# renders as text in the site's own typeface. So the strip works today and each
+# logo appears as its file is dropped into _assets/img/partners/.
+#
+# `kind`: "industry" or "government". Government bodies are funders. Naming a
+# funder is normal academic practice and carries none of the questions above.
+
+[[org]]
+name_en = "National Science and Technology Council"
+name_zh = "國家科學及技術委員會"
+kind    = "government"
+logo    = ""
+
+[[org]]
+name_en = "Taiwan Space Agency"
+name_zh = "國家太空中心"
+kind    = "government"
+logo    = ""
+
+[[org]]
+name_en = "Metal Industries Research & Development Centre"
+name_zh = "金屬工業研究發展中心"
+kind    = "government"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "CPC Corporation, Taiwan"
+name_zh = "台灣中油"
+kind    = "government"
+logo    = "/assets/img/partners/cpc.svg"
+
+[[org]]
+name_en = "Chunghwa Telecom Laboratories"
+name_zh = "中華電信研究院"
+kind    = "government"
+logo    = "/assets/img/partners/chunghwa.svg"
+
+# --- industry ---------------------------------------------------------------
+
+[[org]]
+name_en = "TSMC"
+name_zh = "台積電"
+kind    = "industry"
+logo    = "/assets/img/partners/tsmc.svg"
+
+[[org]]
+name_en = "Intel"
+name_zh = "英特爾"
+kind    = "industry"
+logo    = "/assets/img/partners/intel.svg"
+
+[[org]]
+name_en = "Google"
+name_zh = "Google"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Delta Electronics"
+name_zh = "台達電子"
+kind    = "industry"
+logo    = "/assets/img/partners/delta.svg"
+
+[[org]]
+name_en = "Toshiba"
+name_zh = "東芝"
+kind    = "industry"
+logo    = "/assets/img/partners/toshiba.svg"
+
+[[org]]
+name_en = "Hitachi"
+name_zh = "日立"
+kind    = "industry"
+logo    = "/assets/img/partners/hitachi.svg"
+
+[[org]]
+name_en = "Pegatron"
+name_zh = "和碩聯合科技"
+kind    = "industry"
+logo    = "/assets/img/partners/pegatron.svg"
+
+[[org]]
+name_en = "ASE Holdings"
+name_zh = "日月光投控"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Wistron"
+name_zh = "緯創資通"
+kind    = "industry"
+logo    = "/assets/img/partners/wistron.svg"
+
+[[org]]
+name_en = "Inventec"
+name_zh = "英業達"
+kind    = "industry"
+logo    = "/assets/img/partners/inventec.svg"
+
+[[org]]
+name_en = "Advantech"
+name_zh = "研華科技"
+kind    = "industry"
+logo    = "/assets/img/partners/advantech.svg"
+
+[[org]]
+name_en = "Lite-On"
+name_zh = "光寶科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Cooler Master"
+name_zh = "訊凱國際"
+kind    = "industry"
+logo    = "/assets/img/partners/cooler-master.svg"
+
+[[org]]
+name_en = "Accton Technology"
+name_zh = "智邦科技"
+kind    = "industry"
+logo    = "/assets/img/partners/accton.svg"
+
+[[org]]
+name_en = "Novatek"
+name_zh = "聯詠科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Chroma ATE"
+name_zh = "致茂電子"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "TECO"
+name_zh = "東元電機"
+kind    = "industry"
+logo    = "/assets/img/partners/teco.svg"
+
+[[org]]
+name_en = "Sunon"
+name_zh = "建準電機"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "AVC"
+name_zh = "奇鋐科技"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Coretronic"
+name_zh = "中強光電"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Ansys"
+name_zh = "Ansys"
+kind    = "industry"
+logo    = "/assets/img/partners/ansys.svg"
+
+[[org]]
+name_en = "innodisk"
+name_zh = "宜鼎國際"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Kaori Heat Treatment"
+name_zh = "高力熱處理"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Celsia"
+name_zh = "Celsia"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "T-Global Technology"
+name_zh = "臺灣德懋"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Gigastorage Corporation"
+name_zh = "國碩科技工業"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Chung Yo Materials"
+name_zh = "中佑精材"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Lanner Electronics"
+name_zh = "立端科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Rayvatek"
+name_zh = "銳澤"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Promise Technology"
+name_zh = "喬鼎資訊"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "ViSera Technologies"
+name_zh = "采鈺科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Hermes-Epitek"
+name_zh = "漢民科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "LemTech"
+name_zh = "良維科技"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Sakura"
+name_zh = "櫻花"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Cryomax Cooling System"
+name_zh = "誠加興業"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Chun-Hung Technology"
+name_zh = "長宏科技"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Jentech Precision"
+name_zh = "健策精密"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Meta Green Cooling Technology"
+name_zh = "元鈦科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Sunwood Foundry Works"
+name_zh = "申佳鑄造"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Long Victory Instruments"
+name_zh = "長雲儀器"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Taiwan Asahi Diamond Industrial"
+name_zh = "台灣旭鑽石工業"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Long Time Technology"
+name_zh = "榮炭科技"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Rechi Precision"
+name_zh = "瑞智精密"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "JWS Technology"
+name_zh = "智微創富"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Heatscape"
+name_zh = "Heatscape"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "WavePro"
+name_zh = "WavePro"
+kind    = "industry"
+logo    = ""
+
+[[org]]
+name_en = "Metropole Industrial"
+name_zh = "大都工業"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Vigour Group"
+name_zh = "偉喬集團"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "ChangYang"
+name_zh = "長陽"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Patech Fine Chemicals"
+name_zh = "百泰精細化工"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Ritex Machinery"
+name_zh = "Ritex"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "SWICO"
+name_zh = "SWICO"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "Hon Tech"
+name_zh = "宏塑技術"
+kind    = "industry"
+logo    = ""
+check   = true
+
+[[org]]
+name_en = "PMC"
+name_zh = "精密機械研究發展中心"
+kind    = "industry"
+logo    = ""
+check   = true

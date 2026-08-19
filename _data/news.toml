@@ -1,0 +1,32 @@
+# News. Newest first — the build sorts by date, so the order here does not matter.
+#
+# ALL THREE ENTRIES BELOW ARE PLACEHOLDERS. Replace them before launch.
+#
+# ChatGPT's warning, and it is right: for a lab claiming 20+ active industrial
+# projects, a news page whose newest item is eighteen months old does more
+# reputational damage than having no news page at all. If nobody will update
+# this monthly, remove News from the navigation instead.
+
+[[item]]
+date = 2026-08-01
+tag  = "facility"
+title_en = "PLACEHOLDER — New pool-boiling visualization rig commissioned"
+title_zh = "範例 — 新池沸騰可視化實驗平台啟用"
+body_en  = "Replace this with a real item. One or two sentences. Say what changed and why an outside reader should care."
+body_zh  = "請以真實內容取代。一至兩句話，說明有何進展、以及為何值得關注。"
+
+[[item]]
+date = 2026-07-15
+tag  = "paper"
+title_en = "PLACEHOLDER — Paper accepted on immersion cooling of high-power packages"
+title_zh = "範例 — 高功率封裝浸沒式冷卻論文獲接受"
+body_en  = "Replace this with a real item. Link the DOI when the paper is online."
+body_zh  = "請以真實內容取代。論文上線後請附上 DOI 連結。"
+
+[[item]]
+date = 2026-06-20
+tag  = "award"
+title_en = "PLACEHOLDER — Lab member receives conference best-paper award"
+title_zh = "範例 — 實驗室成員獲研討會最佳論文獎"
+body_en  = "Replace this with a real item. Name the person and the conference."
+body_zh  = "請以真實內容取代。請寫出得獎人姓名與研討會名稱。"
