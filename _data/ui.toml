@@ -93,6 +93,8 @@ final_lead_en    = "Tell us what you are trying to cool, and what is currently s
 final_lead_zh    = "請告訴我們您要冷卻的對象，以及目前遇到的瓶頸。我們會誠實評估能否協助。"
 
 [team]
+page_lead_en   = "Prof. Chi-Chuan Wang, the research leads, and the researchers currently in the lab."
+page_lead_zh   = "王啟川教授、研究主持群，以及目前在實驗室的研究人員。"
 lead_head_en   = "Research leads"
 lead_head_zh   = "研究主持群"
 member_head_en = "Current researchers"
@@ -103,6 +105,12 @@ join_en        = "Join the lab"
 join_zh        = "加入實驗室"
 
 [foot]
+nav_en      = "Navigate"
+nav_zh      = "網站導覽"
+email_en    = "ccwang@nycu.edu.tw"
+email_zh    = "ccwang@nycu.edu.tw"
+phone_en    = "+886-3-571-2121 ext. 55105"
+phone_zh    = "+886-3-571-2121 分機 55105"
 contact_en  = "Contact"
 contact_zh  = "聯絡我們"
 address_en  = "Department of Mechanical Engineering, National Yang Ming Chiao Tung University, 1001 University Road, Hsinchu 300093, Taiwan"

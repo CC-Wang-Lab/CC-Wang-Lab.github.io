@@ -8,7 +8,7 @@ lang = "zh"
 <header class="page-hd">
   <div class="container">
     <h1>{{ui nav team}}</h1>
-    <p>{{ui home pi_head}}</p>
+    <p>{{ui team page_lead}}</p>
   </div>
 </header>
 

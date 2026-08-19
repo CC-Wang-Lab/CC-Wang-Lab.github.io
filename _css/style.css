@@ -710,3 +710,8 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 
 .sector { padding-right: 1rem; }
 .sector .card-title { font-size: 1.15rem; }
+
+/* The address broke mid-university-name at 34ch. */
+.foot-addr { max-width: 42ch; }
+.foot-plain { color: var(--lab-muted); }
+.foot-nav .bi { width: 1.1em; }

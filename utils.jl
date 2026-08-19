@@ -522,7 +522,8 @@ end
 
 function hfun_footer()
     pre = prefix()
-    navlinks = join(["""<a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV], "\n        ")
+    navlinks = join(["""<a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV], "
+          ")
     return """
 <footer class="lab-foot">
   <div class="container">
@@ -534,18 +535,22 @@ function hfun_footer()
         <p class="foot-addr">$(esc(ui("foot", "address")))</p>
       </div>
 
-      <div class="col-lg-4">
-        <p class="foot-head">$(esc(ui("foot", "contact")))</p>
+      <div class="col-6 col-lg-3">
+        <p class="foot-head">$(esc(ui("foot", "nav")))</p>
         <nav class="foot-nav">
-        $(navlinks)
-        <a href="$(pre)/contact/">$(esc(ui("foot", "contact")))</a>
-        <a href="$(pre)/team/alumni/">$(esc(ui("team", "alumni_link")))</a>
+          $(navlinks)
+          <a href="$(pre)/team/alumni/">$(esc(ui("team", "alumni_link")))</a>
         </nav>
       </div>
 
-      <div class="col-lg-3">
-        <p class="foot-head">$(esc(ui("team", "join")))</p>
-        <p><a class="btn btn-ghost btn-sm" href="$(pre)/contact/">$(esc(ui("nav", "cta")))</a></p>
+      <div class="col-6 col-lg-4">
+        <p class="foot-head">$(esc(ui("foot", "contact")))</p>
+        <nav class="foot-nav">
+          <a href="mailto:$(esc(ui("foot", "email")))">$(icon("envelope")) $(esc(ui("foot", "email")))</a>
+          <span class="foot-plain">$(icon("telephone")) $(esc(ui("foot", "phone")))</span>
+          <a href="$(pre)/contact/">$(icon("geo-alt")) $(esc(ui("foot", "contact")))</a>
+        </nav>
+        <p class="mt-3"><a class="btn btn-ghost btn-sm" href="$(pre)/contact/">$(esc(ui("team", "join")))</a></p>
       </div>
 
     </div>
