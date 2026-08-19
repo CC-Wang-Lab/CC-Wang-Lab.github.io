@@ -570,6 +570,13 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .foot-brand { font-weight: 700; font-size: 1.15rem; margin-bottom: 0.1rem; }
 /* A blank line's worth of space, so the address reads as a separate block. */
 .foot-uni { color: var(--lab-muted); margin-bottom: 1.5rem; }
+/* A hairline separating the lab name from the postal address. It stops at the
+   width of the address block rather than running the full column, so it reads
+   as a divider for that text and not as a section break. */
+.foot-addr {
+  border-top: var(--rule);
+  padding-top: 1.5rem;
+}
 .foot-addr { color: var(--lab-muted); font-size: 0.88rem; max-width: 34ch; }
 .foot-head {
   font-family: var(--font-ui);

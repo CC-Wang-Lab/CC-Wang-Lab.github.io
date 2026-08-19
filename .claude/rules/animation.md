@@ -47,6 +47,27 @@ the typed line all read it.
 and runs past five seconds must have a mechanism to stop it. That is normative. Honouring
 `prefers-reduced-motion` is good practice, not normative, and here it was doing more harm than good.
 
+### Testing this: always clear the flag afterwards
+
+The pause choice is stored in `localStorage` under `labMotion` and it **persists across pages and
+visits**, which is correct behaviour and also a trap while testing.
+
+Setting `window.LabMotion.set(false)` from a console or an automation script leaves the reviewer's
+own browser paused. It happened once: the partners marquee was reported as "not animated" when the
+animation was running perfectly and the flag was simply off, set by a screenshot script minutes
+earlier.
+
+```js
+localStorage.removeItem("labMotion");   // run this at the end of any motion test
+```
+
+Before reporting motion as broken, read the flag first:
+
+```js
+localStorage.getItem("labMotion")            // "off" explains everything
+getComputedStyle(document.querySelector(".pt-track")).animationPlayState
+```
+
 ### If you ever change this back
 
 You must keep a control that starts the motion, and it must be visible without hovering. A page
