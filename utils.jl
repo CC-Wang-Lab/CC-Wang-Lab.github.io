@@ -675,7 +675,7 @@ function hfun_people_pi()
     <img src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
   </div>
   <div class="pi-body">
-    <h2 class="pi-name">$(esc(pick(p, "name")))</h2>
+    <h2 class="pi-name">$(person_link(p, esc(pick(p, "name"))))</h2>
     <p class="pi-role">$(esc(pick(p, "role")))</p>
     <ul class="pi-honors">
 $(join(["      <li>$(esc(h))</li>" for h in hon], "\n"))
@@ -690,24 +690,33 @@ end
 """Everyone of one tier who is still in the lab, in file order."""
 current(tier) = filter(p -> get(p, "tier", "") == tier && get(p, "status", "") == "current", people())
 
-"""A photo card. Used for staff: research leads and postdocs."""
+"""
+A photo card, for every tier below the PI.
+
+The card is a LINK when that person has written a page, and a plain card when
+they have not. See person_page above: nothing is flagged by hand.
+"""
 function person_card(p)
-    return """
-      <div class="col-sm-6 col-lg-4">
-        <div class="person-card">
+    body = """
           <img class="person-photo" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
           <h3 class="person-name">$(esc(pick(p, "name")))</h3>
           <p class="person-role">$(esc(pick(p, "role")))</p>
-          <p class="person-topic">$(esc(pick(p, "topic")))</p>
-        </div>
+          <p class="person-topic">$(esc(pick(p, "topic")))</p>"""
+    inner = person_page(String(get(p, "id", ""))) ?
+        """<a class="person-card is-link" href="$(esc(person_href(p["id"])))">$(body)</a>""" :
+        """<div class="person-card">$(body)</div>"""
+    return """
+      <div class="col-sm-6 col-lg-4">
+        $(inner)
       </div>"""
 end
 
-"""A table row. Used for students, where a photo grid would not scale."""
+"""A table row. Used for the alumni page and the index of everyone."""
 function person_row(p)
+    name = esc(pick(p, "name"))
     return """
     <li class="person-row">
-      <span class="person-row-name">$(esc(pick(p, "name")))</span>
+      <span class="person-row-name">$(person_link(p, name))</span>
       <span class="person-row-role">$(esc(pick(p, "role")))</span>
       <span class="person-row-topic">$(esc(pick(p, "topic")))</span>
     </li>"""
@@ -855,6 +864,111 @@ $(fields)
   <p class="ff-privacy">$(esc(ui("form", "privacy")))</p>
 </form>
 """
+end
+
+# ---------------------------------------------------------------------------
+#  A page per person
+#
+#  Same shape as a project page: one Markdown file per person per language,
+#  declaring `person = "<id>"` in its front matter, and everything in the header
+#  looked up from team.toml so no fact is typed twice.
+#
+#  A card or a table row becomes a LINK only when that person's page exists, in
+#  that language. Nobody has to remember to set a flag, and a person with no
+#  page yet is not a dead end - it is the same test the research cards use to
+#  decide whether they link into Projects.
+# ---------------------------------------------------------------------------
+
+"""Does this person have a written page, in the language being built?"""
+person_page(id) = isfile((lang() == "zh" ? "zh/" : "") * "people/" * String(id) * ".md")
+
+"""The person's URL, resolved for the current language."""
+person_href(id) = prefix() * "/people/" * String(id) * "/"
+
+"""Wrap `inner` in a link to the person's page, but only if that page exists."""
+function person_link(p, inner)
+    id = String(get(p, "id", ""))
+    person_page(id) || return inner
+    return """<a href="$(esc(person_href(id)))">$(inner)</a>"""
+end
+
+"""
+`{{person_header}}` on a person's own page.
+
+The page declares `person = "<id>"` in its front matter; the name, role, topic,
+photo and links all come from team.toml, so a page carries no duplicated facts
+and a wrong id stops the build.
+"""
+function hfun_person_header()
+    id = locvar(:person)
+    id === nothing && error("this page needs `person = \"<id>\"` in its front matter")
+    p = person_by_id(String(id))
+
+    links = String[]
+    # A raw URL as link text reads badly. Only the email shows its own value,
+    # because an address is worth seeing before it is clicked.
+    for (k, ico, label) in (("email", "envelope", ""),
+                            ("scholar", "mortarboard", "Google Scholar"),
+                            ("website", "globe", ui("people", "website")),
+                            ("nycu", "building", "NYCU Academic Hub"))
+        v = String(get(p, k, ""))
+        isempty(v) && continue
+        href = k == "email" ? "mailto:" * v : v
+        text = isempty(label) ? v : label
+        push!(links, """<a href="$(esc(href))" rel="noopener">$(icon(ico)) $(esc(text))</a>""")
+    end
+
+    hon = get(p, "honors_" * lang(), get(p, "honors_en", String[]))
+    honors = isempty(hon) ? "" : """
+    <ul class="pi-honors">
+$(join(["      <li>$(esc(h))</li>" for h in hon], "
+"))
+    </ul>"""
+
+    topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
+
+    return """
+<header class="page-hd person-hd">
+  <div class="container">
+    <p class="project-crumb">
+      <a href="$(prefix())/people/">$(esc(ui("people", "back")))</a>
+    </p>
+    <div class="person-hd-row">
+      <img class="person-hd-photo" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="">
+      <div>
+        <h1>$(esc(pick(p, "name")))</h1>
+        <p class="pi-role">$(esc(pick(p, "role")))</p>
+$(isempty(topic) ? "" : "        <p class=\"person-hd-topic\">" * esc(topic) * "</p>")
+$(honors)
+        <p class="pi-links">$(join(links, " &middot; "))</p>
+      </div>
+    </div>
+  </div>
+</header>
+"""
+end
+
+"""
+`{{person_projects}}` — the projects this person is running.
+
+Reads projects.toml, which already names its researcher by a team.toml id. A
+person with no project renders nothing at all rather than an empty heading.
+"""
+function hfun_person_projects()
+    id = locvar(:person)
+    id === nothing && return ""
+    mine = filter(p -> String(p["student"]) == String(id), projects())
+    isempty(mine) && return ""
+    return """
+<section class="person-projects">
+  <div class="section-head">
+    <h2>$(esc(ui("people", "projects_head")))</h2>
+  </div>
+  <div class="row g-4">
+$(join([project_card(p) for p in mine], "
+"))
+  </div>
+</section>"""
 end
 
 # ---------------------------------------------------------------------------

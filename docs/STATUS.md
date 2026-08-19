@@ -10,8 +10,8 @@ at NYCU. Franklin.jl, Bootstrap 5.3, no build step.
 | | |
 |---|---|
 | Repo | `c:\Dev\_Projects\34-CC-Wang-Lab-Website\CC-Wang-Lab.github.io` |
-| Commits | 16, working tree clean |
-| Pages | 24 — 12 per language |
+| Commits | 18, working tree clean |
+| Pages | 30 — 15 per language |
 | Size | 5.4 MB |
 | Target | `https://cc-wang-lab.github.io/` — a **user site**, so **no `prepath`** |
 
@@ -34,7 +34,8 @@ Prof. Wang → call to action.
 | File | Generator | Appears on |
 |---|---|---|
 | `ui.toml` | `hfun_ui` | every interface string, both languages |
-| `team.toml` | `hfun_people_pi/_leads/_postdocs/_phd/_msc/_alumni` | People, Alumni, Home |
+| `team.toml` | `hfun_people_pi/_leads/_postdocs/_phd/_msc/_alumni/_table` | People, Alumni, Home |
+| `team.toml` | `hfun_person_header`, `hfun_person_projects` | each person's own page |
 | `projects.toml` | `hfun_project_grid`, `_header`, `_featured` | Projects and each project page |
 | `research.toml` | `hfun_research_cards` | Home |
 | `partners.toml` | `hfun_partner_strip` | Home |
@@ -70,6 +71,7 @@ with a message naming it. That guard has already caught two real renames.
 | `partners.toml` | 15 of 59 have a logo; the other 44 are in `_assets/img/partners/NEEDED.md`. 18 names are marked uncertain — read off a small image. |
 | `publications.toml` | 20 real papers, but they are the *most-cited*, so they skew old and skew to fin-and-tube. **Add 15–20 recent (2022–2026) electronics-cooling and two-phase papers**; that is what the site sells. |
 | Research area images | 4 of 6 say "image to be supplied". |
+| Person pages | Two written: `cc-wang` and `maysam-gholampour`. `placeholder-phd-1` is the copy-me template. Every other person is a plain card until somebody adds `people/<id>.md`. |
 | Team photos | All the grey silhouette. **Now on five card sections**, so the page is a long run of identical silhouettes until real photographs arrive. |
 | The form endpoint | Empty, so the form falls back to `mailto:`. See the blocked list above. |
 | Chinese | Written by Claude. **Needs a native Traditional Chinese review** before launch. |
@@ -83,6 +85,7 @@ with a message naming it. That guard has already caught two real renames.
 | **Chrome bursts animation frames** | In an unfocused window, 12 frames fired over 7590 ms with only 892 ms *between* them. Anything adding `speed × dt` per frame crawls. `partners.js` computes position from **absolute elapsed time** instead. |
 | **Scrollbar shifts the layout** | A page short enough to need no scrollbar is 20 px wider, so its centred container sits 10 px right. `scrollbar-gutter: stable` on `html` is the fix. |
 | **Logo search returns the wrong logo** | "ASE Group" returned the European Space Agency banner, "Lite-On" an unrelated "TL" mark, "Google" the 2012 Google Play logo. **Look at every file before accepting it.** |
+| **A line starting with a year is a numbered list** | Markdown reads `2010.` at the start of a line as an ordered-list marker. One paragraph on `people/cc-wang.md` broke into three indented fragments and it looked like a CSS fault. Never begin a line with digits and a full stop. |
 | **Heredocs break in this shell** | `cat <<'EOF'` fails on apostrophes in the content. Use Python or the Write tool for prose files. |
 | **`prefers-reduced-motion` is not consulted** | Deliberate, and argued out in `.claude/rules/animation.md`. Motion starts for everyone and a visible control stops it. Do not put the old behaviour back without reading that file. |
 | **One section per research area reads as a column** | With six areas and three projects, every section held one card, so the grid never got to put two side by side. `/projects/` is now ONE grid with an area filter bar; `project-filter.js` reads `#<area-id>` from the URL so the home-page research cards still land on the right filter. Put sections back only once each area has several projects. |

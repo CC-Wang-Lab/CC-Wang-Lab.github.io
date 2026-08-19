@@ -686,6 +686,50 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .project-body { max-width: 100%; }
 
 /* --------------------------------------------------------------------------
+   A page per person
+
+   The header mirrors a project header: photo, name, role, topic, links, and a
+   crumb back to People. Same width rules as a project page, so the two kinds of
+   detail page look like siblings.
+   -------------------------------------------------------------------------- */
+
+.person-hd p { max-width: none; }
+.person-hd-row { display: flex; align-items: flex-start; gap: 2rem; }
+.person-hd-photo {
+  width: 128px;
+  height: 128px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 50%;
+  border: var(--rule);
+  background: var(--lab-surface-2);
+}
+.person-hd-topic { color: var(--lab-muted); margin-bottom: 0.9rem; }
+.person-projects { margin-top: 3.5rem; }
+
+/* A card is a link only when that person has written a page. One that has not
+   must not pretend, so the lift belongs to the link and nothing else. */
+.person-card.is-link {
+  display: block;
+  color: inherit;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+.person-card.is-link:hover {
+  text-decoration: none;
+  color: inherit;
+  transform: translateY(-3px);
+  box-shadow: var(--lab-shadow-lift);
+}
+.person-card.is-link:hover .person-name { color: var(--lab-accent); }
+.person-row-name a { color: inherit; }
+.person-row-name a:hover { color: var(--lab-accent); }
+
+@media (max-width: 575.98px) {
+  .person-hd-row { flex-direction: column; gap: 1.2rem; }
+  .person-hd-photo { width: 96px; height: 96px; }
+}
+
+/* --------------------------------------------------------------------------
    Justification
 
    Every paragraph on the site is justified, card blurbs included. Asked for

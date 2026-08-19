@@ -49,6 +49,16 @@ leaves and nobody edits the file, Franklin will reproduce the wrong information 
 A lab that claims 20+ active industrial projects and still lists people who left two years ago
 does itself more damage than having no team page at all.*
 
+## A line starting with a year becomes a numbered list
+
+Markdown reads `2010.` at the start of a line as an ordered-list marker. It cost one round on
+`people/cc-wang.md`: a paragraph about ITRI wrapped so that "2010. That is the part of the
+record..." began a line, and Franklin broke one paragraph into three indented fragments.
+
+**Never let a line begin with digits followed by a full stop** unless a numbered list is what you
+want. Reflow the line, or move the year one word later. The failure looks like bad CSS, not like
+Markdown, which is why it took a screenshot to see.
+
 ## Adding a language later
 
 Add a third suffix (`_ja`, say), add the folder, extend `NAV` and `prefix()` in `utils.jl`.

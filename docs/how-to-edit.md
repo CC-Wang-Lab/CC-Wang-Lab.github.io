@@ -73,6 +73,22 @@ They move to the Alumni page automatically.
 **Photos.** Square, at least 400 × 400 pixels, JPEG. Put the file in `_assets/img/team/`.
 Leave `photo` out and a grey silhouette appears instead — that is fine.
 
+### Give a person their own page
+
+Copy `people/placeholder-phd-1.md` to `people/<your-id>.md` and
+`zh/people/placeholder-phd-1.md` to `zh/people/<your-id>.md`. Change
+`person = "..."` in both to your id from `team.toml`, then write.
+
+Everything in the page header — photo, name, role, topic, email, Scholar link —
+comes from your row in `team.toml`. Do not repeat it in the page.
+
+**The card becomes a link the moment the file exists.** There is no flag to set
+and nothing to remember. A person with no page yet is a plain card, not a dead
+link, so the site is never broken by a page that has not been written.
+
+Any project in `projects.toml` naming you as its `student` appears at the bottom
+of your page automatically.
+
 ---
 
 ## Turn the contact form on

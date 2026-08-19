@@ -157,6 +157,12 @@ col_role_en     = "Role"
 col_role_zh     = "職稱"
 col_topic_en    = "Research topic"
 col_topic_zh    = "研究主題"
+back_en         = "Back to people"
+back_zh         = "回到研究成員"
+projects_head_en = "Projects"
+projects_head_zh = "研究專案"
+website_en      = "Personal website"
+website_zh      = "個人網站"
 
 # The contact form on /contact/. THREE fields, on purpose.
 #
