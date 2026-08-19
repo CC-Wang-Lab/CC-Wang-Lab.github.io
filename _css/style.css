@@ -1075,13 +1075,13 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   border-color: #fff;
   color: #fff;
 }
-.motion-toggle .motion-icon-play { display: none; }
-.motion-toggle.is-paused .motion-icon-play { display: inline; }
-.motion-toggle.is-paused .motion-icon-pause { display: none; }
-/* Only the label is hidden on small screens; the icon stays tappable. */
+.motion-toggle .motion-when-paused { display: none; }
+.motion-toggle.is-paused .motion-when-paused { display: inline; }
+.motion-toggle.is-paused .motion-when-running { display: none; }
+/* Small screens keep the icon and drop the words. */
 @media (max-width: 575.98px) {
-  .motion-toggle .motion-label { display: none; }
-  .motion-toggle { padding: 0.4rem 0.6rem; bottom: auto; top: 5.2rem; }
+  .motion-toggle { padding: 0.4rem 0.55rem; bottom: auto; top: 5.2rem; font-size: 0; }
+  .motion-toggle .bi { font-size: 1rem; }
 }
 
 /* --------------------------------------------------------------------------

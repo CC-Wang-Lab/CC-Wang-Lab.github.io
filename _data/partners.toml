@@ -52,13 +52,13 @@ check   = true
 name_en = "CPC Corporation, Taiwan"
 name_zh = "台灣中油"
 kind    = "government"
-logo    = ""
+logo    = "/assets/img/partners/cpc.svg"
 
 [[org]]
 name_en = "Chunghwa Telecom Laboratories"
 name_zh = "中華電信研究院"
 kind    = "government"
-logo    = ""
+logo    = "/assets/img/partners/chunghwa.svg"
 
 # --- industry ---------------------------------------------------------------
 
@@ -66,13 +66,13 @@ logo    = ""
 name_en = "TSMC"
 name_zh = "台積電"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/tsmc.svg"
 
 [[org]]
 name_en = "Intel"
 name_zh = "英特爾"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/intel.svg"
 
 [[org]]
 name_en = "Google"
@@ -84,25 +84,25 @@ logo    = ""
 name_en = "Delta Electronics"
 name_zh = "台達電子"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/delta.svg"
 
 [[org]]
 name_en = "Toshiba"
 name_zh = "東芝"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/toshiba.svg"
 
 [[org]]
 name_en = "Hitachi"
 name_zh = "日立"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/hitachi.svg"
 
 [[org]]
 name_en = "Pegatron"
 name_zh = "和碩聯合科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/pegatron.svg"
 
 [[org]]
 name_en = "ASE Holdings"
@@ -114,19 +114,19 @@ logo    = ""
 name_en = "Wistron"
 name_zh = "緯創資通"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/wistron.svg"
 
 [[org]]
 name_en = "Inventec"
 name_zh = "英業達"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/inventec.svg"
 
 [[org]]
 name_en = "Advantech"
 name_zh = "研華科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/advantech.svg"
 
 [[org]]
 name_en = "Lite-On"
@@ -138,13 +138,13 @@ logo    = ""
 name_en = "Cooler Master"
 name_zh = "訊凱國際"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/cooler-master.svg"
 
 [[org]]
 name_en = "Accton Technology"
 name_zh = "智邦科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/accton.svg"
 
 [[org]]
 name_en = "Novatek"
@@ -162,7 +162,7 @@ logo    = ""
 name_en = "TECO"
 name_zh = "東元電機"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/teco.svg"
 
 [[org]]
 name_en = "Sunon"
@@ -187,7 +187,7 @@ logo    = ""
 name_en = "Ansys"
 name_zh = "Ansys"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/ansys.svg"
 
 [[org]]
 name_en = "innodisk"

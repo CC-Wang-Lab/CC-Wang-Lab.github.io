@@ -265,11 +265,11 @@ function hfun_hero()
       <a class="btn btn-ghost btn-lg" href="$(pre)/research/">$(esc(ui("hero", "cta1")))</a>
     </div>
   </div>
-  <button class="motion-toggle" data-motion-toggle type="button" aria-pressed="false"
-          title="$(esc(ui("hero", "motion_pause")))">
-    <span class="motion-icon-pause">$(icon("pause-fill"))</span>
-    <span class="motion-icon-play">$(icon("play-fill"))</span>
-    <span class="motion-label">$(esc(ui("hero", "motion_pause")))</span>
+  <!-- Icon AND label swap together. An earlier version swapped only the icon,
+       so a paused page showed a play triangle next to the word "Pause". -->
+  <button class="motion-toggle" data-motion-toggle type="button" aria-pressed="false">
+    <span class="motion-when-running">$(icon("pause-fill")) $(esc(ui("hero", "motion_pause")))</span>
+    <span class="motion-when-paused">$(icon("play-fill")) $(esc(ui("hero", "motion_play")))</span>
   </button>
   <p class="hero-caption">$(esc(ui("hero", "caption")))</p>
 </section>
