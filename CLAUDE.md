@@ -27,7 +27,9 @@ Franklin.jl, Bootstrap 5.3, deployed to GitHub Pages.
 | Change any interface word | `_data/ui.toml` — both languages live side by side |
 | Add a page | Create `x.md` AND `zh/x.md`, then add it to `NAV` in `utils.jl` |
 | Change how something renders | The matching `hfun_*` in `utils.jl` |
-| Change color or type | `_css/style.css` |
+| Change color or type | `_css/style.css`, the token block at the top. **Never write a literal size or hex in a rule.** |
+| Check the colours still pass AA | `python scripts/check-contrast.py` |
+| See a page rendered, both themes | `python scripts/shoot.py` → `_tmp/verify/`. Add `--measure` for the size and overflow audit. |
 | Deploy | Push to `main`. The Action publishes to `gh-pages`. |
 
 ## Rules

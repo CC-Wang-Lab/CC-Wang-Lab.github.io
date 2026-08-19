@@ -112,14 +112,57 @@ Measured, not estimated:
 
 ## Why the type looks like this
 
-The client owns `maysam-gholampour.github.io` and asked for the same feel. The scale is copied
-exactly: **body 1.15rem / 1.5em, h1 weight 400, h2 and h3 italic at weight 400.** That
-italic-roman pairing is the signature of ET Book, and it is deliberate.
+The client owns `maysam-gholampour.github.io` and asked for the same feel. The **proportions** are
+copied: h1 weight 400, h2 and h3 italic at weight 400. That italic-roman pairing is the signature
+of ET Book, and it is deliberate.
 
 Two exceptions. **Names stay roman**, because italic on a proper noun reads as emphasis rather than
 style. And Chinese needs `Noto Serif TC` in the stack, because **ET Book has no CJK glyphs**.
 Without it every Chinese page is a grid of empty boxes, and it looks perfect to anyone testing in
 English.
+
+### The ladder, added 2026-08-19
+
+The first version had **74 `font-size` declarations across 33 different values**, the smallest at
+0.62rem = 9.9 px. Fourteen of those values sat inside a 4.5 px band, which the eye reads as noise
+rather than as hierarchy. They are now nine tokens.
+
+| token | 375 px | 1440 px | used for |
+|---|---|---|---|
+| `--fs-4xl` | 35.2 | **57.6** | the hero title |
+| `--fs-3xl` | 35.2 | **48.8** | h1 |
+| `--fs-2xl` | 25.6 | **37.6** | h2, the PI name |
+| `--fs-xl` | 20.8 | **28.0** | h3, card-level h2 |
+| `--fs-lg` | 19.2 | **22.4** | h4, card titles, leads |
+| `--fs-md` | 16.8 | **18.4** | body |
+| `--fs-sm` | 16.0 | 16.0 | secondary prose, controls, form fields |
+| `--fs-xs` | 14.4 | 14.4 | labels, dates, captions |
+| `--fs-2xs` | 12.8 | 12.8 | uppercase eyebrows. **A hard floor.** |
+
+*Why every minimum equals the old phone value: nothing on a small screen got smaller, so the change
+is additive at the desktop end only. Every `clamp()` is solved to hit its minimum at 375 px and its
+maximum at 1440 px, and there is now **no `font-size` inside any media query** except the icon-only
+collapse below 576 px.*
+
+*Why the ladder grows at the top and not at the bottom: the heading-to-body ratio used to run the
+wrong way. `body` dropped to 1.05rem below 768 px while `h1`–`h5` never changed, so a phone got the
+most dramatic headings and a monitor the least. It is now 2.10 at 375 px and 2.65 at 1440 px.*
+
+**`--fs-sm` is 16 px and must not go lower.** Below 16 px, iOS Safari zooms the page when a form
+field takes focus.
+
+**`line-height` is unitless everywhere.** `body { line-height: 1.5em }` computed once to a fixed
+27.6 px and every descendant inherited that absolute length whatever its own size, so a 10.9 px
+badge carried 27.6 px of leading.
+
+**`--font-ui` no longer starts with `Noto Serif TC`.** That face ships a Latin subset
+(`unicode-range: U+0000-00FF`), so all 32 rules that asked for the "UI" font were rendering English
+in a Chinese serif and never reached Segoe UI. The site is now one family on purpose, matching
+`maysam-gholampour.github.io`, which uses ET Book on every element.
+
+**ET Book ships exactly two weights**, 400 and 700, plus a 400 italic. There is no 500 and no 600,
+so `font-weight: 500` rendered as 400 and `600` rendered as 700. The navbar asked for 500, which
+did nothing at all. Only 400 and 700 are written now.
 
 ---
 
@@ -133,6 +176,44 @@ matches it.
 **The mark in the navbar is a placeholder.** The original logo file, SVG preferred and otherwise
 the largest PNG available, is still needed. The copy currently in the repo was pulled out of a
 video frame at 220 by 130 pixels and is far too small for a favicon.
+
+### A logo colour is not a text colour, added 2026-08-19
+
+The three brand hexes are unchanged and still fill every button and band. What changed is that
+**they stopped carrying text in light mode**, because they cannot.
+
+```
+#d89030 on the light page  =  2.58 : 1
+#eda43f on the light page  =  2.05 : 1     <- the old link HOVER
+#4080a8 on the light page  =  4.20 : 1
+                    AA needs 4.5 for body text, 3.0 for a control border
+```
+
+Twenty-one rules used a brand hex as text. Eleven of them failed. The worst two were the link
+hover, where **hovering a link made it harder to read than not hovering it**, and the dark theme,
+where `--lab-accent` and `a:hover` both resolved to `#eda43f`, so **hover changed nothing at all**.
+
+Three derived tokens now carry text, and each flips with the theme:
+
+| token | light | ratio | dark | ratio |
+|---|---|---|---|---|
+| `--lab-accent` | `#9c6014` | 5.00 | `#eda43f` | 8.69 |
+| `--lab-accent-hover` | `#7a4f0e` | 6.94 | `#f7c579` | 11.51 |
+| `--lab-accent-2` | `#2d5c7a` | 7.01 | `#5aa0cc` | 6.39 |
+| `--lab-border-strong` | `#948d7e` | 3.30 | `#6a6a85` | 3.21 |
+| `--lab-danger` | `#a5160f` | 7.53 | `#f2b8b5` | 10.71 |
+
+*Because they flip by themselves, four `[data-bs-theme="dark"] .x` patch rules that existed only to
+swap blue for blue-bright are gone. The change deletes more than it adds.*
+
+`--bs-border-color` stays as it was. It is the **decorative** hairline at 1.35:1, which is right for
+a rule between sections and wrong for the edge of a form field. Controls use `--lab-border-strong`.
+
+The always-dark regions — hero, CTA band, news slider, motion toggle — used **15 white-alpha
+literals across 10 different alphas**. They are three tokens now: `--on-dark-1/2/3` at 0.92, 0.78
+and 0.60, whose worst case over the four grounds those regions actually use is 9.41, 7.29 and 5.03.
+
+**`scripts/check-contrast.py` asserts every pair above.** Run it after any colour change.
 
 ---
 
