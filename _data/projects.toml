@@ -16,7 +16,7 @@
 id       = "porous-pool-boiling"
 weight   = 1
 image    = "/assets/img/projects/porous-pool-boiling.jpg"
-student  = "placeholder-member-1"
+student  = "placeholder-phd-1"
 area     = "two-phase"
 title_en = "Pool boiling on porous surfaces"
 title_zh = "多孔表面之池沸騰"
@@ -39,7 +39,7 @@ lead_zh  = "模擬空氣通過 ATX 主機板上塔型散熱器的流動路徑，
 id       = "placeholder-project"
 weight   = 99
 image    = "/assets/img/projects/placeholder.svg"
-student  = "placeholder-member-2"
+student  = "placeholder-postdoc-1"
 area     = "data-center"
 title_en = "PLACEHOLDER — Project title"
 title_zh = "範例 — 專案名稱"

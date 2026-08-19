@@ -1,6 +1,6 @@
 +++
-title = "研究團隊"
-descr = "王啟川教授、研究主持群與現職研究人員。"
+title = "研究成員"
+descr = "王啟川教授、研究主持群、博士後研究員與研究生。"
 lang = "zh"
 +++
 
@@ -23,11 +23,21 @@ lang = "zh"
     {{people_leads}}
 
     <div class="section-head mt-5">
-      <h2>{{ui people member_head}}</h2>
+      <h2>{{ui people postdoc_head}}</h2>
     </div>
-    {{people_members}}
+    {{people_postdocs}}
 
-    <p class="mt-4"><a href="{{url people/alumni}}">{{ui people alumni_link}} &rarr;</a></p>
+    <div class="section-head mt-5">
+      <h2>{{ui people phd_head}}</h2>
+    </div>
+    {{people_phd}}
+
+    <div class="section-head mt-5">
+      <h2>{{ui people msc_head}}</h2>
+    </div>
+    {{people_msc}}
+
+    <p class="mt-5"><a class="link-arrow" href="{{url people/alumni}}">{{ui people alumni_link}} <span class="link-arrow-mark">&rarr;</span></a></p>
 
   </div>
 </div>

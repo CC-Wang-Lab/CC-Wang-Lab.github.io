@@ -28,7 +28,7 @@ Open `_data/team.toml`. Copy an existing block and change it.
 ```toml
 [[person]]
 id            = "chen-mei-ling"     # anything unique, lowercase, no spaces
-tier          = "member"            # "lead" for a large card, "member" for a row
+tier          = "phd"               # see the table below
 status        = "current"           # "current" or "alumni"
 last_verified = "2026-08-19"        # today's date. Required.
 name_en       = "Mei-Ling Chen"
@@ -40,6 +40,21 @@ topic_zh      = "伺服器板浸沒式冷卻"
 photo         = "/assets/img/team/chen-mei-ling.jpg"   # optional
 email         = "..."                                  # optional
 ```
+
+**Which section a person lands in** is decided by `tier`:
+
+| `tier` | Section on the People page | Shown as |
+|---|---|---|
+| `pi` | at the top | a large block, one person only |
+| `lead` | Research leads | photo card |
+| `postdoc` | Postdoctoral researchers | photo card |
+| `phd` | PhD students | a row |
+| `msc` | MSc students | a row |
+
+Staff get photo cards, students get rows. Forty student cards make a very long page and need forty
+photographs before it looks finished. Forty rows stay readable and need only a name and a topic.
+
+Anyone with `status = "alumni"` goes to the Alumni page instead, whatever their tier.
 
 **About `last_verified`.** Put today's date. Once a year the site build will start printing a
 warning for anyone whose date is over twelve months old. That warning is the only thing standing

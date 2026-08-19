@@ -52,6 +52,12 @@
 
   --rule: 1px solid var(--bs-border-color);
   --pad-section: 5rem;
+
+  /* ONE prose measure for the whole site.
+     Three different widths were in play before this: .page-hd p at 54ch,
+     .section-head at 46rem and everything else at the full container. That is
+     why an intro paragraph wrapped early above cards that ran much wider. */
+  --measure: 74ch;
 }
 
 /* Light */
@@ -108,7 +114,17 @@ body {
 body.loaded { opacity: 1; }
 
 /* No scroll-jump when the fixed navbar anchors to a section. */
-html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; }
+/*
+  `scrollbar-gutter: stable` reserves the scrollbar's width even on pages short
+  enough not to need one. Without it a short page is 20px wider than a long one,
+  so its centred container sits 10px further right and every heading on the site
+  fails to line up between pages. Measured: /news/ at 341, /publications/ at 331.
+*/
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  scrollbar-gutter: stable;
+}
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-body);
@@ -143,7 +159,7 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 
 .section { padding: var(--pad-section) 0; }
 .section-alt { background: var(--lab-surface-2); }
-.section-head { max-width: 46rem; margin-bottom: 2.5rem; }
+.section-head { max-width: var(--measure); margin-bottom: 2.5rem; }
 .section-head p { color: var(--lab-muted); margin-bottom: 0; }
 
 /* --------------------------------------------------------------------------
@@ -643,11 +659,11 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .page-hd p {
   color: var(--lab-muted);
   font-size: 1.1rem;
-  max-width: 54ch;
+  max-width: var(--measure);
   margin-bottom: 0;
 }
 .page-body { padding: 3.5rem 0 5rem; }
-.page-narrow { max-width: 46rem; }
+.page-narrow { max-width: var(--measure); }
 
 /* Prose written as Markdown, not generated. Justified, like the source site. */
 .prose { text-align: justify; }
@@ -1156,18 +1172,21 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   margin-bottom: 2rem;
 }
 
-.pt-marquee { position: relative; overflow: hidden; padding: 0.5rem 0; }
-.pt-track {
+.pt-marquee { position: relative; padding: 0.5rem 0; }
+
+/* Two rows. Each scrolls natively, so the arrows have something to push and a
+   phone can swipe it. The scrollbar itself is hidden - the arrows are the
+   affordance. */
+.pt-scroller {
   display: flex;
-  width: max-content;
-  animation: pt-scroll 70s linear infinite;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
 }
-@keyframes pt-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-.pt-marquee:hover .pt-track { animation-play-state: paused; }
-.motion-off .pt-track { animation-play-state: paused; }
+.pt-scroller::-webkit-scrollbar { display: none; }
+.pt-scroller + .pt-scroller { margin-top: 0.5rem; }
 
 .pt-row {
   display: flex;
@@ -1194,8 +1213,8 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   transition: color 0.2s ease-out;
 }
 .pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
-/* Greyscale until hover. This uses less of each mark, and it is also what
-   makes eighty logos of wildly different quality look like one set. */
+/* Greyscale until hover. Uses less of each mark, and it is also what makes
+   sixty logos of wildly different quality look like one set. */
 .pt-logo {
   max-height: 2.6rem;
   max-width: 11rem;
@@ -1209,17 +1228,41 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 [data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }
 [data-bs-theme="dark"] .pt-item:hover .pt-logo { filter: grayscale(0) invert(0); }
 
-/* The edges fade out so names do not appear to be chopped off. */
+.pt-arrow {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 50%;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease-out, border-color 0.18s ease-out, color 0.18s ease-out;
+}
+.pt-arrow:hover { border-color: var(--lab-orange); color: var(--lab-orange); }
+.pt-prev { left: 0.5rem; }
+.pt-next { right: 0.5rem; }
+.pt-prev:hover { transform: translate(-0.2rem, -50%); }
+.pt-next:hover { transform: translate(0.2rem, -50%); }
+
+/* The edges fade so names do not appear chopped off. */
 .pt-fade {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 6rem;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
-.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 15%, transparent 100%); }
-.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 15%, transparent 100%); }
+.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 30%, transparent 100%); }
+.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 30%, transparent 100%); }
 
 .pt-note {
   font-family: var(--font-ui);
@@ -1230,27 +1273,24 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   max-width: 62ch;
   margin: 2.25rem auto 0;
 }
-.pt-funders {
-  font-family: var(--font-ui);
-  font-size: 0.82rem;
-  color: var(--lab-muted);
-  text-align: center;
-  margin: 0 auto 3.5rem;
-  max-width: 70ch;
-}
-.pt-funders span {
-  display: block;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
-}
 
 @media (max-width: 767.98px) {
   .partners { padding-top: 3rem; }
   .pt-row { gap: 2rem; padding: 0 1rem; }
   .pt-fade { width: 3rem; }
-  .pt-track { animation-duration: 45s; }
-  .hero { padding-bottom: 5rem; }
+    .hero { padding-bottom: 5rem; }
   .typed-line { margin-bottom: 1.1rem; }
 }
+
+/* Publications header: the two profile links sit on one line. */
+.pub-links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.25rem; }
+
+/* A research card whose area has no project yet is not a link, so it must not
+   pretend to be one. */
+.card-media.is-static { cursor: default; }
+.card-media.is-static:hover .card-media-img,
+.card-media.is-static:hover .card-media-body { transform: none; }
+.card-media.is-static:hover .card-media-img img { transform: none; }
+
+.project-group { margin-bottom: 4rem; }
+.project-group:last-child { margin-bottom: 0; }

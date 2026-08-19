@@ -10,10 +10,18 @@
 #                                     not stop data going stale; this check does.
 #
 # tier controls where the row is rendered:
-#   "pi"      -> the credibility block at the top of the Team page (one person)
-#   "lead"    -> large cards, research leads
-#   "member"  -> compact rows: name, role, topic
-#   alumni are anything with status = "alumni", rendered on /team/alumni/
+#   "pi"      -> the large block at the top of the People page (one person)
+#   "lead"    -> photo cards, Research leads
+#   "postdoc" -> photo cards, Postdoctoral researchers
+#   "phd"     -> table rows, PhD students
+#   "msc"     -> table rows, MSc students
+#
+# Staff get photo cards, students get rows. Forty student cards make a very long
+# page and need forty photographs before it looks finished; forty rows stay
+# readable and need only a name and a topic.
+#
+# Anything with status = "alumni" is rendered on /people/alumni/ instead,
+# whatever its tier.
 
 [[person]]
 id        = "cc-wang"
@@ -83,7 +91,7 @@ email     = ""
 
 [[person]]
 id        = "maysam-gholampour"
-tier      = "lead"
+tier      = "postdoc"
 status    = "current"
 last_verified = "2026-08-19"
 name_en   = "Maysam Gholampour"
@@ -98,8 +106,8 @@ scholar   = "https://scholar.google.com/citations?user=BOo-4xQAAAAJ&hl=en"
 website   = "https://maysam-gholampour.github.io/"
 
 [[person]]
-id        = "placeholder-member-1"
-tier      = "member"
+id        = "placeholder-postdoc-1"
+tier      = "postdoc"
 status    = "current"
 last_verified = "2026-08-19"
 name_en   = "Member Name"
@@ -110,8 +118,8 @@ topic_en  = "Pool boiling on porous surfaces"
 topic_zh  = "多孔表面池沸騰"
 
 [[person]]
-id        = "placeholder-member-2"
-tier      = "member"
+id        = "placeholder-phd-1"
+tier      = "phd"
 status    = "current"
 last_verified = "2026-08-19"
 name_en   = "Member Name"
@@ -122,8 +130,8 @@ topic_en  = "Cold-plate design for high heat flux"
 topic_zh  = "高熱通量冷板設計"
 
 [[person]]
-id        = "placeholder-member-3"
-tier      = "member"
+id        = "placeholder-msc-1"
+tier      = "msc"
 status    = "current"
 last_verified = "2026-08-19"
 name_en   = "Member Name"
@@ -135,7 +143,7 @@ topic_zh  = "結霜與除霜控制"
 
 [[person]]
 id        = "placeholder-alumni-1"
-tier      = "member"
+tier      = "phd"
 status    = "alumni"
 last_verified = "2026-08-19"
 left_year = 2024

@@ -8,7 +8,7 @@ lang = "zh"
 {{hero}}
 {{news_slider}}
 
-<section class="section">
+<section class="section" id="research">
   <div class="container">
     <div class="section-head">
       <h2>{{ui home research_head}}</h2>
@@ -27,8 +27,6 @@ lang = "zh"
     {{people_pi}}
   </div>
 </section>
-
-<div class="container">{{partner_funders}}</div>
 
 <section class="band-cta">
   <div class="container">

@@ -75,7 +75,7 @@ function hfun_url(params::Vector{String})
     return prefix() * "/" * p * "/"
 end
 
-"""`{{ui nav research}}` -> the `research_en` / `research_zh` string in ui.toml."""
+"""`{{ui nav people}}` -> the `people_en` / `people_zh` string in ui.toml."""
 function hfun_ui(params::Vector{String})
     length(params) == 2 || error("{{ui section key}} needs exactly two arguments, got $params")
     section, key = params
@@ -125,7 +125,6 @@ end
 # Add a page here and it appears in both, in both languages.
 const NAV = [
     ("home",         "/"),
-    ("research",     "/research/"),
     ("projects",     "/projects/"),
     ("people",       "/people/"),
     ("publications", "/publications/"),
@@ -262,7 +261,7 @@ function hfun_hero()
     <p class="hero-lead">$(esc(ui("hero", "lead")))</p>
     <div class="hero-actions">
       <a class="btn btn-cta btn-lg" href="$(pre)/contact/">$(esc(ui("hero", "cta2")))</a>
-      <a class="btn btn-ghost btn-lg" href="$(pre)/research/">$(esc(ui("hero", "cta1")))</a>
+      <a class="btn btn-ghost btn-lg" href="$(pre)/#research">$(esc(ui("hero", "cta1")))</a>
     </div>
   </div>
   <!-- Icon AND label swap together. An earlier version swapped only the icon,
@@ -318,33 +317,31 @@ end
 function hfun_research_cards()
     pre = prefix()
     areas = data("research")["area"]
-    cards = join(["""
-      <div class="col-md-6 col-lg-4">
-        <a class="card-media" href="$(pre)/research/#$(esc(a["id"]))">
+    used  = Set(String(p["area"]) for p in data("projects")["project"])
+    cards = String[]
+    for a in areas
+        img  = esc(get(a, "image", "/assets/img/projects/placeholder.svg"))
+        body = """
           <span class="card-media-img">
-            <img src="$(esc(get(a, "image", "/assets/img/projects/placeholder.svg")))" alt="" loading="lazy">
+            <img src="$(img)" alt="" loading="lazy">
           </span>
           <span class="card-media-body">
             <span class="card-title">$(esc(pick(a, "title")))</span>
             <span class="card-scope">$(esc(pick(a, "scope")))</span>
-          </span>
-        </a>
-      </div>""" for a in areas], "\n")
-    return """<div class="row g-4">\n$(cards)\n</div>"""
-end
-
-"""Full research page: the same six areas, expanded, with anchors."""
-function hfun_research_full()
-    areas = data("research")["area"]
-    blocks = join(["""
-  <section class="area-block" id="$(esc(a["id"]))">
-    <div class="area-head">
-      <span class="card-icon">$(icon(a["icon"]))</span>
-      <h2>$(esc(pick(a, "title")))</h2>
-    </div>
-    <p class="area-scope">$(esc(pick(a, "scope")))</p>
-  </section>""" for a in areas], "\n")
-    return blocks
+          </span>"""
+        # An area with no project yet is NOT a link. A card that lifts on hover
+        # and then goes nowhere reads as a broken page.
+        inner = a["id"] in used ?
+            """<a class="card-media" href="$(pre)/projects/#$(esc(a["id"]))">$(body)</a>""" :
+            """<div class="card-media is-static">$(body)</div>"""
+        push!(cards, """      <div class="col-md-6 col-lg-4">
+$(inner)
+      </div>""")
+    end
+    return """<div class="row g-4">
+$(join(cards, "
+"))
+</div>"""
 end
 
 # ---------------------------------------------------------------------------
@@ -406,29 +403,41 @@ function hfun_partner_strip()
     orgs = data("partners")["org"]
     isempty(orgs) && return ""
 
-    industry = filter(o -> get(o, "kind", "industry") != "government", orgs)
-    isempty(industry) && return ""
+    # Two rows, items dealt alternately so both rows come out a similar length.
+    # Government funders sit alongside the companies, which is what the lab's own
+    # collage slide does; the separate "Funded in part by" line it replaced was
+    # a second concept for no gain.
+    rowa = [o for (i, o) in enumerate(orgs) if isodd(i)]
+    rowb = [o for (i, o) in enumerate(orgs) if iseven(i)]
 
-    row = join([partner_item(o) for o in industry], "
-        ")
-    # The track holds the row TWICE and slides by exactly -50%. That is what
-    # makes the loop seamless without any JavaScript. The second copy is hidden
-    # from assistive technology so each name is announced once.
+    function scroller(items, speed)
+        row = join([partner_item(o) for o in items], "
+          ")
+        # The list is duplicated and the loop subtracts exactly half the track
+        # when it passes the midpoint, so the wrap is invisible. The copy is
+        # hidden from assistive technology so each name is announced once.
+        return """
+      <div class="pt-scroller" data-speed="$(speed)">
+        <ul class="pt-row">
+          $(row)
+        </ul>
+        <ul class="pt-row" aria-hidden="true">
+          $(row)
+        </ul>
+      </div>"""
+    end
+
     return """
-<section class="section partners">
+<section class="section partners" id="partners">
   <div class="container">
     <p class="pt-head">$(esc(ui("partners", "head")))</p>
   </div>
 
   <div class="pt-marquee">
-    <div class="pt-track">
-      <ul class="pt-row">
-        $(row)
-      </ul>
-      <ul class="pt-row" aria-hidden="true">
-        $(row)
-      </ul>
-    </div>
+    <button class="pt-arrow pt-prev" type="button" aria-label="Scroll left">$(icon("chevron-left"))</button>
+$(scroller(rowa, 30))
+$(scroller(rowb, 24))
+    <button class="pt-arrow pt-next" type="button" aria-label="Scroll right">$(icon("chevron-right"))</button>
     <div class="pt-fade pt-fade-l"></div>
     <div class="pt-fade pt-fade-r"></div>
   </div>
@@ -438,14 +447,6 @@ function hfun_partner_strip()
   </div>
 </section>
 """
-end
-
-"""Funders, listed plainly. Naming a funder is normal academic practice."""
-function hfun_partner_funders()
-    orgs = filter(o -> get(o, "kind", "") == "government", data("partners")["org"])
-    isempty(orgs) && return ""
-    names = join([esc(pick(o, "name")) for o in orgs], " &middot; ")
-    return """<p class="pt-funders"><span>$(esc(ui("partners", "funders")))</span> $(names)</p>"""
 end
 
 # ---------------------------------------------------------------------------
@@ -542,7 +543,36 @@ function project_card(p)
       </div>"""
 end
 
-hfun_project_grid() = """<div class="row g-4">\n$(join([project_card(p) for p in projects()], "\n"))\n</div>"""
+"""
+The Projects page, grouped under research-area headings.
+
+Each group carries `id="<area-id>"`, which is what the research cards on the home
+page link to. Areas are walked in research.toml order, so the groups appear in
+the same order as the cards. An area with no projects is skipped entirely, which
+is why those cards are not links.
+"""
+function hfun_project_grid()
+    ps = projects()
+    out = String[]
+    for a in data("research")["area"]
+        mine = filter(p -> String(p["area"]) == a["id"], ps)
+        isempty(mine) && continue
+        cards = join([project_card(p) for p in mine], "
+")
+        push!(out, """
+<section class="project-group" id="$(esc(a["id"]))">
+  <div class="section-head">
+    <h2>$(esc(pick(a, "title")))</h2>
+    <p>$(esc(pick(a, "scope")))</p>
+  </div>
+  <div class="row g-4">
+$(cards)
+  </div>
+</section>""")
+    end
+    return join(out, "
+")
+end
 
 """`{{project_featured 3}}` — the first n projects, for the home page."""
 function hfun_project_featured(params::Vector{String})
@@ -614,10 +644,12 @@ $(join(["      <li>$(esc(h))</li>" for h in hon], "\n"))
 """
 end
 
-function hfun_people_leads()
-    ls = filter(p -> get(p, "tier", "") == "lead" && get(p, "status", "") == "current", people())
-    isempty(ls) && return ""
-    cards = join(["""
+"""Everyone of one tier who is still in the lab, in file order."""
+current(tier) = filter(p -> get(p, "tier", "") == tier && get(p, "status", "") == "current", people())
+
+"""A photo card. Used for staff: research leads and postdocs."""
+function person_card(p)
+    return """
       <div class="col-sm-6 col-lg-4">
         <div class="person-card">
           <img class="person-photo" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
@@ -625,21 +657,35 @@ function hfun_people_leads()
           <p class="person-role">$(esc(pick(p, "role")))</p>
           <p class="person-topic">$(esc(pick(p, "topic")))</p>
         </div>
-      </div>""" for p in ls], "\n")
-    return """<div class="row g-4">\n$(cards)\n</div>"""
+      </div>"""
 end
 
-function hfun_people_members()
-    ms = filter(p -> get(p, "tier", "") == "member" && get(p, "status", "") == "current", people())
-    isempty(ms) && return ""
-    rows = join(["""
+"""A table row. Used for students, where a photo grid would not scale."""
+function person_row(p)
+    return """
     <li class="person-row">
       <span class="person-row-name">$(esc(pick(p, "name")))</span>
       <span class="person-row-role">$(esc(pick(p, "role")))</span>
       <span class="person-row-topic">$(esc(pick(p, "topic")))</span>
-    </li>""" for p in ms], "\n")
-    return """<ul class="person-rows">\n$(rows)\n</ul>"""
+    </li>"""
 end
+
+cards_of(tier) = (ps = current(tier); isempty(ps) ? "" :
+    """<div class="row g-4">
+$(join([person_card(p) for p in ps], "
+"))
+</div>""")
+
+rows_of(tier) = (ps = current(tier); isempty(ps) ? "" :
+    """<ul class="person-rows">
+$(join([person_row(p) for p in ps], "
+"))
+</ul>""")
+
+hfun_people_leads()    = cards_of("lead")
+hfun_people_postdocs() = cards_of("postdoc")
+hfun_people_phd()      = rows_of("phd")
+hfun_people_msc()      = rows_of("msc")
 
 function hfun_people_alumni()
     as = filter(p -> get(p, "status", "") == "alumni", people())
