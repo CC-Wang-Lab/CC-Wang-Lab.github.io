@@ -844,6 +844,17 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
    Link underline that grows from the left, and the arrow nudge.
    -------------------------------------------------------------------------- */
 
+/*
+  The navbar draws its OWN animated indicator, so the browser underline has to
+  go. With the global `a:hover { text-decoration: underline }` still applying, a
+  hovered item showed two lines at once: the text-decoration and the ::after bar.
+  Covers the brand, the links, the language switch and the CTA in one rule.
+*/
+.lab-nav a,
+.lab-nav a:hover,
+.lab-nav a:focus,
+.lab-nav a:active { text-decoration: none; }
+
 .lab-nav .nav-link { position: relative; }
 .lab-nav .nav-link::after {
   content: "";
