@@ -399,32 +399,54 @@ function partner_item(o)
     return """<li class="pt-item">$(body)</li>"""
 end
 
+"""
+`{{partner_strip}}` — two independent bands of organisation names and logos.
+
+WHY TWO BANDS AND NOT ONE MARQUEE WITH TWO ROWS
+The first version put both rows inside one control, drifting the same way at 30
+and 24 px/s, eight pixels apart. Two nearly-equal speeds side by side read as a
+shake, not as movement: the eye tracks the difference between the rows, not the
+rows. Each row is now a self-contained band with its own arrows, a real gap
+between them, and they drift in OPPOSITE directions. A difference of 52 px/s
+reads as two separate things, which is what it is.
+
+A negative `data-speed` is the whole of "the other way"; partners.js needs no
+second code path for it.
+"""
 function hfun_partner_strip()
     orgs = data("partners")["org"]
     isempty(orgs) && return ""
 
-    # Two rows, items dealt alternately so both rows come out a similar length.
-    # Government funders sit alongside the companies, which is what the lab's own
-    # collage slide does; the separate "Funded in part by" line it replaced was
-    # a second concept for no gain.
+    # Items dealt alternately so both bands come out a similar length. Government
+    # funders sit alongside the companies, which is what the lab's own collage
+    # slide does; the separate "Funded in part by" line it replaced was a second
+    # concept for no gain.
     rowa = [o for (i, o) in enumerate(orgs) if isodd(i)]
     rowb = [o for (i, o) in enumerate(orgs) if iseven(i)]
 
-    function scroller(items, speed)
+    function band(items, speed, n)
         row = join([partner_item(o) for o in items], "
           ")
-        # The list is duplicated and the loop subtracts exactly half the track
-        # when it passes the midpoint, so the wrap is invisible. The copy is
-        # hidden from assistive technology so each name is announced once.
+        # The list is duplicated and the loop subtracts exactly one copy when the
+        # offset passes it, so the wrap is invisible. The copy is hidden from
+        # assistive technology so each name is announced once.
         return """
-      <div class="pt-scroller" data-speed="$(speed)">
-        <ul class="pt-row">
+    <div class="pt-band" data-speed="$(speed)">
+      <button class="pt-arrow pt-prev" type="button" aria-label="Scroll row $(n) left">$(icon("chevron-left"))</button>
+      <div class="pt-viewport">
+        <div class="pt-track">
+          <ul class="pt-row">
           $(row)
-        </ul>
-        <ul class="pt-row" aria-hidden="true">
+          </ul>
+          <ul class="pt-row" aria-hidden="true">
           $(row)
-        </ul>
-      </div>"""
+          </ul>
+        </div>
+      </div>
+      <div class="pt-fade pt-fade-l"></div>
+      <div class="pt-fade pt-fade-r"></div>
+      <button class="pt-arrow pt-next" type="button" aria-label="Scroll row $(n) right">$(icon("chevron-right"))</button>
+    </div>"""
     end
 
     return """
@@ -433,13 +455,9 @@ function hfun_partner_strip()
     <p class="pt-head">$(esc(ui("partners", "head")))</p>
   </div>
 
-  <div class="pt-marquee">
-    <button class="pt-arrow pt-prev" type="button" aria-label="Scroll left">$(icon("chevron-left"))</button>
-$(scroller(rowa, 30))
-$(scroller(rowb, 24))
-    <button class="pt-arrow pt-next" type="button" aria-label="Scroll right">$(icon("chevron-right"))</button>
-    <div class="pt-fade pt-fade-l"></div>
-    <div class="pt-fade pt-fade-r"></div>
+  <div class="pt-bands">
+$(band(rowa,  26, 1))
+$(band(rowb, -26, 2))
   </div>
 
   <div class="container">
@@ -636,9 +654,11 @@ function hfun_project_header()
     </p>
   </div>
 </header>
-<figure class="project-hero">
-  <img src="$(esc(p["image"]))" alt="">
-</figure>
+<div class="container">
+  <figure class="project-hero">
+    <img src="$(esc(p["image"]))" alt="">
+  </figure>
+</div>
 """
 end
 
@@ -707,8 +727,35 @@ $(join([person_row(p) for p in ps], "
 
 hfun_people_leads()    = cards_of("lead")
 hfun_people_postdocs() = cards_of("postdoc")
-hfun_people_phd()      = rows_of("phd")
-hfun_people_msc()      = rows_of("msc")
+hfun_people_phd()      = cards_of("phd")
+hfun_people_msc()      = cards_of("msc")
+
+"""
+`{{people_table}}` — every current member of the lab in one table.
+
+The five card sections above it are good for meeting one person. They are poor
+for finding one, and with a placeholder silhouette in every card they are also a
+very long page. The table is the index: one line each, in tier order, no photo
+needed.
+
+Alumni are deliberately absent. They have their own page, and mixing "here now"
+with "was here" in a table with no year column would say the wrong thing.
+"""
+function hfun_people_table()
+    ps = vcat((current(t) for t in ("pi", "lead", "postdoc", "phd", "msc"))...)
+    isempty(ps) && return ""
+    rows = join([person_row(p) for p in ps], "
+")
+    return """
+<ul class="person-rows person-table">
+    <li class="person-row person-row-head">
+      <span class="person-row-name">$(esc(ui("people", "col_name")))</span>
+      <span class="person-row-role">$(esc(ui("people", "col_role")))</span>
+      <span class="person-row-topic">$(esc(ui("people", "col_topic")))</span>
+    </li>
+$(rows)
+</ul>"""
+end
 
 function hfun_people_alumni()
     as = filter(p -> get(p, "status", "") == "alumni", people())
@@ -729,6 +776,85 @@ function hfun_people_alumni()
         push!(out, """<h2 class="year-head">$(y == 0 ? "&mdash;" : string(y))</h2>\n<ul class="person-rows">\n$(rows)\n</ul>""")
     end
     return join(out, "\n")
+end
+
+# ---------------------------------------------------------------------------
+#  Contact form
+#
+#  GitHub Pages has no server. A form here therefore either posts to a third
+#  party or it builds a mailto: link. `form_endpoint` in config.md decides
+#  which, and an empty endpoint is not a broken page - it is the mailto version,
+#  which works today with no account anywhere.
+# ---------------------------------------------------------------------------
+
+"""One labelled field. `kind` is "text", "email" or "area"."""
+function form_field(id, label, hint, kind, required)
+    req  = required ? """ <span class="ff-req">$(esc(ui("form", "required")))</span>""" : ""
+    star = required ? " required" : ""
+    ph   = isempty(hint) ? "" : """ placeholder="$(esc(hint))\""""
+    input = kind == "area" ?
+        """<textarea id="$(id)" name="$(id)" rows="6"$(ph)$(star)></textarea>""" :
+        """<input id="$(id)" name="$(id)" type="$(kind)"$(ph)$(star)>"""
+    return """
+      <div class="ff">
+        <label for="$(id)">$(esc(label))$(req)</label>
+        $(input)
+      </div>"""
+end
+
+"""
+`{{contact_form}}` — the form on /contact/.
+
+Three fields: name, email, message. It replaced a prose list headed "What to
+put in the first email"; the four things that list asked for are now the
+message placeholder, so the guidance survives without becoming four more boxes.
+"""
+function hfun_contact_form()
+    endpoint = try string(globvar(:form_endpoint)) catch; "" end
+    key      = try string(globvar(:form_access_key)) catch; "" end
+    to       = try string(globvar(:form_to)) catch; "ccwang@nycu.edu.tw" end
+    live     = !isempty(endpoint)
+
+    # THREE fields. The first version had eight, one per line of the prose list
+    # it replaced, and every extra field is a reason not to send. The four
+    # things that list asked for are now the message placeholder: they guide
+    # without blocking, and somebody who wants to write two lines can.
+    fields = join([
+        form_field("name",    ui("form", "name"),    "",                         "text",  true),
+        form_field("email",   ui("form", "email"),   "",                         "email", true),
+        form_field("message", ui("form", "message"), ui("form", "message_hint"), "area",  true),
+    ], "
+")
+
+    # Web3Forms wants its key in the body; Formspree wants nothing extra.
+    hidden = String[]
+    isempty(key) || push!(hidden, """<input type="hidden" name="access_key" value="$(esc(key))">""")
+    push!(hidden, """<input type="hidden" name="_subject" value="Project inquiry &mdash; CC Wang Lab website">""")
+    # The honeypot. A bot fills every field it finds; a person never sees this
+    # one. `tabindex="-1"` keeps it out of the keyboard path too.
+    push!(hidden, """<input class="ff-trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">""")
+
+    note = live ? "" : """
+      <p class="ff-note">$(esc(ui("form", "mailto_note")))</p>"""
+
+    return """
+<form class="contact-form" id="inquiryForm"
+      method="POST"
+      action="$(esc(live ? endpoint : "mailto:" * to))"
+      data-mailto="$(esc(to))"
+      data-live="$(live ? "1" : "0")">
+$(join(hidden, "\n"))
+$(fields)
+      <div class="ff-actions">
+        <button class="btn btn-cta" type="submit">$(esc(ui("form", "send")))</button>
+      </div>$(note)
+  <p class="ff-status" role="status" aria-live="polite"
+     data-sending="$(esc(ui("form", "sending")))"
+     data-sent="$(esc(ui("form", "sent")))"
+     data-failed="$(esc(ui("form", "failed")))"></p>
+  <p class="ff-privacy">$(esc(ui("form", "privacy")))</p>
+</form>
+"""
 end
 
 # ---------------------------------------------------------------------------

@@ -29,8 +29,13 @@ news_en         = "News"
 news_zh         = "最新消息"
 about_en        = "About"
 about_zh        = "關於實驗室"
-cta_en          = "Project inquiries"
-cta_zh          = "專案洽詢"
+# The footer nav renders ui("nav", <key>) for every entry in NAV_FOOT, and
+# `contact` was missing: the footer carried <a href="/contact/"></a>, an empty
+# link nobody could see or click. Do not delete this pair.
+contact_en      = "Contact us"
+contact_zh      = "聯絡我們"
+cta_en          = "Contact us"
+cta_zh          = "聯絡我們"
 switch_en       = "中文"
 switch_zh       = "English"
 theme_en        = "Toggle dark mode"
@@ -47,8 +52,8 @@ play_en  = "Play the experiment"
 play_zh  = "播放實驗影片"
 cta1_en  = "Research areas"
 cta1_zh  = "研究領域"
-cta2_en  = "Project inquiries"
-cta2_zh  = "專案洽詢"
+cta2_en  = "Contact us"
+cta2_zh  = "聯絡我們"
 # The typed line under the headline. Wording from the Write For Me GPT,
 # 2026-08-19: six phrases, one per research area, all 17-23 characters so the
 # line does not reflow as it types. Do not add a long one without checking the
@@ -142,6 +147,58 @@ msc_head_en     = "MSc students"
 msc_head_zh     = "碩士班學生"
 alumni_link_en = "View alumni"
 alumni_link_zh = "歷屆成員"
+table_head_en   = "Everyone in the lab"
+table_head_zh   = "全體成員一覽"
+table_lead_en   = "The same people again, as one list, for finding a name quickly."
+table_lead_zh   = "同樣的成員以列表呈現，方便快速查找姓名。"
+col_name_en     = "Name"
+col_name_zh     = "姓名"
+col_role_en     = "Role"
+col_role_zh     = "職稱"
+col_topic_en    = "Research topic"
+col_topic_zh    = "研究主題"
+
+# The contact form on /contact/. THREE fields, on purpose.
+#
+# The first version asked eight questions, one per line of the prose list it
+# replaced. Every extra field is a reason not to send. The four things that list
+# asked for now live in the message placeholder, where they guide without
+# blocking: somebody who wants to write two lines can write two lines.
+[form]
+head_en        = "Send us a message"
+head_zh        = "傳訊息給我們"
+lead_en        = "We reply to every message, and we say honestly whether this laboratory can help."
+lead_zh        = "我們會回覆每一封來信，並誠實說明本實驗室能否協助。"
+
+name_en        = "Your name"
+name_zh        = "您的姓名"
+email_en       = "Email"
+email_zh       = "電子郵件"
+message_en     = "Message"
+message_zh     = "訊息內容"
+
+# The four questions from the old prose list, folded into the placeholder.
+message_hint_en = "What you are cooling, the heat load and the temperature limit, what is stopping you now, and your timescale. A few lines is enough."
+message_hint_zh = "您要冷卻的對象、熱負載與溫度上限、目前的瓶頸，以及時程。幾行文字即可。"
+
+send_en        = "Send"
+send_zh        = "送出"
+required_en    = "Required"
+required_zh    = "必填"
+
+# Shown under the button when form_endpoint in config.md is still empty.
+mailto_note_en = "This opens your email program with the message filled in. Press send there."
+mailto_note_zh = "此按鈕會開啟您的郵件程式並填入內容，請在郵件程式中送出。"
+
+sent_en        = "Thank you. Your message is with the laboratory, and we reply to every one."
+sent_zh        = "感謝您。訊息已送達實驗室，我們會回覆每一封來信。"
+failed_en      = "The message did not send. Please email us directly at ccwang@nycu.edu.tw."
+failed_zh      = "訊息未能送出，請直接來信 ccwang@nycu.edu.tw。"
+sending_en     = "Sending..."
+sending_zh     = "傳送中……"
+
+privacy_en     = "What you write here goes to the laboratory only. It is not passed on, and it is not used for anything but answering you."
+privacy_zh     = "您填寫的內容僅送至本實驗室，不會轉交他人，也僅用於回覆您的來信。"
 
 [foot]
 nav_en      = "Navigate"
@@ -150,7 +207,7 @@ email_en    = "ccwang@nycu.edu.tw"
 email_zh    = "ccwang@nycu.edu.tw"
 phone_en    = "+886-3-571-2121 ext. 55105"
 phone_zh    = "+886-3-571-2121 分機 55105"
-contact_en  = "Contact"
+contact_en  = "Contact us"
 contact_zh  = "聯絡我們"
 address_en  = "Department of Mechanical Engineering, National Yang Ming Chiao Tung University, 1001 University Road, Hsinchu 300093, Taiwan"
 address_zh  = "300093 新竹市大學路 1001 號　國立陽明交通大學 機械工程學系"

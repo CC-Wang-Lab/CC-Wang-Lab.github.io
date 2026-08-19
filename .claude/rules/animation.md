@@ -15,6 +15,33 @@ purpose, and say which.
 | Slider progress line | `13.75rem x .25rem` track, fill bar `translateX(-100%)` to `translateX(0)` over the dwell time |
 | Slider arrows | `top: 50%; transform: translateY(-50%)`, outside the slide at `+/- 2.1875rem`, nudging `+/- .3125rem` |
 
+## The partners strip is a TRANSFORM, not a scroll
+
+Changed 2026-08-19, after the strip was reported as shaking. **Do not put
+`scrollLeft` back.**
+
+Two faults, both measured:
+
+| Fault | The measurement |
+|---|---|
+| Whole-pixel stepping | 26 px/s at 60 fps is 0.43 px per frame. A scroll offset is painted at whole device pixels, so the strip stood still for two frames and jumped one. |
+| The two rows beat against each other | 30 px/s and 24 px/s, same direction, 8 px apart. The eye tracks the DIFFERENCE between two neighbours, so a 6 px/s difference reads as a shake, not as motion. |
+
+**The rounding was in the compositor, not in the JavaScript.** Deleting a
+`Math.round` would not have fixed it. A composited `transform: translate3d()` is
+interpolated at sub-pixel precision, which is why the mechanism changed.
+
+What it cost: native scrolling gave touch and trackpad swiping for free. A
+`pointerdown / pointermove / pointerup` handler in `partners.js` replaces it.
+
+The layout now: two `.pt-band` elements, 1.5rem apart, **drifting in opposite
+directions at 26 px/s each**, with their own arrows. A difference of 52 px/s
+reads as two separate things, which is what they are. A negative `data-speed`
+is the whole of "the other way".
+
+Measured after the change, over 3.0 s of virtual time: band 1 moved **79 px
+left**, band 2 moved **79 px right**. Target was 78.
+
 ## Motion starts running, for everyone
 
 **This rule replaced an earlier one, on purpose. Read the history before changing it back.**

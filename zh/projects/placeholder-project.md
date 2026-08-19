@@ -10,7 +10,7 @@ lang = "zh"
 
 @@page-body
 @@container
-@@page-narrow,prose
+@@project-body,prose
 
 ## 研究問題
 

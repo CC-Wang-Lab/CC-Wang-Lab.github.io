@@ -523,6 +523,18 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .person-row-name { font-weight: 700; }
 .person-row-role,
 .person-row-topic { color: var(--lab-muted); font-size: 0.95rem; }
+
+/* The index of everyone, under the card sections. Its first row is a header, so
+   the three columns are named rather than guessed at. */
+.person-table .person-row-head {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  border-bottom: 2px solid var(--bs-border-color);
+}
+.person-table .person-row-head span { font-weight: 600; color: inherit; text-align: left; }
 .year-head { margin-top: 2.5rem; }
 
 /* --------------------------------------------------------------------------
@@ -665,9 +677,44 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .page-body { padding: 3.5rem 0 5rem; }
 .page-narrow { max-width: var(--measure); }
 
-/* Prose written as Markdown, not generated. Justified, like the source site. */
-.prose { text-align: justify; }
-.prose h2, .prose h3, .prose h1 { text-align: left; }
+/* A project page runs its body at the FULL container width, matching the hero
+   photo above it. Asked for directly, 2026-08-19, after seeing the two side by
+   side: the hero ran to the container edge while the text stopped at 74
+   characters, and the mismatch was the thing that looked wrong.
+   The cost, said once: about 130 characters per line, which is long. The About
+   page keeps .page-narrow, so the two are now deliberately different. */
+.project-body { max-width: 100%; }
+
+/* --------------------------------------------------------------------------
+   Justification
+
+   Every paragraph on the site is justified, card blurbs included. Asked for
+   directly, 2026-08-19.
+
+   What is NOT justified, and why: a heading is one line, so justifying it only
+   risks stretching it; a badge, a chip, a button and a table header are labels,
+   not prose; a name in the people table is a single word.
+
+   The cost, stated once: a card column is about 45 characters wide, which is
+   near the floor for justified text. Two-line blurbs will show visible word
+   gaps. It is one selector to take back.
+   -------------------------------------------------------------------------- */
+
+.prose,
+.page-hd p,
+.section-head p,
+.pi-body p,
+.card-scope,
+.person-topic,
+.person-row-topic,
+.news-body,
+.pg-scope,
+.ff-lead,
+.foot-addr { text-align: justify; }
+
+/* Headings never justify - a stretched one-line heading looks broken. */
+.prose h1, .prose h2, .prose h3,
+.page-hd h1, .section-head h2 { text-align: left; }
 .prose h2 { margin-top: 2.5rem; }
 
 /* The source site's section divider: a centred ✦ instead of a rule. */
@@ -717,6 +764,89 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .contact-card p + h2 { margin-top: 2rem; }
 
 /* --------------------------------------------------------------------------
+   The inquiry form
+
+   THE WIDTH. The prose that used to sit here ran the full col-lg-7, about
+   745px, while every other page's prose runs at --measure, about 650px. That
+   was the last of the three widths this site used to have. The column keeps its
+   grid position; the content inside it stops at the same measure as everywhere
+   else, so the form and the page heading above it share one left edge and one
+   right edge.
+   -------------------------------------------------------------------------- */
+
+.form-col { max-width: var(--measure); }
+.ff-head { margin-bottom: 0.6rem; }
+.ff-lead { color: var(--lab-muted); margin-bottom: 2rem; }
+
+.contact-form { display: flex; flex-direction: column; gap: 1.1rem; }
+.ff { display: flex; flex-direction: column; gap: 0.35rem; }
+.ff label {
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+}
+.ff-req {
+  font-weight: 400;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  margin-left: 0.4rem;
+}
+.ff input,
+.ff textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--bs-body-color);
+  background: var(--lab-surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  width: 100%;
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.ff textarea { resize: vertical; min-height: 5.5rem; }
+.ff input::placeholder,
+.ff textarea::placeholder { color: var(--lab-muted); opacity: 0.75; }
+.ff input:focus,
+.ff textarea:focus {
+  outline: none;
+  border-color: var(--lab-blue);
+  box-shadow: 0 0 0 3px rgba(64, 128, 168, 0.22);
+}
+[data-bs-theme="dark"] .ff input:focus,
+[data-bs-theme="dark"] .ff textarea:focus { border-color: var(--lab-blue-bright); }
+
+.ff-actions { margin-top: 0.4rem; }
+.ff-note,
+.ff-privacy {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--lab-muted);
+  margin: 0;
+}
+.ff-privacy { margin-top: 0.75rem; }
+
+.ff-status { font-family: var(--font-ui); font-size: 0.9rem; margin: 0; }
+.ff-status.is-sending { color: var(--lab-muted); }
+.ff-status.is-sent    { color: var(--lab-blue); font-weight: 600; }
+.ff-status.is-failed  { color: #b3261e; font-weight: 600; }
+[data-bs-theme="dark"] .ff-status.is-sent   { color: var(--lab-blue-bright); }
+[data-bs-theme="dark"] .ff-status.is-failed { color: #f2b8b5; }
+
+/* The honeypot. Off-screen rather than display:none, because some bots skip
+   anything that is not rendered. A person never reaches it: it is out of the
+   viewport and out of the tab order. */
+.ff-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
    Responsive
    -------------------------------------------------------------------------- */
 
@@ -757,7 +887,20 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   .pi-name { font-size: 1.65rem; }
   .person-row { grid-template-columns: 1fr; gap: 0.15rem; }
   .stat-num { font-size: 1.75rem; }
-  .prose { text-align: left; }  /* justified text at 390px produces rivers */
+  /* At 390px a justified line is about 32 characters, and the white rivers
+     between words are unavoidable. Everything the justification block above
+     turned on is turned back off here. */
+  .prose,
+  .page-hd p,
+  .section-head p,
+  .pi-body p,
+  .card-scope,
+  .person-topic,
+  .person-row-topic,
+  .news-body,
+  .pg-scope,
+  .ff-lead,
+  .foot-addr { text-align: left; }
 
   /* Half a phone wide is not enough for two columns of "Publications". */
   .foot-nav-2col { columns: 1; }
@@ -1040,13 +1183,25 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
    -------------------------------------------------------------------------- */
 
 .project-hd .card-badge { margin-bottom: 0.6rem; }
+/* The lead runs the full container too, so the whole project page is one width:
+   heading, lead, hero photo and body all start and end on the same two lines.
+   Every OTHER page keeps its intro at --measure. */
+.project-hd p { max-width: none; }
 .project-crumb { font-family: var(--font-ui); font-size: 0.82rem; margin-bottom: 1rem; }
 .project-by { display: flex; align-items: center; gap: 0.9rem; margin-top: 1.5rem; margin-bottom: 0; }
 .project-by-photo {
   width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
   border: var(--rule); background: var(--lab-surface-2);
 }
-.project-hero { margin: 0; }
+/* The hero used to run the full window while the body sat at 74 characters.
+   Nothing else on the site is full-bleed, so it now sits in the same container
+   the card grids use, with the card corner radius. */
+.project-hero {
+  margin: 0;
+  border-radius: 0.9rem;
+  overflow: hidden;
+  box-shadow: var(--lab-shadow);
+}
 .project-hero img { display: block; width: 100%; max-height: 460px; object-fit: cover; }
 .project-figure { margin: 2rem 0; }
 .project-figure video { width: 100%; border-radius: 0.75rem; display: block; }
@@ -1172,21 +1327,20 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   margin-bottom: 2rem;
 }
 
-.pt-marquee { position: relative; padding: 0.5rem 0; }
+/* Two INDEPENDENT bands, drifting in opposite directions, with a real gap
+   between them. The first version shared one control and one pair of arrows,
+   and the two rows crept along together 8px apart at 30 and 24 px/s. The eye
+   reads a small difference between neighbours as a shake. 26 px/s each way is
+   a difference of 52 px/s, which reads as two separate things. */
+.pt-bands { display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0; }
+.pt-band { position: relative; }
 
-/* Two rows. Each scrolls natively, so the arrows have something to push and a
-   phone can swipe it. The scrollbar itself is hidden - the arrows are the
-   affordance. */
-.pt-scroller {
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  overscroll-behavior-x: contain;
-}
-.pt-scroller::-webkit-scrollbar { display: none; }
-.pt-scroller + .pt-scroller { margin-top: 0.5rem; }
+/* The viewport clips; the track inside it is what moves, under a transform.
+   Not overflow-x:auto - a scroll offset is painted at whole device pixels, and
+   at 0.43px per frame that is a visible step. See partners.js. */
+.pt-viewport { overflow: hidden; touch-action: pan-y; cursor: grab; }
+.pt-viewport.is-dragging { cursor: grabbing; }
+.pt-track { display: flex; will-change: transform; }
 
 .pt-row {
   display: flex;
@@ -1252,17 +1406,19 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .pt-prev:hover { transform: translate(-0.2rem, -50%); }
 .pt-next:hover { transform: translate(0.2rem, -50%); }
 
-/* The edges fade so names do not appear chopped off. */
+/* The edges fade so names do not appear chopped off. Opaque for the first 55%,
+   which is what keeps a half-word from showing beside the arrow; the old 30%
+   left "...chnology Council" legible under the button. */
 .pt-fade {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 6rem;
+  width: 7.5rem;
   pointer-events: none;
   z-index: 2;
 }
-.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 30%, transparent 100%); }
-.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 30%, transparent 100%); }
+.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 55%, transparent 100%); }
+.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 55%, transparent 100%); }
 
 .pt-note {
   font-family: var(--font-ui);

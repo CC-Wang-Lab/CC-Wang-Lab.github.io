@@ -10,7 +10,7 @@ lang = "en"
 
 @@page-body
 @@container
-@@page-narrow,prose
+@@project-body,prose
 
 ## The question
 

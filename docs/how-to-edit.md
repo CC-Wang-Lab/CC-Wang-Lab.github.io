@@ -48,11 +48,12 @@ email         = "..."                                  # optional
 | `pi` | at the top | a large block, one person only |
 | `lead` | Research leads | photo card |
 | `postdoc` | Postdoctoral researchers | photo card |
-| `phd` | PhD students | a row |
-| `msc` | MSc students | a row |
+| `phd` | PhD students | photo card |
+| `msc` | MSc students | photo card |
 
-Staff get photo cards, students get rows. Forty student cards make a very long page and need forty
-photographs before it looks finished. Forty rows stay readable and need only a name and a topic.
+**Everyone appears twice**: once as a photo card in their own section, and once in the
+"Everyone in the lab" table at the bottom of the page. The table is the index — one line each,
+for finding a name without scrolling past forty photographs.
 
 Anyone with `status = "alumni"` goes to the Alumni page instead, whatever their tier.
 
@@ -73,6 +74,29 @@ They move to the Alumni page automatically.
 Leave `photo` out and a grey silhouette appears instead — that is fine.
 
 ---
+
+## Turn the contact form on
+
+The form at `/contact/` works today, but it does not send the email itself. It
+opens the visitor's mail program with every answer filled in, and they press
+send. That needs no account anywhere, which is why it is the default.
+
+**To make it send by itself, two steps.**
+
+1. Create a free account at [formspree.io](https://formspree.io) or
+   [web3forms.com](https://web3forms.com) and point it at `ccwang@nycu.edu.tw`.
+2. Paste the endpoint into `config.md`:
+
+```
+form_endpoint   = "https://formspree.io/f/XXXXXXXX"
+form_access_key = ""                 # Web3Forms only; Formspree needs nothing here
+```
+
+That one line is the whole switch. The form's markup does not change, and the
+visitor stops leaving the page: the reply appears underneath the button.
+
+To change what the form asks, edit the `[form]` section of `_data/ui.toml`.
+Both languages sit on adjacent lines, as everywhere else.
 
 ## Add a project
 

@@ -1,6 +1,6 @@
 +++
-title = "Discuss an R&D project"
-descr = "How to reach the lab, and what to put in a first email about an industrial project."
+title = "Contact us"
+descr = "How to reach the laboratory, and the form for starting an industrial project."
 lang = "en"
 +++
 
@@ -16,19 +16,14 @@ lang = "en"
 @@page-body
 @@container
 @@row,g-5
-@@col-lg-7,prose
-
-## What to put in the first email
-
-Four lines are enough to get a useful answer.
-
-1. **What you are cooling.** A chip package, a cold plate, a rack, a heat exchanger, a whole room.
-2. **The heat load and the limit.** Watts, and the temperature you must not exceed.
-3. **What is stopping you now.** The measurement you cannot make, or the design that will not close.
-4. **Your timescale.** Weeks, one semester, or a multi-year program.
-
-We reply to say honestly whether this lab can help. If it cannot, we say so.
-
+@@col-lg-7
+~~~
+<div class="form-col">
+  <h2 class="ff-head">{{ui form head}}</h2>
+  <p class="ff-lead">{{ui form lead}}</p>
+  {{contact_form}}
+</div>
+~~~
 @@
 @@col-lg-5
 @@contact-card

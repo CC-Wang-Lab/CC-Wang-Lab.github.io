@@ -1,16 +1,25 @@
 /*
- * Partners strip — two rows, slow drift, arrows for manual control.
+ * Partners strip — two independent bands drifting in opposite directions.
  *
- * WHY THIS IS NOT A CSS MARQUEE
- * The first version used @keyframes on a transform. That animates fine but it
- * cannot be scrubbed: the animation owns the transform, so an arrow button has
- * nothing to push. Driving `scrollLeft` instead gives manual control, and it
- * gives touch and trackpad swiping for free.
+ * WHY A TRANSFORM AND NOT scrollLeft
+ * The first version animated `scrollLeft` and it visibly stepped. 26 px/s at
+ * 60 fps is 0.43 px per frame, and a scroll offset is painted at whole device
+ * pixels, so the strip stood still for two frames and then jumped one pixel.
+ * Dropping the Math.round would not have helped: the rounding was in the
+ * compositor, not in this file. A composited transform IS interpolated at
+ * sub-pixel precision, so the drift is smooth at any speed.
+ *
+ * What that cost: native scrolling used to give touch and trackpad swiping for
+ * free. The pointer-drag handler at the bottom of this file replaces it.
  *
  * THE SEAMLESS WRAP
- * Each row holds its list TWICE. When the scroll passes half the track, we
- * subtract exactly half. At that instant the second copy sits precisely where
- * the first began, so nothing appears to move. Any other distance shows a jump.
+ * Each track holds its list TWICE. When the offset passes one copy, exactly one
+ * copy is subtracted. At that instant the second copy sits precisely where the
+ * first began, so nothing appears to move. Any other distance shows a jump.
+ *
+ * DIRECTION
+ * `data-speed` is px per second. Negative means the other way. Band 1 runs +26
+ * and band 2 runs -26, and nothing else in here knows about direction.
  *
  * Obeys the shared flag in motion.js, like everything else on the page.
  */
@@ -18,25 +27,31 @@
   "use strict";
 
   var NUDGE = 380;   // px an arrow press adds
-  var EASE = 0.12;   // how fast a nudge is consumed, per frame
+  var EASE = 0.12;   // how much of a pending nudge is consumed per frame
 
   function init() {
     var root = document.getElementById("partners");
     if (!root) return;
 
-    var scrollers = [].slice.call(root.querySelectorAll(".pt-scroller"));
-    if (!scrollers.length) return;
-
-    var rows = scrollers.map(function (el) {
+    var bands = [].slice.call(root.querySelectorAll(".pt-band")).map(function (el) {
+      var track = el.querySelector(".pt-track");
+      if (!track) return null;
       return {
         el: el,
-        speed: parseFloat(el.getAttribute("data-speed")) || 30, // px per second
-        pos: 0,
+        track: track,
+        speed: parseFloat(el.getAttribute("data-speed")) || 26,
+        pos: 0,        // px scrolled from the start of the first copy
+        base: 0,       // pos at the last resync
+        baseTime: 0,   // when that resync was
         nudge: 0,
-        written: 0   // the last value THIS loop wrote, see the scroll handler
-
+        dragging: false,
+        dragX: 0
       };
-    });
+    }).filter(Boolean);
+    if (!bands.length) return;
+
+    var now0 = performance.now();
+    bands.forEach(function (b) { b.baseTime = now0; });
 
     // POSITION IS COMPUTED FROM ABSOLUTE TIME, not accumulated per frame.
     //
@@ -47,79 +62,87 @@
     // focused. Deriving the position from elapsed wall-clock time instead is
     // correct however the frames arrive, and a long sleep simply resumes at the
     // right place. The wrap is seamless, so even a large jump is invisible.
-    rows.forEach(function (r) {
-      r.base = 0;                    // scroll position at the last resync
-      r.baseTime = performance.now(); // when that was
-    });
-
     function frame() {
       var now = performance.now();
       var moving = !window.LabMotion || window.LabMotion.isRunning();
 
-      rows.forEach(function (r) {
-        var h = r.el.scrollWidth / 2;   // one full copy of the list
-        if (h <= 0) return;
+      bands.forEach(function (b) {
+        var copy = b.track.scrollWidth / 2;   // one full copy of the list
+        if (copy <= 0) return;
 
-        if (moving) {
-          r.pos = r.base + r.speed * ((now - r.baseTime) / 1000);
+        if (moving && !b.dragging) {
+          b.pos = b.base + b.speed * ((now - b.baseTime) / 1000);
         } else {
-          // Paused: hold still, and keep the clock from running on underneath.
-          r.base = r.pos;
-          r.baseTime = now;
+          // Paused or held: stand still, and keep the clock from running on.
+          b.base = b.pos;
+          b.baseTime = now;
         }
 
-        // Consume any arrow nudge, eased.
-        if (r.nudge !== 0) {
-          var step = r.nudge * EASE;
-          if (Math.abs(step) < 0.5) step = r.nudge;
-          r.base += step;
-          r.pos += step;
-          r.nudge -= step;
+        // Consume any pending arrow nudge, eased.
+        if (b.nudge !== 0) {
+          var step = b.nudge * EASE;
+          if (Math.abs(step) < 0.5) step = b.nudge;
+          b.base += step;
+          b.pos += step;
+          b.nudge -= step;
         }
 
-        // Wrap both ways so the arrows can run backwards indefinitely.
-        while (r.pos >= h) { r.pos -= h; r.base -= h; }
-        while (r.pos < 0)  { r.pos += h; r.base += h; }
+        // Wrap both ways, so the arrows can run backwards indefinitely.
+        while (b.pos >= copy) { b.pos -= copy; b.base -= copy; }
+        while (b.pos < 0)     { b.pos += copy; b.base += copy; }
 
-        r.written = Math.round(r.pos);
-        r.el.scrollLeft = r.written;
+        // Fractional on purpose. Rounding here is what made it step.
+        b.track.style.transform = "translate3d(" + (-b.pos) + "px,0,0)";
       });
 
       if (window.__partners) window.__partners.frames++;
       requestAnimationFrame(frame);
     }
 
-    function push(direction) {
-      rows.forEach(function (r) {
-        r.nudge += NUDGE * direction;
+    // Arrows move ONLY their own band. Two rows sharing one pair of arrows was
+    // the other half of what made the strip read as a single shaking block.
+    bands.forEach(function (b) {
+      var prev = b.el.querySelector(".pt-prev");
+      var next = b.el.querySelector(".pt-next");
+      if (prev) prev.addEventListener("click", function () { b.nudge -= NUDGE; });
+      if (next) next.addEventListener("click", function () { b.nudge += NUDGE; });
+
+      // Pointer drag, replacing the swipe that native scrolling gave for free.
+      // Dragging holds the band still; releasing resumes the drift from wherever
+      // it was left, which is the same contract the old scroll handler had.
+      var view = b.el.querySelector(".pt-viewport");
+      if (!view) return;
+
+      view.addEventListener("pointerdown", function (e) {
+        if (e.button !== 0 && e.pointerType === "mouse") return;
+        b.dragging = true;
+        b.dragX = e.clientX;
+        b.nudge = 0;
+        view.setPointerCapture(e.pointerId);
+        view.classList.add("is-dragging");
       });
-    }
 
-    var prev = root.querySelector(".pt-prev");
-    var next = root.querySelector(".pt-next");
-    if (prev) prev.addEventListener("click", function () { push(-1); });
-    if (next) next.addEventListener("click", function () { push(1); });
+      view.addEventListener("pointermove", function (e) {
+        if (!b.dragging) return;
+        b.pos -= e.clientX - b.dragX;
+        b.dragX = e.clientX;
+        e.preventDefault();
+      });
 
-    // A visitor who drags or swipes a row owns its position from then on;
-    // pick the drift back up from wherever they left it.
-    //
-    // Compare against the value the loop last WROTE, never against `pos`.
-    // The scroll event is asynchronous: by the time it arrives, `pos` has
-    // already advanced another frame, so comparing with `pos` made every one of
-    // our own writes look like a user drag and rolled the position back. That
-    // turned 30 px/s into a measured 2 px/s.
-    scrollers.forEach(function (el, i) {
-      el.addEventListener("scroll", function () {
-        if (Math.abs(el.scrollLeft - rows[i].written) > 2) {
-          rows[i].pos = el.scrollLeft;
-          rows[i].base = el.scrollLeft;
-          rows[i].baseTime = performance.now();
-        }
-      }, { passive: true });
+      function release(e) {
+        if (!b.dragging) return;
+        b.dragging = false;
+        b.base = b.pos;
+        b.baseTime = performance.now();
+        try { view.releasePointerCapture(e.pointerId); } catch (err) { /* already gone */ }
+        view.classList.remove("is-dragging");
+      }
+      view.addEventListener("pointerup", release);
+      view.addEventListener("pointercancel", release);
     });
 
     // Exposed so the drift can be measured without guessing at it.
-    window.__partners = { rows: rows, frames: 0, lastDt: 0 };
+    window.__partners = { bands: bands, frames: 0 };
 
     requestAnimationFrame(frame);
   }

@@ -37,6 +37,12 @@ lang = "zh"
     </div>
     {{people_msc}}
 
+    <div class="section-head mt-5">
+      <h2>{{ui people table_head}}</h2>
+      <p>{{ui people table_lead}}</p>
+    </div>
+    {{people_table}}
+
     <p class="mt-5"><a class="link-arrow" href="{{url people/alumni}}">{{ui people alumni_link}} <span class="link-arrow-mark">&rarr;</span></a></p>
 
   </div>
