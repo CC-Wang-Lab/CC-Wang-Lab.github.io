@@ -338,25 +338,6 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   body { transition: none; }
 }
 
-.hero-play {
-  position: absolute;
-  z-index: 3;
-  right: 1.25rem;
-  bottom: 3.25rem;
-  display: none;              /* shown by JS only when autoplay did not start */
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 1rem 0.4rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 2rem;
-  background: rgba(11, 11, 18, 0.55);
-  backdrop-filter: blur(6px);
-  color: #fff;
-  font-family: var(--font-ui);
-  font-size: 0.82rem;
-}
-.hero-play.is-shown { display: inline-flex; }
-.hero-play:hover { background: rgba(11, 11, 18, 0.8); border-color: #fff; }
 
 /* --------------------------------------------------------------------------
    Numbers band
@@ -488,8 +469,8 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .person-name { font-style: normal; }
 .news-title { font-style: normal; }
 .pi-role { color: var(--lab-muted); font-size: 1.05rem; margin-bottom: 0.9rem; }
-.pi-honours { list-style: none; padding: 0; margin: 0 0 1.2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.pi-honours li {
+.pi-honors { list-style: none; padding: 0; margin: 0 0 1.2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pi-honors li {
   font-family: var(--font-ui);
   font-size: 0.78rem;
   border: 1px solid var(--lab-blue);
@@ -497,7 +478,7 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   border-radius: 1rem;
   padding: 0.15rem 0.75rem;
 }
-[data-bs-theme="dark"] .pi-honours li { border-color: var(--lab-blue-bright); color: var(--lab-blue-bright); }
+[data-bs-theme="dark"] .pi-honors li { border-color: var(--lab-blue-bright); color: var(--lab-blue-bright); }
 .pi-links { margin-top: 1.1rem; font-size: 0.95rem; }
 
 .person-card { text-align: center; }
@@ -587,7 +568,8 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   font-size: 0.95rem;
 }
 .foot-brand { font-weight: 700; font-size: 1.15rem; margin-bottom: 0.1rem; }
-.foot-uni { color: var(--lab-muted); margin-bottom: 0.6rem; }
+/* A blank line's worth of space, so the address reads as a separate block. */
+.foot-uni { color: var(--lab-muted); margin-bottom: 1.5rem; }
 .foot-addr { color: var(--lab-muted); font-size: 0.88rem; max-width: 34ch; }
 .foot-head {
   font-family: var(--font-ui);
@@ -598,10 +580,16 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   margin-bottom: 0.7rem;
 }
 .foot-nav { display: flex; flex-direction: column; gap: 0.35rem; }
+/*
+  Nine links in one column made the footer taller than the content beside it.
+  `columns` balances them by itself, so adding a page needs no change here.
+*/
+.foot-nav-2col { display: block; columns: 2; column-gap: 1.5rem; }
+.foot-nav-2col a { display: block; margin-bottom: 0.35rem; break-inside: avoid; }
 .foot-nav a { color: var(--bs-body-color); }
 .foot-nav a:hover { color: var(--lab-orange); }
 .foot-rule { margin: 2.5rem 0 1.2rem; border-color: var(--bs-border-color); opacity: 1; }
-.foot-fine { color: var(--lab-muted); font-size: 0.82rem; margin-bottom: 0; }
+.foot-fine { color: var(--lab-muted); font-size: 0.82rem; margin-bottom: 0; text-align: center; }
 
 /* --------------------------------------------------------------------------
    Back to top — carried over from maysam-gholampour.github.io, it works.
@@ -682,6 +670,30 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .prose li { margin-bottom: 0.4rem; }
 
 /* --------------------------------------------------------------------------
+   Contact page
+   The prose runs in the left column. The addresses sit in a card beside it,
+   which is what stops the page ending in half a screen of empty space.
+   -------------------------------------------------------------------------- */
+
+.contact-card {
+  background: var(--lab-surface);
+  border: var(--rule);
+  border-radius: 0.9rem;
+  padding: 1.6rem 1.7rem;
+  box-shadow: var(--lab-shadow);
+  font-size: 1rem;
+}
+/* Peer sections of the prose beside it, so h2 — but sized for a card. */
+.contact-card h2 { font-size: 1.3rem; margin-bottom: 0.9rem; }
+.contact-card h2 + p { margin-top: 0; }
+.contact-card p { margin-bottom: 1.1rem; }
+.contact-card p:last-child { margin-bottom: 0; }
+.contact-card .header-anchor { color: inherit; }
+.contact-card .header-anchor:hover { text-decoration: none; }
+/* Second heading in the card needs air above it, the first does not. */
+.contact-card p + h2 { margin-top: 2rem; }
+
+/* --------------------------------------------------------------------------
    Responsive
    -------------------------------------------------------------------------- */
 
@@ -723,6 +735,9 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   .person-row { grid-template-columns: 1fr; gap: 0.15rem; }
   .stat-num { font-size: 1.75rem; }
   .prose { text-align: left; }  /* justified text at 390px produces rivers */
+
+  /* Half a phone wide is not enough for two columns of "Publications". */
+  .foot-nav-2col { columns: 1; }
 }
 
 /* --------------------------------------------------------------------------
@@ -838,6 +853,13 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .lab-nav .nav-link:hover::after { transform: scaleX(1); }
 .lab-nav .nav-link.active { box-shadow: none; }
 .lab-nav .nav-link.active::after { transform: scaleX(1); }
+/*
+  The pointer wins. While the visitor is over the menu, only the item under the
+  pointer keeps its underline; the active page gives up its own until the
+  pointer leaves. Without this rule the active page and the hovered item both
+  draw a line, which reads as a broken menu.
+*/
+.lab-nav .navbar-nav:hover .nav-link.active:not(:hover)::after { transform: scaleX(0); }
 
 .link-arrow-mark {
   display: inline-block;
@@ -992,4 +1014,200 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   .ns-nav { gap: 0.75rem; margin-top: 1.75rem; }
   .ns-arrow { display: none; }
   .project-hero img { max-height: 240px; }
+}
+
+/* ==========================================================================
+   ROUND 3 — typed line, motion control, partners marquee, spacing
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Typed line under the hero headline
+   -------------------------------------------------------------------------- */
+
+.typed-line {
+  font-family: var(--font-ui);
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.92);
+  margin: -0.4rem 0 1.4rem;
+  min-height: 1.7em;              /* holds its line so nothing below jumps */
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+.typed-lead { color: rgba(255, 255, 255, 0.6); margin-right: 0.5rem; }
+.typed-text { color: var(--lab-orange-bright); font-weight: 600; }
+.typed-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--lab-orange-bright);
+  animation: caret-blink 1.05s step-end infinite;
+}
+@keyframes caret-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+/* A blinking caret on a page whose motion is paused is a contradiction. */
+.motion-off .typed-caret { animation: none; opacity: 0.35; }
+
+/* --------------------------------------------------------------------------
+   Motion control — one button, everything on the page obeys it
+   -------------------------------------------------------------------------- */
+
+.motion-toggle {
+  position: absolute;
+  z-index: 3;
+  right: 1.25rem;
+  bottom: 3.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.95rem 0.35rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 2rem;
+  background: rgba(11, 11, 18, 0.5);
+  backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  transition: background 0.18s ease-out, border-color 0.18s ease-out, color 0.18s ease-out;
+}
+.motion-toggle:hover {
+  background: rgba(11, 11, 18, 0.8);
+  border-color: #fff;
+  color: #fff;
+}
+.motion-toggle .motion-icon-play { display: none; }
+.motion-toggle.is-paused .motion-icon-play { display: inline; }
+.motion-toggle.is-paused .motion-icon-pause { display: none; }
+/* Only the label is hidden on small screens; the icon stays tappable. */
+@media (max-width: 575.98px) {
+  .motion-toggle .motion-label { display: none; }
+  .motion-toggle { padding: 0.4rem 0.6rem; bottom: auto; top: 5.2rem; }
+}
+
+/* --------------------------------------------------------------------------
+   Hero and news band — they used to run into each other
+   -------------------------------------------------------------------------- */
+
+.hero { padding-bottom: 6.5rem; }
+.news-slider {
+  border-top: 3px solid var(--lab-orange);
+  padding-top: 3.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Partners marquee
+
+   The track holds the row twice and slides by exactly -50%, so the moment it
+   reaches the halfway point the second copy sits precisely where the first
+   started and the reset is invisible. Any other distance shows a jump.
+   -------------------------------------------------------------------------- */
+
+.partners { padding-top: 4rem; padding-bottom: 3.5rem; }
+.pt-head {
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.pt-marquee { position: relative; overflow: hidden; padding: 0.5rem 0; }
+.pt-track {
+  display: flex;
+  width: max-content;
+  animation: pt-scroll 70s linear infinite;
+}
+@keyframes pt-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.pt-marquee:hover .pt-track { animation-play-state: paused; }
+.motion-off .pt-track { animation-play-state: paused; }
+
+.pt-row {
+  display: flex;
+  align-items: center;
+  gap: 3.25rem;
+  margin: 0;
+  padding: 0 1.625rem;
+  list-style: none;
+  flex: 0 0 auto;
+}
+.pt-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  flex: 0 0 auto;
+}
+.pt-name {
+  font-family: var(--font-ui);
+  font-size: 1.02rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--lab-muted);
+  transition: color 0.2s ease-out;
+}
+.pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
+/* Greyscale until hover. This uses less of each mark, and it is also what
+   makes eighty logos of wildly different quality look like one set. */
+.pt-logo {
+  max-height: 2.6rem;
+  max-width: 11rem;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.62;
+  transition: filter 0.25s ease-out, opacity 0.25s ease-out;
+}
+.pt-item:hover .pt-logo { filter: grayscale(0); opacity: 1; }
+[data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }
+[data-bs-theme="dark"] .pt-item:hover .pt-logo { filter: grayscale(0) invert(0); }
+
+/* The edges fade out so names do not appear to be chopped off. */
+.pt-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6rem;
+  pointer-events: none;
+  z-index: 1;
+}
+.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 15%, transparent 100%); }
+.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 15%, transparent 100%); }
+
+.pt-note {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--lab-muted);
+  text-align: center;
+  max-width: 62ch;
+  margin: 2.25rem auto 0;
+}
+.pt-funders {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  color: var(--lab-muted);
+  text-align: center;
+  margin: 0 auto 3.5rem;
+  max-width: 70ch;
+}
+.pt-funders span {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .partners { padding-top: 3rem; }
+  .pt-row { gap: 2rem; padding: 0 1rem; }
+  .pt-fade { width: 3rem; }
+  .pt-track { animation-duration: 45s; }
+  .hero { padding-bottom: 5rem; }
+  .typed-line { margin-bottom: 1.1rem; }
 }

@@ -4,12 +4,9 @@
  * Slides cross-fade. The navigation underneath is a row of titles, each above a
  * progress line that fills across the slide's dwell time.
  *
- * THE REDUCED-MOTION RULE
- * A visitor who has asked for reduced motion gets NO auto-advance and NO filling
- * progress bar. They still get the arrows and the title navigation, so nothing on
- * this page is unreachable. Note that on Windows "reduce motion" is just
- * Settings > Accessibility > Visual effects > Animation effects = Off, which is
- * common. Hiding content from those visitors is not acceptable.
+ * Auto-advance is governed by the shared flag in motion.js, not by
+ * prefers-reduced-motion directly. See the note at the top of that file for why.
+ * The arrows and the title navigation always work, paused or not.
  */
 (function () {
   "use strict";
@@ -22,19 +19,22 @@
 
     var slides = root.querySelectorAll(".ns-slide");
     var navs = root.querySelectorAll(".ns-nav-item");
+
     if (slides.length < 2) {
-      root.querySelector(".ns-nav").style.display = "none";
-      root.querySelector(".ns-prev").style.display = "none";
-      root.querySelector(".ns-next").style.display = "none";
+      ["ns-nav", "ns-prev", "ns-next"].forEach(function (c) {
+        var el = root.querySelector("." + c);
+        if (el) el.style.display = "none";
+      });
       return;
     }
 
-    var reduce =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
     var index = 0;
     var timer = null;
+    var hovered = false;
+
+    function running() {
+      return window.LabMotion ? window.LabMotion.isRunning() : true;
+    }
 
     function paint(next) {
       index = (next + slides.length) % slides.length;
@@ -43,22 +43,25 @@
         navs[i].classList.toggle("is-active", i === index);
         navs[i].setAttribute("aria-current", i === index ? "true" : "false");
 
-        // Restart the fill animation only on the slide that just became active.
         var fill = navs[i].querySelector(".ns-nav-fill");
         fill.style.transition = "none";
         fill.style.transform = "translateX(-100%)";
-        if (i === index && !reduce) {
-          // force a reflow so the browser does not collapse the two states
-          void fill.offsetWidth;
+        if (i === index && running() && !hovered) {
+          void fill.offsetWidth; // force a reflow, or the two states collapse
           fill.style.transition = "transform " + DWELL + "ms linear";
           fill.style.transform = "translateX(0)";
         }
       }
     }
 
-    function schedule() {
-      if (reduce) return;
+    function stop() {
       clearTimeout(timer);
+      timer = null;
+    }
+
+    function schedule() {
+      stop();
+      if (!running() || hovered || document.hidden) return;
       timer = setTimeout(function () {
         paint(index + 1);
         schedule();
@@ -70,34 +73,32 @@
       schedule();
     }
 
-    root.querySelector(".ns-prev").addEventListener("click", function () {
-      go(index - 1);
-    });
-    root.querySelector(".ns-next").addEventListener("click", function () {
-      go(index + 1);
-    });
+    root.querySelector(".ns-prev").addEventListener("click", function () { go(index - 1); });
+    root.querySelector(".ns-next").addEventListener("click", function () { go(index + 1); });
     for (var i = 0; i < navs.length; i++) {
       navs[i].addEventListener("click", function () {
         go(parseInt(this.getAttribute("data-goto"), 10));
       });
     }
 
-    // Stop advancing while the visitor is reading or interacting.
-    root.addEventListener("mouseenter", function () {
-      clearTimeout(timer);
-    });
-    root.addEventListener("mouseleave", schedule);
-    root.addEventListener("focusin", function () {
-      clearTimeout(timer);
-    });
-    root.addEventListener("focusout", schedule);
+    // Hold still while somebody is reading or tabbing through it.
+    function hold() { hovered = true; paint(index); stop(); }
+    function release() { hovered = false; paint(index); schedule(); }
+    root.addEventListener("mouseenter", hold);
+    root.addEventListener("mouseleave", release);
+    root.addEventListener("focusin", hold);
+    root.addEventListener("focusout", release);
     document.addEventListener("visibilitychange", function () {
-      if (document.hidden) clearTimeout(timer);
-      else schedule();
+      if (document.hidden) stop();
+      else { paint(index); schedule(); }
     });
 
-    paint(0);
-    schedule();
+    if (window.LabMotion) {
+      window.LabMotion.onChange(function () { paint(index); schedule(); });
+    } else {
+      paint(0);
+      schedule();
+    }
   }
 
   if (document.readyState === "loading") {

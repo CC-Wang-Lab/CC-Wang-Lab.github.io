@@ -4,9 +4,9 @@
 # 2026-08-19, with the citation counts as they stood that day.
 #
 # >>> GAP TO FILL BEFORE LAUNCH <<<
-# These are the twenty MOST-CITED papers, which skews old and skews towards
+# These are the twenty MOST-CITED papers, which skews old and skews toward
 # fin-and-tube heat exchangers. The site sells electronics cooling, immersion
-# cooling and data centres, and there is almost nothing here from that work
+# cooling and data centers, and there is almost nothing here from that work
 # because those papers are recent and have not accumulated citations yet.
 # Add roughly 15-20 RECENT papers (2022-2026) under the themes
 # "electronics" and "two-phase". Recency matters more than citation count to
@@ -18,7 +18,7 @@
 # --- theme order controls the order on the page ---
 [[theme]]
 id = "electronics"
-name_en = "Electronics cooling & data centres"
+name_en = "Electronics cooling & data centers"
 name_zh = "電子散熱與資料中心"
 
 [[theme]]

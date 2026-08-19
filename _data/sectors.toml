@@ -9,7 +9,7 @@
 
 [[sector]]
 icon    = "hdd-rack"
-name_en = "Data centres & AI hardware"
+name_en = "Data centers & AI hardware"
 name_zh = "資料中心與 AI 硬體"
 work_en = "Cold plates, immersion tanks, rack airflow, cooling energy, waste-heat recovery"
 work_zh = "冷板、浸沒式冷卻槽、機櫃氣流、冷卻能耗、廢熱回收"

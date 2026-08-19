@@ -1,6 +1,6 @@
 +++
 title = "Home"
-descr = "Experimental and computational thermal engineering at National Yang Ming Chiao Tung University: electronics cooling, data-centre thermal management, boiling heat transfer and HVAC&R."
+descr = "Experimental and computational thermal engineering at National Yang Ming Chiao Tung University: electronics cooling, data-center thermal management, boiling heat transfer and HVAC&R."
 lang = "en"
 +++
 
@@ -12,11 +12,12 @@ lang = "en"
   <div class="container">
     <div class="section-head">
       <h2>{{ui home research_head}}</h2>
-      <p>{{ui home research_lead}}</p>
     </div>
     {{research_cards}}
   </div>
 </section>
+
+{{partner_strip}}
 
 <section class="section section-alt">
   <div class="container">
@@ -26,6 +27,8 @@ lang = "en"
     {{people_pi}}
   </div>
 </section>
+
+<div class="container">{{partner_funders}}</div>
 
 <section class="band-cta">
   <div class="container">

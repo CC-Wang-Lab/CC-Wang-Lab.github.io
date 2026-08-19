@@ -15,7 +15,8 @@ lang = "en"
 
 @@page-body
 @@container
-@@page-narrow,prose
+@@row,g-5
+@@col-lg-7,prose
 
 ## What to put in the first email
 
@@ -24,11 +25,19 @@ Four lines are enough to get a useful answer.
 1. **What you are cooling.** A chip package, a cold plate, a rack, a heat exchanger, a whole room.
 2. **The heat load and the limit.** Watts, and the temperature you must not exceed.
 3. **What is stopping you now.** The measurement you cannot make, or the design that will not close.
-4. **Your timescale.** Weeks, one semester, or a multi-year programme.
+4. **Your timescale.** Weeks, one semester, or a multi-year program.
 
 We reply to say honestly whether this lab can help. If it cannot, we say so.
 
-## Where we are
+## Joining the lab
+
+Prospective postdoctoral researchers and graduate students are welcome to write directly. Say which of the six research areas interests you and why, and attach a CV. A generic email to many labs at once is easy to recognize and will not get a reply.
+
+@@
+@@col-lg-5
+@@contact-card
+
+## Visiting the lab
 
 **Prof. Chi-Chuan Wang**  \
 Department of Mechanical Engineering  \
@@ -38,9 +47,19 @@ National Yang Ming Chiao Tung University  \
 **Email**: [ccwang@nycu.edu.tw](mailto:ccwang@nycu.edu.tw)  \
 **Phone**: +886-3-571-2121 ext. 55105
 
-## Joining the lab
+## Lab assistant
 
-Prospective postdoctoral researchers and graduate students are welcome to write directly. Say which of the six research areas interests you and why, and attach a CV. A generic email to many labs at once is easy to recognise and will not get a reply.
+**Julia Hsieh 謝孟娟**  \
+Assistant, CC Wang Lab  \
+Department of Mechanical Engineering  \
+National Yang Ming Chiao Tung University
+
+**Email**: [juliahsieh@nycu.edu.tw](mailto:juliahsieh@nycu.edu.tw)  \
+**Phone**: +886-3-571-2121 ext. 55172  \
+**Office**: Room EE305, 1001 University Road, Hsinchu 300093, Taiwan
+
+@@
+@@
 @@
 @@
 @@

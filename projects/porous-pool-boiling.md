@@ -15,7 +15,7 @@ lang = "en"
 ## The question
 
 A boiling surface removes far more heat than a dry one, but only once boiling actually starts. On a
-smooth surface that start is late and unpredictable. A porous coating gives vapour somewhere to
+smooth surface that start is late and unpredictable. A porous coating gives vapor somewhere to
 nucleate, so boiling begins earlier and at a lower wall superheat.
 
 **How much earlier, and at what cost in pressure drop, is what this rig measures.**

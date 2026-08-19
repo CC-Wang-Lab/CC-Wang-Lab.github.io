@@ -13,7 +13,7 @@ lead_en  = "Purpose-built rigs for measuring heat transfer and pressure drop und
 lead_zh  = "客製化實驗平台，於受控條件下量測熱傳與壓降。"
 items_en = [
   "Pool and flow boiling rigs, including enhanced and porous surfaces",
-  "High-speed visualisation of bubble dynamics and onset of nucleate boiling",
+  "High-speed visualization of bubble dynamics and onset of nucleate boiling",
   "Fin-and-tube and compact heat exchanger test loops",
   "Refrigerant and dielectric working-fluid handling",
   "Calibrated instrumentation with documented uncertainty",
@@ -29,15 +29,15 @@ items_zh = [
 [[group]]
 id      = "electronics-testing"
 icon    = "motherboard"
-title_en = "Electronics & data-centre testing"
+title_en = "Electronics & data-center testing"
 title_zh = "電子與資料中心測試"
-lead_en  = "Thermal characterisation from a single package up to a populated rack."
+lead_en  = "Thermal characterization from a single package up to a populated rack."
 lead_zh  = "從單一封裝到整櫃系統的熱特性量測。"
 items_en = [
-  "Cold-plate and heat-sink performance characterisation",
+  "Cold-plate and heat-sink performance characterization",
   "Single-phase and two-phase immersion cooling evaluation",
   "Rack and server airflow measurement and management",
-  "Heat-pipe and vapour-chamber module testing",
+  "Heat-pipe and vapor-chamber module testing",
   "Package-level thermal resistance measurement",
 ]
 items_zh = [
@@ -49,9 +49,9 @@ items_zh = [
 ]
 
 [[group]]
-id      = "modelling"
+id      = "modeling"
 icon    = "diagram-3"
-title_en = "Modelling & simulation"
+title_en = "Modeling & simulation"
 title_zh = "建模與模擬"
 lead_en  = "Component and system models, validated against our own measurements."
 lead_zh  = "元件與系統模型，並以自有實驗數據驗證。"
@@ -59,7 +59,7 @@ items_en = [
   "CFD of airflow, conjugate heat transfer and two-phase flow",
   "System-level thermal and energy models",
   "Correlation development from measured data",
-  "Design-space exploration and optimisation",
+  "Design-space exploration and optimization",
   "Uncertainty quantification and sensitivity analysis",
 ]
 items_zh = [

@@ -1,13 +1,13 @@
-# Third-party licences
+# Third-party licenses
 
-This repository **redistributes** the ET Book font files. The MIT licence requires that its
+This repository **redistributes** the ET Book font files. The MIT license requires that its
 copyright notice travels with those copies, so it is reproduced in full below. That is an
 obligation, not a courtesy.
 
 Everything else on this list is either loaded from a CDN (so nothing is redistributed) or is a
 build tool that never ships to a visitor.
 
-| What | Where | Licence | Redistributed here? |
+| What | Where | License | Redistributed here? |
 |---|---|---|---|
 | **ET Book** (the serif) | `_assets/et-book/` | MIT | **Yes** — notice required, below |
 | Bootstrap 5.3 | jsDelivr CDN | MIT | No |
@@ -44,6 +44,6 @@ Source: https://github.com/edwardtufte/et-book
 ## The lab's own content
 
 Text, photographs, figures and video on this site are © CC Wang Lab, National Yang Ming Chiao Tung
-University, unless stated otherwise. **No licence has been chosen for them yet** — decide whether
-the content should be all-rights-reserved or released under a Creative Commons licence, and record
+University, unless stated otherwise. **No license has been chosen for them yet** — decide whether
+the content should be all-rights-reserved or released under a Creative Commons license, and record
 it here.

@@ -15,6 +15,45 @@ purpose, and say which.
 | Slider progress line | `13.75rem x .25rem` track, fill bar `translateX(-100%)` to `translateX(0)` over the dwell time |
 | Slider arrows | `top: 50%; transform: translateY(-50%)`, outside the slide at `+/- 2.1875rem`, nudging `+/- .3125rem` |
 
+## Motion starts running, for everyone
+
+**This rule replaced an earlier one, on purpose. Read the history before changing it back.**
+
+There were two earlier versions, and both were wrong in the same direction:
+
+1. The first did `display: none` on the hero video under `prefers-reduced-motion`. A visitor got a
+   still image with no way to play it, and no clue why.
+2. The second kept the video visible but refused to start it, and refused to advance the news
+   slider. Better, but the site still looked frozen to the same people.
+
+**Why those visitors are not an edge case:** on Windows, "reduce motion" is just
+Settings > Accessibility > Visual effects > Animation effects = Off. Many people switch that off
+for performance, not for motion sensitivity. The site owner is one of them, which is how the fault
+was found — three times.
+
+### What the site does now
+
+`_assets/js/motion.js` owns one flag. The hero video, the news slider, the partners marquee and
+the typed line all read it.
+
+| | Behaviour |
+|---|---|
+| Default | **Running.** `prefers-reduced-motion` is deliberately not consulted. |
+| The control | One visible, keyboard-reachable button in the hero pauses and resumes **everything** at once |
+| Memory | The choice is stored in `localStorage` and survives reloads and page changes |
+| Pausing | Never leaves a half-typed word or a half-faded slide; each element settles on a complete state |
+
+**The requirement this satisfies is WCAG 2.2.2 "Pause, Stop, Hide"** — motion that starts on its own
+and runs past five seconds must have a mechanism to stop it. That is normative. Honouring
+`prefers-reduced-motion` is good practice, not normative, and here it was doing more harm than good.
+
+### If you ever change this back
+
+You must keep a control that starts the motion, and it must be visible without hovering. A page
+that is frozen with no visible way to start it is the fault this rule exists to prevent.
+
+## The old rule, kept for reference
+
 ## The reduced-motion rule
 
 **Never hide anything for `prefers-reduced-motion: reduce`.**

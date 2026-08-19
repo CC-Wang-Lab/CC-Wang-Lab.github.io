@@ -27,7 +27,7 @@ Franklin.jl, Bootstrap 5.3, deployed to GitHub Pages.
 | Change any interface word | `_data/ui.toml` — both languages live side by side |
 | Add a page | Create `x.md` AND `zh/x.md`, then add it to `NAV` in `utils.jl` |
 | Change how something renders | The matching `hfun_*` in `utils.jl` |
-| Change colour or type | `_css/style.css` |
+| Change color or type | `_css/style.css` |
 | Deploy | Push to `main`. The Action publishes to `gh-pages`. |
 
 ## Rules

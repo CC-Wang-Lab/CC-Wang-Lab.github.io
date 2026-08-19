@@ -1,47 +1,42 @@
 /*
- * Hero video control.
+ * Hero video.
  *
  * The markup has NO `autoplay` attribute. That is deliberate: with it present
- * the browser restarts the video after a script pauses it, so the visitor's
- * reduced-motion preference could not be honoured. Starting is decided here.
+ * the browser restarts the video after a script pauses it, so the pause control
+ * could not hold. Starting and stopping is decided here, from the shared flag
+ * in motion.js.
  *
- * Two cases leave the video paused, and BOTH show a play button rather than a
- * dead still image:
- *   1. The visitor asked for reduced motion. On Windows that is just
- *      Settings > Accessibility > Visual effects > Animation effects = Off,
- *      which many people switch off for performance. It is not rare.
- *   2. The browser blocked playback by policy.
+ * It loops forever (`loop` in the markup) and it is muted, which is not
+ * optional: Chrome and Safari refuse to autoplay a video with an audio track,
+ * and they fail silently.
  */
 (function () {
   "use strict";
 
   function start() {
     var video = document.querySelector(".hero-video");
-    var button = document.getElementById("heroPlay");
-    if (!video || !button) return;
+    if (!video || !window.LabMotion) return;
 
-    function offerPlay() {
-      button.classList.add("is-shown");
+    function play() {
+      var attempt = video.play();
+      if (attempt && typeof attempt.catch === "function") {
+        // Autoplay can still be blocked by browser policy. If it is, flip the
+        // shared flag so the pause control shows "play" and one click fixes it.
+        attempt.catch(function () {
+          window.LabMotion.set(false);
+        });
+      }
     }
 
-    button.addEventListener("click", function () {
-      video.play();
-      button.classList.remove("is-shown");
+    window.LabMotion.onChange(function (running) {
+      if (running) play();
+      else video.pause();
     });
 
-    var reduce =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (reduce) {
-      offerPlay();
-      return;
-    }
-
-    var attempt = video.play();
-    if (attempt && typeof attempt.catch === "function") {
-      attempt.catch(offerPlay);
-    }
+    // Some browsers drop playback when the tab is hidden and do not resume.
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden && window.LabMotion.isRunning() && video.paused) play();
+    });
   }
 
   if (document.readyState === "loading") {

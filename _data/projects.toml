@@ -20,7 +20,7 @@ student  = "placeholder-member-1"
 area     = "two-phase"
 title_en = "Pool boiling on porous surfaces"
 title_zh = "多孔表面之池沸騰"
-lead_en  = "High-speed visualisation of nucleate boiling on a 65% porosity surface in R1233zd, measuring how the surface changes the onset of boiling and the heat transfer coefficient."
+lead_en  = "High-speed visualization of nucleate boiling on a 65% porosity surface in R1233zd, measuring how the surface changes the onset of boiling and the heat transfer coefficient."
 lead_zh  = "以高速攝影觀察 R1233zd 於孔隙率 65% 表面的核沸騰，量測表面結構如何改變起始沸騰點與熱傳係數。"
 
 [[project]]
@@ -40,7 +40,7 @@ id       = "placeholder-project"
 weight   = 99
 image    = "/assets/img/projects/placeholder.svg"
 student  = "placeholder-member-2"
-area     = "data-centre"
+area     = "data-center"
 title_en = "PLACEHOLDER — Project title"
 title_zh = "範例 — 專案名稱"
 lead_en  = "One or two sentences. Say what is being measured or built, and what question it answers. Write it for an engineer who has never met this lab."

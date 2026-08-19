@@ -8,7 +8,6 @@ lang = "zh"
 <header class="page-hd">
   <div class="container">
     <h1>{{ui nav research}}</h1>
-    <p>{{ui home research_lead}}</p>
   </div>
 </header>
 

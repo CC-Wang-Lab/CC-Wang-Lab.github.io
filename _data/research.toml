@@ -14,12 +14,12 @@ scope_en = "Air, liquid, two-phase and immersion thermal management, from chip p
 scope_zh = "空氣、液體、兩相與浸沒式散熱，涵蓋晶片封裝到整櫃系統。"
 
 [[area]]
-id      = "data-centre"
-image   = "/assets/img/research/data-centre.svg"
+id      = "data-center"
+image   = "/assets/img/research/data-center.svg"
 icon    = "hdd-rack"
-title_en = "Data-Centre Thermal Management"
+title_en = "Data-Center Thermal Management"
 title_zh = "資料中心熱管理"
-scope_en = "Airflow management, rack and room-level thermal behaviour, cooling energy and waste-heat recovery."
+scope_en = "Airflow management, rack and room-level thermal behavior, cooling energy and waste-heat recovery."
 scope_zh = "氣流管理、機櫃與機房層級熱行為、冷卻能耗與廢熱回收。"
 
 [[area]]
@@ -28,7 +28,7 @@ image   = "/assets/img/research/two-phase.jpg"
 icon    = "droplet-half"
 title_en = "Boiling & Two-Phase Heat Transfer"
 title_zh = "沸騰與兩相熱傳"
-scope_en = "Pool and flow boiling, enhanced and porous surfaces, high-speed visualisation, critical heat flux."
+scope_en = "Pool and flow boiling, enhanced and porous surfaces, high-speed visualization, critical heat flux."
 scope_zh = "池沸騰與流動沸騰、強化與多孔表面、高速可視化、臨界熱通量。"
 
 [[area]]

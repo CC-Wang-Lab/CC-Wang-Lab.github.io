@@ -28,18 +28,18 @@ photo     = "/assets/img/team/placeholder.svg"
 email     = "ccwang@nycu.edu.tw"
 scholar   = "https://scholar.google.com/citations?user=QlIdSPIAAAAJ&hl=en"
 nycu      = "https://scholar.nycu.edu.tw/en/persons/chi-chuan-wang/"
-honours_en = [
+honors_en = [
   "Fellow, ASHRAE (2006)",
   "Fellow, ASME (2009)",
   "Outstanding Research Award, Ministry of Science and Technology (2017)",
 ]
-honours_zh = [
+honors_zh = [
   "美國冷凍空調學會 ASHRAE 會士（2006）",
   "美國機械工程師學會 ASME 會士（2009）",
   "科技部傑出研究獎（2017）",
 ]
 bio_en = """
-Prof. Wang leads thermal engineering research at NYCU, spanning electronics and data-centre cooling, boiling and two-phase heat transfer, heat exchangers, HVAC&R, and AI-assisted thermal control.
+Prof. Wang leads thermal engineering research at NYCU, spanning electronics and data-center cooling, boiling and two-phase heat transfer, heat exchangers, HVAC&R, and AI-assisted thermal control.
 
 He spent twenty-one years in industrial R&D at the Industrial Technology Research Institute (ITRI) from 1989 to 2010 before returning to academia, and was a visiting researcher at UC Berkeley in 2003. He took his BS, MS and PhD in Mechanical Engineering at National Chiao Tung University.
 """
@@ -76,7 +76,7 @@ name_en   = "Research Lead Name"
 name_zh   = "研究主持人姓名"
 role_en   = "Research Fellow"
 role_zh   = "研究員"
-topic_en  = "Data-centre airflow and controls"
+topic_en  = "Data-center airflow and controls"
 topic_zh  = "資料中心氣流與控制"
 photo     = "/assets/img/team/placeholder.svg"
 email     = ""
@@ -90,7 +90,7 @@ name_en   = "Maysam Gholampour"
 name_zh   = "Maysam Gholampour"
 role_en   = "Postdoctoral Researcher"
 role_zh   = "博士後研究員"
-topic_en  = "Thermal system modelling, simulation and visualisation"
+topic_en  = "Thermal system modeling, simulation and visualization"
 topic_zh  = "熱系統建模、模擬與視覺化"
 photo     = "/assets/img/team/placeholder.svg"
 email     = "m.gholampour@nycu.edu.tw"

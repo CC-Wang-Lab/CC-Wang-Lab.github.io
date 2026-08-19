@@ -31,7 +31,7 @@ news_en         = "News"
 news_zh         = "最新消息"
 about_en        = "About"
 about_zh        = "關於實驗室"
-cta_en          = "Project enquiries"
+cta_en          = "Project inquiries"
 cta_zh          = "專案洽詢"
 switch_en       = "中文"
 switch_zh       = "English"
@@ -43,14 +43,40 @@ top_zh          = "回到頂端"
 [hero]
 title_en = "Thermal engineering from electronics to energy systems"
 title_zh = "熱工程研究：從電子元件到能源系統"
-lead_en  = "Experimental and computational research in electronics cooling, data-centre thermal management, boiling heat transfer and HVAC&R at National Yang Ming Chiao Tung University."
+lead_en  = "Experimental and computational research in electronics cooling, data-center thermal management, boiling heat transfer and HVAC&R at National Yang Ming Chiao Tung University."
 lead_zh  = "國立陽明交通大學的實驗與計算研究，涵蓋電子散熱、資料中心熱管理、沸騰熱傳與空調冷凍。"
 play_en  = "Play the experiment"
 play_zh  = "播放實驗影片"
 cta1_en  = "Research areas"
 cta1_zh  = "研究領域"
-cta2_en  = "Project enquiries"
+cta2_en  = "Project inquiries"
 cta2_zh  = "專案洽詢"
+# The typed line under the headline. Wording from the Write For Me GPT,
+# 2026-08-19: six phrases, one per research area, all 17-23 characters so the
+# line does not reflow as it types. Do not add a long one without checking the
+# others still line up.
+typed_lead_en = "We study"
+typed_lead_zh = "我們研究"
+typed_en = [
+  "Immersion cooling",
+  "Data-center airflow",
+  "Pool and flow boiling",
+  "Compact heat exchangers",
+  "Heat pump systems",
+  "Smart thermal control",
+]
+typed_zh = [
+  "浸沒式冷卻",
+  "資料中心氣流",
+  "池沸騰與流動沸騰",
+  "緊湊型熱交換器",
+  "熱泵系統",
+  "智慧熱控制",
+]
+motion_pause_en = "Pause motion"
+motion_pause_zh = "暫停動態效果"
+motion_play_en  = "Play motion"
+motion_play_zh  = "播放動態效果"
 caption_en = "Onset of nucleate boiling, R1233zd on a 65% porosity porous surface at 2.5 bar. High-speed footage from our own laboratory."
 caption_zh = "起始核沸騰：R1233zd 於 2.5 bar、孔隙率 65% 多孔表面。本實驗室高速攝影實拍。"
 
@@ -67,17 +93,15 @@ cites_zh    = "論文引用次數"
 [home]
 research_head_en = "Research areas"
 research_head_zh = "研究領域"
-research_lead_en = "Six areas, from package-level cooling to whole-plant energy systems."
-research_lead_zh = "六大領域，從封裝層級散熱到全廠能源系統。"
 cap_head_en      = "What we can do for a project"
 cap_head_zh      = "我們能為專案做什麼"
 cap_lead_en      = "Research says what we study. This says what we can measure, model, build and validate for you."
 cap_lead_zh      = "研究領域說明我們研究什麼；此處說明我們能為您量測、建模、製作與驗證什麼。"
 industry_head_en = "Industrial R&D at scale"
 industry_head_zh = "產業級研發能量"
-industry_lead_en = "Experimental, computational and AI-assisted thermal engineering across electronics cooling, data centres, HVAC&R and thermal systems."
+industry_lead_en = "Experimental, computational and AI-assisted thermal engineering across electronics cooling, data centers, HVAC&R and thermal systems."
 industry_lead_zh = "涵蓋電子散熱、資料中心、空調冷凍與熱系統的實驗、計算與 AI 輔助熱工程。"
-industry_note_en = "Many industrial collaborations are confidential. Organisations are named publicly only where disclosure has been approved."
+industry_note_en = "Many industrial collaborations are confidential. Organizations are named publicly only where disclosure has been approved."
 industry_note_zh = "多數產學合作依約保密，僅在對方同意公開時具名。"
 industry_link_en = "How we collaborate"
 industry_link_zh = "合作方式"
@@ -97,6 +121,17 @@ final_lead_en    = "Tell us what you are trying to cool, and what is currently s
 final_lead_zh    = "請告訴我們您要冷卻的對象，以及目前遇到的瓶頸。我們會誠實評估能否協助。"
 final_cta_en     = "Tell us about it"
 final_cta_zh     = "告訴我們"
+
+[partners]
+# "Organizations we have worked with" states a fact. "Our clients" and
+# "Trusted by" imply endorsement, which is exactly what turns a factual
+# reference into a trademark problem. Do not change this heading.
+head_en   = "Organizations we have worked with"
+head_zh   = "合作過的機構與企業"
+note_en   = "Names and logos are the property of their respective owners. Shown to describe past and current collaboration, not to imply endorsement."
+note_zh   = "所有名稱與標誌均屬其各自所有人。此處僅說明過去與現在的合作關係，不代表任何背書。"
+funders_en = "Funded in part by"
+funders_zh = "部分計畫由下列單位支持"
 
 [people]
 page_lead_en   = "Prof. Chi-Chuan Wang, the research leads, and the researchers currently in the lab."

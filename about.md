@@ -44,7 +44,7 @@ Most projects follow the same four steps. The first one is free.
 
 1. **You describe the problem.** What you are cooling, what the heat load is, what is currently stopping you. One email or one meeting is enough.
 2. **We say honestly whether we can help.** If the answer is no, we say so and, where we can, point you somewhere better.
-3. **We agree a scope.** Measurement only, modelling only, or both. Timeline, deliverables and confidentiality are fixed in writing before work starts.
+3. **We agree a scope.** Measurement only, modeling only, or both. Timeline, deliverables and confidentiality are fixed in writing before work starts.
 4. **We deliver, and we defend the numbers.** Every measurement comes with its uncertainty. Every model is validated against data.
 
 ## Why this laboratory

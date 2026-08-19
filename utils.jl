@@ -86,6 +86,14 @@ end
 
 ui(section, key) = string(pick(data("ui")[section], key))
 
+"""An array-valued ui string, e.g. the typed phrases."""
+function ui_list(section, key)
+    v = pick(data("ui")[section], key)
+    return v isa AbstractVector ? String.(v) : String[]
+end
+
+first_or_empty(v) = isempty(v) ? "" : String(v[1])
+
 # ---------------------------------------------------------------------------
 #  Small helpers
 # ---------------------------------------------------------------------------
@@ -229,11 +237,17 @@ end
 
 function hfun_hero()
     pre = prefix()
+    phrases = ui_list("hero", "typed")
+    # The first phrase is rendered into the HTML so the line is never empty for
+    # a screen reader, a crawler, or a visitor with JavaScript off. typed.js
+    # takes over only once it runs.
+    first_phrase = first_or_empty(phrases)
+    json = "[" * join(["\"" * replace(esc(p), "\"" => "&quot;") * "\"" for p in phrases], ",") * "]"
     return """
 <section class="hero">
   <!-- No `autoplay` attribute on purpose. The browser re-triggers it after a
-       script pauses the video, so the reduced-motion preference could not be
-       honoured while it was there. hero-video.js decides whether to start. -->
+       script pauses the video, so the pause control could not hold while it
+       was there. hero-video.js starts and stops it from the shared motion flag. -->
   <video class="hero-video" muted loop playsinline preload="auto"
          poster="/assets/video/hero-poster.jpg" aria-hidden="true" tabindex="-1">
     <source src="/assets/video/hero-boiling.mp4" type="video/mp4">
@@ -241,14 +255,21 @@ function hfun_hero()
   <div class="hero-veil"></div>
   <div class="hero-inner container">
     <h1 class="hero-title">$(esc(ui("hero", "title")))</h1>
+    <p class="typed-line" id="typedLine" data-phrases='$(json)'>
+      <span class="typed-lead">$(esc(ui("hero", "typed_lead")))</span>
+      <span class="typed-text">$(esc(first_phrase))</span><span class="typed-caret" aria-hidden="true"></span>
+    </p>
     <p class="hero-lead">$(esc(ui("hero", "lead")))</p>
     <div class="hero-actions">
       <a class="btn btn-cta btn-lg" href="$(pre)/contact/">$(esc(ui("hero", "cta2")))</a>
       <a class="btn btn-ghost btn-lg" href="$(pre)/research/">$(esc(ui("hero", "cta1")))</a>
     </div>
   </div>
-  <button class="hero-play" id="heroPlay" type="button">
-    <i class="bi bi-play-fill" aria-hidden="true"></i> $(esc(ui("hero", "play")))
+  <button class="motion-toggle" data-motion-toggle type="button" aria-pressed="false"
+          title="$(esc(ui("hero", "motion_pause")))">
+    <span class="motion-icon-pause">$(icon("pause-fill"))</span>
+    <span class="motion-icon-play">$(icon("play-fill"))</span>
+    <span class="motion-label">$(esc(ui("hero", "motion_pause")))</span>
   </button>
   <p class="hero-caption">$(esc(ui("hero", "caption")))</p>
 </section>
@@ -358,6 +379,73 @@ function hfun_capabilities_brief()
         </div>
       </div>""" for g in groups], "\n")
     return """<div class="row g-4">\n$(out)\n</div>"""
+end
+
+# ---------------------------------------------------------------------------
+#  Partners strip
+#
+#  A marquee of organizations the lab has worked with. A row renders its LOGO if
+#  `logo` points at a file, and its NAME as text otherwise, so the strip is
+#  useful before a single logo file has arrived.
+#
+#  The heading is "Organizations we have worked with", never "Our clients" and
+#  never "Trusted by": the first states a fact, the other two imply endorsement,
+#  which is what turns a factual reference into a trademark problem.
+# ---------------------------------------------------------------------------
+
+function partner_item(o)
+    logo = get(o, "logo", "")
+    name = esc(pick(o, "name"))
+    body = isempty(logo) ?
+        """<span class="pt-name">$(name)</span>""" :
+        """<img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy">"""
+    return """<li class="pt-item">$(body)</li>"""
+end
+
+function hfun_partner_strip()
+    orgs = data("partners")["org"]
+    isempty(orgs) && return ""
+
+    industry = filter(o -> get(o, "kind", "industry") != "government", orgs)
+    isempty(industry) && return ""
+
+    row = join([partner_item(o) for o in industry], "
+        ")
+    # The track holds the row TWICE and slides by exactly -50%. That is what
+    # makes the loop seamless without any JavaScript. The second copy is hidden
+    # from assistive technology so each name is announced once.
+    return """
+<section class="section partners">
+  <div class="container">
+    <p class="pt-head">$(esc(ui("partners", "head")))</p>
+  </div>
+
+  <div class="pt-marquee">
+    <div class="pt-track">
+      <ul class="pt-row">
+        $(row)
+      </ul>
+      <ul class="pt-row" aria-hidden="true">
+        $(row)
+      </ul>
+    </div>
+    <div class="pt-fade pt-fade-l"></div>
+    <div class="pt-fade pt-fade-r"></div>
+  </div>
+
+  <div class="container">
+    <p class="pt-note">$(esc(ui("partners", "note")))</p>
+  </div>
+</section>
+"""
+end
+
+"""Funders, listed plainly. Naming a funder is normal academic practice."""
+function hfun_partner_funders()
+    orgs = filter(o -> get(o, "kind", "") == "government", data("partners")["org"])
+    isempty(orgs) && return ""
+    names = join([esc(pick(o, "name")) for o in orgs], " &middot; ")
+    return """<p class="pt-funders"><span>$(esc(ui("partners", "funders")))</span> $(names)</p>"""
 end
 
 # ---------------------------------------------------------------------------
@@ -503,7 +591,7 @@ end
 
 function hfun_people_pi()
     p = pi_person()
-    hon = get(p, "honours_" * lang(), get(p, "honours_en", String[]))
+    hon = get(p, "honors_" * lang(), get(p, "honors_en", String[]))
     links = String[]
     haskey(p, "email")   && !isempty(p["email"])   && push!(links, """<a href="mailto:$(esc(p["email"]))">$(icon("envelope")) $(esc(p["email"]))</a>""")
     haskey(p, "scholar") && !isempty(p["scholar"]) && push!(links, """<a href="$(esc(p["scholar"]))" rel="noopener">$(icon("mortarboard")) Google Scholar</a>""")
@@ -516,7 +604,7 @@ function hfun_people_pi()
   <div class="pi-body">
     <h2 class="pi-name">$(esc(pick(p, "name")))</h2>
     <p class="pi-role">$(esc(pick(p, "role")))</p>
-    <ul class="pi-honours">
+    <ul class="pi-honors">
 $(join(["      <li>$(esc(h))</li>" for h in hon], "\n"))
     </ul>
     $(paras(pick(p, "bio")))
@@ -705,7 +793,7 @@ function hfun_footer()
 
       <div class="col-6 col-lg-3">
         <p class="foot-head">$(esc(ui("foot", "nav")))</p>
-        <nav class="foot-nav">
+        <nav class="foot-nav foot-nav-2col">
           $(navlinks)
           <a href="$(pre)/people/alumni/">$(esc(ui("people", "alumni_link")))</a>
 $(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV_FOOT], "\n"))

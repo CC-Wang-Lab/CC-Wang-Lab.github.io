@@ -36,7 +36,7 @@ figures.
          poster="/assets/img/projects/cpu-cooler-airflow.jpg">
     <source src="/assets/video/cfd-cpu-cooler.mp4" type="video/mp4">
   </video>
-  <figcaption>Streamline particles through the fin stack, coloured by velocity magnitude.</figcaption>
+  <figcaption>Streamline particles through the fin stack, colored by velocity magnitude.</figcaption>
 </figure>
 ~~~
 
