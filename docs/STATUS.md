@@ -50,8 +50,28 @@ with a message naming it. That guard has already caught two real renames.
 
 ## Blocked, waiting on Maysam
 
-1. **Push access to `CC-Wang-Lab`.** `gh` is authenticated as `maysam-gholampour`; that account has
-   0 repos. Nothing has ever been pushed.
+1. **Push access to `CC-Wang-Lab`.** Checked properly on 2026-08-19, and the reason is narrower
+   than "no access": **`CC-Wang-Lab` is a GitHub _User_ account, not an Organization** (created
+   2026-08-19, 0 public repos). A user namespace can only be written to by its owner, and there is
+   no way to be added to one the way you join an org. `gh` is authenticated as
+   `maysam-gholampour`, which has 0 pending invitations and belongs to no orgs, so it cannot
+   create `CC-Wang-Lab/CC-Wang-Lab.github.io` however the token is scoped.
+
+   **The unblocking sequence, decided 2026-08-19:**
+   1. Signed in as `CC-Wang-Lab`, create an **empty, PRIVATE** repo named exactly
+      `CC-Wang-Lab.github.io`. No README, no `.gitignore`, no licence — an initial commit turns
+      the first push into a merge.
+   2. Settings → Collaborators → add `maysam-gholampour` with **Write**.
+   3. `git push -u origin main`. The remote is already configured. Two commits are waiting.
+   4. The Action runs and creates `gh-pages`. **Pages will not serve yet**, and that is deliberate:
+      a user site must be public for Pages on the free plan, and the content is not ready (see 2
+      and 3 below, and the placeholder table).
+   5. When the content is ready: flip the repo to public, then Settings → Pages → Source →
+      Deploy from a branch → `gh-pages` / `(root)`.
+
+   *Why private first: pushing a public user site publishes ~59 named partner organisations while
+   the NDA check in item 3 is still open, plus three news items that say PLACEHOLDER and five
+   people called "Member Name". Private gets the work off one laptop today without any of that.*
 2. **The client-logo collage file.** Asked for three times. It was pasted into chat and is not on
    disk — I searched every image over 80 KB. It holds all 44 missing logos in one picture.
 3. **The NDA check.** Prof. Wang approved publishing all ~80 organisations. His office should still
