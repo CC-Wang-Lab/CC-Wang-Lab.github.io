@@ -8,7 +8,24 @@ author = "CC Wang Lab"
 mintoclevel = 2
 lang = "en"
 
-ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", "CLAUDE.md", "THIRD-PARTY-LICENSES.md", "_tmp/"]
+# Franklin COPIES every path not named here into __site, and __site is what gets
+# published. Found on the first real deploy, 2026-08-19: the site was serving
+# /_data/partners.toml, /scripts/shoot.py, /Project.toml and /Manifest.toml.
+#
+# `_data/` is the one that matters. It holds every organisation name, the whole
+# team list and the unpublished notes beside them, and it was fetchable directly
+# even though nothing links to it and it is in no sitemap.
+#
+# Ignoring `_data/` does NOT break the build. The generators in utils.jl read it
+# from the SOURCE tree with TOML.parsefile; this list only decides what is copied
+# to the output.
+#
+# Keep this a Julia comment. An HTML comment inside the +++ block is a parse
+# error, because Franklin evaluates the whole block as Julia code.
+ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", "CLAUDE.md",
+          "THIRD-PARTY-LICENSES.md", "_tmp/",
+          "_data/", "scripts/",
+          "Project.toml", "Manifest.toml", "package.json", "package-lock.json"]
 
 generate_rss = false
 website_title = "CC Wang Lab"
