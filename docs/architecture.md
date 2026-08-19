@@ -66,6 +66,8 @@ gitGraph
 ## How a page is built
 
 Data goes in on the left, HTML comes out on the right. **No list on this site is written by hand.**
+The dashed arrows are the cross-references: a project names its researcher and its research area by
+id, so neither is ever typed twice.
 
 ```mermaid
 flowchart LR
@@ -73,6 +75,7 @@ flowchart LR
     UI["_data/ui.toml<br/>every interface string"]
     D1["_data/team.toml"]
     D2["_data/research.toml"]
+    D7["_data/projects.toml"]
     D3["_data/capabilities.toml"]
     D4["_data/sectors.toml"]
     D5["_data/publications.toml"]
@@ -80,18 +83,23 @@ flowchart LR
   end
 
   subgraph src["Page sources"]
-    EN["*.md<br/>lang = en"]
-    ZH["zh/*.md<br/>lang = zh"]
+    EN["*.md and projects/*.md<br/>lang = en"]
+    ZH["zh/*.md and zh/projects/*.md<br/>lang = zh"]
   end
 
-  UTILS["utils.jl<br/>hfun_* generators<br/>pick() picks _en or _zh"]
-  LAY["_layout/<br/>head, foot, style"]
-  CSS["_css/style.css<br/>ET Book + Noto Serif TC"]
-  ASSET["_assets/<br/>video, fonts, icons"]
+  UTILS["utils.jl<br/>hfun_* generators<br/>pick() picks _en or _zh<br/>{{url}} adds the /zh prefix"]
+  LAY["_layout/"]
+  CSS["_css/style.css"]
+  JS["_assets/js/<br/>theme, hero video, news slider"]
+  ASSET["_assets/<br/>video, fonts, images"]
+
+  D7 -.->|student id| D1
+  D7 -.->|area id| D2
 
   UI --> UTILS
   D1 --> UTILS
   D2 --> UTILS
+  D7 --> UTILS
   D3 --> UTILS
   D4 --> UTILS
   D5 --> UTILS
@@ -102,9 +110,10 @@ flowchart LR
   UTILS --> FR
   LAY --> FR
   CSS --> FR
+  JS --> FR
   ASSET --> FR
 
-  FR --> SITE["__site/<br/>18 pages, 2 languages"]
+  FR --> SITE["__site/<br/>26 pages, 2 languages"]
   SITE --> GHA["GitHub Action<br/>optimize + brace check"]
   GHA --> PAGES[("gh-pages branch<br/>cc-wang-lab.github.io")]
 
@@ -113,7 +122,7 @@ flowchart LR
   classDef conv fill:#BF8700,stroke:#BF8700,color:#fff
   class UTILS,FR arch
   class PAGES crit
-  class UI,D1,D2,D3,D4,D5,D6 conv
+  class UI,D1,D2,D7,D3,D4,D5,D6 conv
 ```
 
 ## Adding a person to the site
@@ -138,4 +147,36 @@ sequenceDiagram
   F->>F: check for unresolved {{...}} calls
   F->>S: publish to gh-pages
   Note over S: The card appears on /team/ and /zh/team/.<br/>No HTML was written by anyone.
+```
+
+## What the news slider does, and for whom
+
+The one piece of behaviour on this site that changes by visitor. It exists because a slider that
+moves on its own is exactly what a reduced-motion preference is meant to stop.
+
+```mermaid
+sequenceDiagram
+  actor V as Visitor
+  participant P as Page
+  participant JS as news-slider.js
+  participant S as Slider
+
+  V->>P: opens the home page
+  P->>JS: DOMContentLoaded
+  JS->>JS: read prefers-reduced-motion
+
+  alt motion is fine
+    JS->>S: show slide 0, fill the progress line over 6 s
+    JS->>S: advance, and repeat
+    V->>S: hovers or focuses
+    S->>JS: pause while reading
+    V->>S: leaves
+    S->>JS: resume
+  else visitor asked for reduced motion
+    JS->>S: show slide 0 and STOP
+    Note over S: no auto-advance, no filling bar,<br/>arrows and title navigation still work
+  end
+
+  V->>S: clicks an arrow or a title
+  S->>JS: go to that slide, restart the timer
 ```

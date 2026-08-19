@@ -59,6 +59,50 @@ Leave `photo` out and a grey silhouette appears instead — that is fine.
 
 ---
 
+## Add a project
+
+This is the one your professor asked for: every experiment gets its own page,
+written by the person doing the work.
+
+**Two steps.**
+
+**Step 1 — add a row to `_data/projects.toml`:**
+
+```toml
+[[project]]
+id       = "cold-plate-high-flux"    # lowercase, no spaces. Becomes the web address.
+weight   = 3                          # sorts the grid, lowest first
+image    = "/assets/img/projects/cold-plate-high-flux.jpg"
+student  = "chen-mei-ling"            # must be an id already in team.toml
+area     = "electronics-cooling"      # must be an id already in research.toml
+title_en = "Cold-plate design for high heat flux"
+title_zh = "高熱通量冷板設計"
+lead_en  = "One or two sentences. What is measured or built, and what question it answers."
+lead_zh  = "一至兩句話，說明量測或建置什麼、以及回答什麼問題。"
+```
+
+**Step 2 — write the page.** Copy `projects/placeholder-project.md` to
+`projects/cold-plate-high-flux.md`, and copy the Chinese one to
+`zh/projects/cold-plate-high-flux.md`. Change `project = "..."` in both to your new id, then
+write. It is ordinary Markdown: headings, paragraphs, lists, images.
+
+**Images.** Put them in `_assets/img/projects/<your-id>/` and use them like this:
+
+```markdown
+![](/assets/img/projects/cold-plate-high-flux/rig.jpg)
+```
+
+The cover image on the card must be **16:9** and under **250 KB**. Anything larger slows the page
+for everyone.
+
+**If you mistype the `student` or `area` id, the build stops with a message naming the bad id.**
+That is deliberate. A silent blank card is worse than a failed build.
+
+**What you never write:** the researcher name, the photo, the research-area label. All three are
+looked up from the ids, so they can never disagree with the People page.
+
+---
+
 ## Add a news item
 
 Open `_data/news.toml`.
@@ -145,7 +189,7 @@ failed — click it to see why, and ask for help rather than pushing again.
 | Do not | Because |
 |---|---|
 | Edit any file in `__site/` | It is deleted and rebuilt every time. Your change disappears. |
-| Edit HTML to add a person or a paper | The two language versions will drift apart within months. |
+| Edit HTML to add a person, a paper or a project | The two language versions will drift apart within months. |
 | Put a company logo on the site without written permission | Most of our industrial work is under NDA. |
 | Upload a video larger than 1 MB to `_assets/video/` | GitHub allows 100 GB of traffic a month. A big file burns it. |
 | Delete `last_verified` from a person | It is the only check that keeps the team page honest. |

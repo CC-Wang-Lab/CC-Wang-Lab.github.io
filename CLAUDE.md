@@ -23,6 +23,7 @@ Franklin.jl, Bootstrap 5.3, deployed to GitHub Pages.
 | Preview locally | `julia --project=. -e 'using Franklin; serve()'` → http://localhost:8000 |
 | First run on a machine | `julia --project=. -e 'using Pkg; Pkg.instantiate()'` |
 | Add a person, paper, news item, sector | Edit the matching file in `_data/`. **Never edit HTML.** |
+| Add a project | A row in `_data/projects.toml` **and** a page at `projects/<id>.md` + `zh/projects/<id>.md` |
 | Change any interface word | `_data/ui.toml` — both languages live side by side |
 | Add a page | Create `x.md` AND `zh/x.md`, then add it to `NAV` in `utils.jl` |
 | Change how something renders | The matching `hfun_*` in `utils.jl` |
@@ -35,6 +36,7 @@ Franklin.jl, Bootstrap 5.3, deployed to GitHub Pages.
 - [Bilingual pages](.claude/rules/bilingual.md) — mirrored folders, `{{url}}`, `{{ui}}`, the CJK font trap
 - [Data files](.claude/rules/data-files.md) — the one hard rule of this repo, and the staleness check
 - [Media](.claude/rules/media.md) — hero video budget, ffmpeg recipes, the GitHub Pages bandwidth limit
+- [Animation](.claude/rules/animation.md) — the imec values, and the reduced-motion rule that must not be broken again
 
 ## The one thing to remember
 
