@@ -31,7 +31,7 @@ lang = "zh"
   <div class="container">
     <h2>{{ui home final_head}}</h2>
     <p>{{ui home final_lead}}</p>
-    <a class="btn btn-cta btn-lg" href="{{url contact}}">{{ui nav cta}}</a>
+    <a class="btn btn-cta btn-lg" href="{{url contact}}">{{ui home final_cta}}</a>
   </div>
 </section>
 ~~~
