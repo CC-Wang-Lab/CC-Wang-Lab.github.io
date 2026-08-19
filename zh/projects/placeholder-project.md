@@ -20,7 +20,7 @@ lang = "zh"
 
 建置或模擬了什麼。量測哪些量、使用什麼儀器。並附上照片：
 
-```
+```markdown
 ![](/assets/img/projects/placeholder-project/rig.jpg)
 ```
 
