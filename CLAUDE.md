@@ -47,6 +47,7 @@ the generator is in `utils.jl` and it is the thing to change.
 
 ## Docs
 
+- **[docs/STATUS.md](docs/STATUS.md) — read this first.** Where the project stands, what is still placeholder, what it is blocked on, and the traps already paid for.
 - [docs/architecture.md](docs/architecture.md) — the diagrams
 - [docs/how-to-edit.md](docs/how-to-edit.md) — for lab members, not developers
 - [docs/reference/design-decisions.md](docs/reference/design-decisions.md) — every choice, with its reason
