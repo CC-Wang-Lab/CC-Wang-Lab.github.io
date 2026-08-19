@@ -1,0 +1,28 @@
++++
+title = "研究成果"
+descr = "依主題分類的代表性論文，並連結完整的 Google Scholar 紀錄。"
+lang = "zh"
++++
+
+~~~
+<header class="page-hd">
+  <div class="container">
+    <h1>{{ui nav publications}}</h1>
+    <p>{{ui page pubs_lead}} {{fill lab_outputs}} {{ui page pubs_outputs}} {{fill lab_articles}} {{ui page pubs_articles}}</p>
+    <p class="mt-3">
+      <a class="btn btn-ghost btn-sm" href="https://scholar.google.com/citations?user=QlIdSPIAAAAJ&amp;hl=en" rel="noopener">
+        <i class="bi bi-mortarboard"></i> Google Scholar &mdash; {{fill lab_citations}}
+      </a>
+      <a class="btn btn-ghost btn-sm" href="https://scholar.nycu.edu.tw/en/persons/chi-chuan-wang/" rel="noopener">
+        <i class="bi bi-building"></i> {{ui page pubs_hub}}
+      </a>
+    </p>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="container">
+    {{publications}}
+  </div>
+</div>
+~~~

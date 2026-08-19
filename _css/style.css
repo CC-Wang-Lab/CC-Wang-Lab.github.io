@@ -1,0 +1,712 @@
+/* ==========================================================================
+   CC Wang Lab
+   Bootstrap 5.3 does the grid, the navbar and the light/dark machinery.
+   This file does the type, the colour and the lab-specific components.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   ET Book, self-hosted. Same family as maysam-gholampour.github.io.
+   -------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "et-book";
+  src: url("../assets/et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff") format("woff"),
+       url("../assets/et-book/et-book-roman-line-figures/et-book-roman-line-figures.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "et-book";
+  src: url("../assets/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff") format("woff"),
+       url("../assets/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "et-book";
+  src: url("../assets/et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff") format("woff"),
+       url("../assets/et-book/et-book-bold-line-figures/et-book-bold-line-figures.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
+   Tokens.
+   The two brand colours were sampled from the lab's own logo: the orange fish
+   is heat, the blue fish is cooling.
+   -------------------------------------------------------------------------- */
+
+:root {
+  --lab-orange: #d89030;
+  --lab-orange-bright: #eda43f;
+  --lab-blue: #4080a8;
+  --lab-blue-bright: #5aa0cc;
+  --lab-ink: #181828;
+
+  /* ET Book first, Noto Serif TC for the Chinese glyphs it does not have. */
+  --font-body: "et-book", "Noto Serif TC", "Times New Roman", Times, serif;
+  --font-ui: "Noto Serif TC", -apple-system, "Segoe UI", system-ui, sans-serif;
+
+  --rule: 1px solid var(--bs-border-color);
+  --pad-section: 5rem;
+}
+
+/* Light */
+:root,
+[data-bs-theme="light"] {
+  --bs-body-bg: #fdfcfa;
+  --bs-body-color: #22222c;
+  --bs-border-color: #e2ddd4;
+  --bs-emphasis-color: #101018;
+  --lab-surface: #ffffff;
+  --lab-surface-2: #f5f2ec;
+  --lab-muted: #6b6b78;
+  --lab-accent: #b8761f;
+  --lab-nav-bg: rgba(253, 252, 250, 0.92);
+  --lab-shadow: 0 2px 14px rgba(24, 24, 40, 0.07);
+  --lab-shadow-lift: 0 10px 28px rgba(24, 24, 40, 0.13);
+}
+
+/* Dark */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #14141e;
+  --bs-body-color: #dedee6;
+  --bs-border-color: #2e2e3d;
+  --bs-emphasis-color: #ffffff;
+  --lab-surface: #1c1c2a;
+  --lab-surface-2: #232335;
+  --lab-muted: #9a9aae;
+  --lab-accent: var(--lab-orange-bright);
+  --lab-nav-bg: rgba(20, 20, 30, 0.92);
+  --lab-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+  --lab-shadow-lift: 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+/*
+  TYPE SCALE — matched to maysam-gholampour.github.io.
+  Body 1.15rem / 1.5em. h1 weight 400. h2 and h3 ITALIC weight 400.
+  That italic-roman pairing is the signature of the source site, and it is what
+  makes ET Book look like ET Book rather than a generic serif.
+*/
+body {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  line-height: 1.5em;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  opacity: 0;
+  transition: opacity 0.4s ease-in;
+  -webkit-font-smoothing: antialiased;
+}
+body.loaded { opacity: 1; }
+
+/* No scroll-jump when the fixed navbar anchors to a section. */
+html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; }
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-body);
+  color: var(--bs-emphasis-color);
+}
+h1 {
+  font-weight: 400;
+  font-size: 2.2rem;
+  line-height: 1.1em;
+  margin-bottom: 1.5rem;
+}
+h2 {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1.2em;
+  margin-bottom: 1.4rem;
+}
+h3 {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.3rem;
+  line-height: 1.25em;
+}
+h4 { font-weight: 400; font-size: 1.2rem; }
+h5 { font-weight: 400; font-size: 1.1rem; }
+
+a { color: var(--lab-accent); text-decoration: none; }
+a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
+
+.muted { color: var(--lab-muted); }
+
+.section { padding: var(--pad-section) 0; }
+.section-alt { background: var(--lab-surface-2); }
+.section-head { max-width: 46rem; margin-bottom: 2.5rem; }
+.section-head p { color: var(--lab-muted); margin-bottom: 0; }
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.btn-cta,
+.btn-ghost {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 2rem;
+  padding: 0.5rem 1.4rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.btn-cta {
+  background: var(--lab-orange);
+  border: 1px solid var(--lab-orange);
+  color: #17131c;
+}
+.btn-cta:hover {
+  background: var(--lab-orange-bright);
+  border-color: var(--lab-orange-bright);
+  color: #17131c;
+  transform: translateY(-1px);
+  box-shadow: var(--lab-shadow-lift);
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: var(--bs-body-color);
+}
+.btn-ghost:hover {
+  background: var(--bs-body-color);
+  color: var(--bs-body-bg);
+  transform: translateY(-1px);
+}
+.btn-lg { padding: 0.7rem 1.9rem; font-size: 1.02rem; }
+
+.btn-icon {
+  border: 0;
+  background: transparent;
+  color: var(--bs-body-color);
+  padding: 0.25rem 0.45rem;
+  line-height: 1;
+}
+.btn-icon:hover { color: var(--lab-orange); }
+
+/* --------------------------------------------------------------------------
+   Navbar
+   -------------------------------------------------------------------------- */
+
+.lab-nav {
+  background: var(--lab-nav-bg);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: var(--rule);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.brand-mark { flex: 0 0 auto; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+.brand-name {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--bs-emphasis-color);
+  letter-spacing: 0.02em;
+}
+.brand-tag {
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+}
+.lab-nav .nav-link {
+  font-family: var(--font-ui);
+  font-size: 0.93rem;
+  font-weight: 500;
+  color: var(--bs-body-color);
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+.lab-nav .nav-link:hover { color: var(--lab-orange); }
+.lab-nav .nav-link.active {
+  color: var(--lab-orange);
+  box-shadow: inset 0 -2px 0 var(--lab-orange);
+}
+.lang-switch {
+  font-size: 0.85rem !important;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+  padding: 0.1rem 0.7rem !important;
+}
+.navbar-toggler { border-color: var(--bs-border-color); }
+.navbar-toggler:focus { box-shadow: 0 0 0 0.2rem rgba(216, 144, 48, 0.3); }
+[data-bs-theme="dark"] .navbar-toggler-icon {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  min-height: min(82vh, 720px);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #0b0b12;
+  margin-top: 0;
+  padding: 8rem 0 5rem;
+}
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  /* The footage is a high-speed camera frame: black ground, grey bubbles.
+     Straight off the camera it reads as a dark blur behind the veil. */
+  filter: brightness(1.45) contrast(1.12);
+}
+/*
+  The veil makes white text readable. It must be heavy on the LEFT, where the
+  words are, and nearly gone on the RIGHT, where the bubbles have to be visible.
+  A flat overlay across the whole frame hides the one thing worth showing.
+*/
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(95deg,
+      rgba(11, 11, 18, 0.92) 0%,
+      rgba(11, 11, 18, 0.78) 26%,
+      rgba(11, 11, 18, 0.40) 52%,
+      rgba(11, 11, 18, 0.10) 78%,
+      rgba(11, 11, 18, 0.02) 100%),
+    linear-gradient(0deg, rgba(11, 11, 18, 0.62) 0%, rgba(11, 11, 18, 0) 38%);
+}
+.hero-inner { position: relative; z-index: 2; max-width: 100%; }
+/* The hero uses the SOURCE SITE's base h1: 3.2rem, weight 400, line-height 1em. */
+.hero-title {
+  color: #fff;
+  font-size: clamp(2.2rem, 4.4vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.05em;
+  max-width: 20ch;
+  margin-bottom: 1.4rem;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+}
+.hero-lead {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1.15rem;
+  line-height: 1.5em;
+  max-width: 46ch;
+  margin-bottom: 2rem;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: 0.85rem; }
+.hero .btn-ghost { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
+.hero .btn-ghost:hover { background: #fff; color: #14141e; }
+/* Say what the footage is. Unlabelled, it is just bubbles. */
+.hero-caption {
+  position: absolute;
+  z-index: 2;
+  bottom: 0.9rem;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  max-width: 1320px;
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-video { display: none; }
+  .hero {
+    background-image: url("/assets/video/hero-poster.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+  html { scroll-behavior: auto; }
+  body { transition: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Numbers band
+   -------------------------------------------------------------------------- */
+
+.band-stats {
+  background: var(--lab-ink);
+  color: #fff;
+  padding: 2.4rem 0;
+  border-bottom: 3px solid var(--lab-orange);
+}
+.stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.stat-num {
+  font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+  font-weight: 700;
+  color: var(--lab-orange-bright);
+  line-height: 1.05;
+}
+.stat-label {
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+/* --------------------------------------------------------------------------
+   Cards
+   -------------------------------------------------------------------------- */
+
+/*
+  Icon tile. An orange-to-blue gradient goes muddy brown through the middle at
+  this size, so the tile is a flat orange wash with the glyph in full orange.
+*/
+.card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.75rem;
+  font-size: 1.25rem;
+  margin-bottom: 0.9rem;
+  background: rgba(216, 144, 48, 0.14);
+  color: var(--lab-orange);
+  box-shadow: inset 0 0 0 1px rgba(216, 144, 48, 0.3);
+}
+[data-bs-theme="dark"] .card-icon {
+  background: rgba(237, 164, 63, 0.16);
+  color: var(--lab-orange-bright);
+  box-shadow: inset 0 0 0 1px rgba(237, 164, 63, 0.3);
+}
+.card-area:hover .card-icon {
+  background: var(--lab-orange);
+  color: #17131c;
+  box-shadow: none;
+}
+.card-area,
+.cap-card,
+.cap-brief,
+.person-card,
+.news-card {
+  display: block;
+  height: 100%;
+  background: var(--lab-surface);
+  border: var(--rule);
+  border-radius: 0.9rem;
+  padding: 1.5rem;
+  box-shadow: var(--lab-shadow);
+}
+.card-area {
+  color: inherit;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.card-area:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--lab-shadow-lift);
+  border-color: var(--lab-orange);
+  text-decoration: none;
+  color: inherit;
+}
+.card-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
+.card-scope { color: var(--lab-muted); font-size: 0.98rem; line-height: 1.45em; margin-bottom: 0; }
+.cap-brief { box-shadow: none; background: transparent; border: 0; padding: 0; }
+.cap-list {
+  margin: 1rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.97rem;
+  color: var(--lab-muted);
+}
+.cap-list li { margin-bottom: 0.35rem; }
+
+/* --------------------------------------------------------------------------
+   Research page
+   -------------------------------------------------------------------------- */
+
+.area-block { padding: 2rem 0; border-bottom: var(--rule); }
+.area-block:last-child { border-bottom: 0; }
+.area-head { display: flex; align-items: center; gap: 1rem; }
+.area-head .card-icon { margin-bottom: 0; }
+.area-head h2 { margin-bottom: 0; }
+.area-scope { color: var(--lab-muted); margin: 0.8rem 0 0; max-width: 60ch; }
+
+/* --------------------------------------------------------------------------
+   Industry callout
+   -------------------------------------------------------------------------- */
+
+.industry-note {
+  border-left: 3px solid var(--lab-blue);
+  padding: 0.6rem 0 0.6rem 1.1rem;
+  color: var(--lab-muted);
+  font-size: 0.97rem;
+  max-width: 56ch;
+}
+
+/* --------------------------------------------------------------------------
+   Team
+   -------------------------------------------------------------------------- */
+
+.pi-block { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; align-items: start; }
+.pi-photo img {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: var(--rule);
+  background: var(--lab-surface-2);
+}
+/* Names stay roman. Italic on a proper noun reads as emphasis, not as style. */
+.pi-name { font-style: normal; font-size: 2rem; margin-bottom: 0.2rem; }
+.person-name { font-style: normal; }
+.news-title { font-style: normal; }
+.pi-role { color: var(--lab-muted); font-size: 1.05rem; margin-bottom: 0.9rem; }
+.pi-honours { list-style: none; padding: 0; margin: 0 0 1.2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pi-honours li {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  border: 1px solid var(--lab-blue);
+  color: var(--lab-blue);
+  border-radius: 1rem;
+  padding: 0.15rem 0.75rem;
+}
+[data-bs-theme="dark"] .pi-honours li { border-color: var(--lab-blue-bright); color: var(--lab-blue-bright); }
+.pi-links { margin-top: 1.1rem; font-size: 0.95rem; }
+
+.person-card { text-align: center; }
+.person-photo {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: var(--rule);
+  background: var(--lab-surface-2);
+  margin-bottom: 0.9rem;
+}
+.person-name { margin-bottom: 0.15rem; }
+.person-role { color: var(--lab-muted); font-size: 0.9rem; margin-bottom: 0.35rem; }
+.person-topic { font-size: 0.95rem; margin-bottom: 0; }
+
+.person-rows { list-style: none; padding: 0; margin: 0; }
+.person-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: var(--rule);
+  align-items: baseline;
+}
+.person-row-name { font-weight: 700; }
+.person-row-role,
+.person-row-topic { color: var(--lab-muted); font-size: 0.95rem; }
+.year-head { margin-top: 2.5rem; }
+
+/* --------------------------------------------------------------------------
+   Publications
+   -------------------------------------------------------------------------- */
+
+.pub-theme { margin-bottom: 3rem; }
+.pub-theme h2 { border-bottom: 2px solid var(--lab-orange); padding-bottom: 0.4rem; display: inline-block; }
+.pub-list { padding-left: 1.4rem; margin-top: 1.2rem; }
+.pub { margin-bottom: 1rem; }
+.pub-title { display: block; }
+.pub-meta { display: block; color: var(--lab-muted); font-size: 0.9rem; font-family: var(--font-ui); }
+
+/* --------------------------------------------------------------------------
+   News
+   -------------------------------------------------------------------------- */
+
+.news-date {
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  margin-bottom: 0.5rem;
+}
+.news-tag {
+  margin-left: 0.6rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 1rem;
+  background: var(--lab-surface-2);
+  color: var(--lab-blue);
+  letter-spacing: 0.04em;
+}
+[data-bs-theme="dark"] .news-tag { color: var(--lab-blue-bright); }
+.news-title { margin-bottom: 0.4rem; }
+.news-body { color: var(--lab-muted); font-size: 0.97rem; margin-bottom: 0; }
+
+/* --------------------------------------------------------------------------
+   Final CTA
+   -------------------------------------------------------------------------- */
+
+.band-cta {
+  background: linear-gradient(120deg, var(--lab-ink) 0%, #232344 60%, #2c3f56 100%);
+  color: #fff;
+  padding: 4rem 0;
+  text-align: center;
+}
+.band-cta h2 { color: #fff; }
+.band-cta p { color: rgba(255, 255, 255, 0.8); max-width: 52ch; margin: 0 auto 1.8rem; }
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.lab-foot {
+  background: var(--lab-surface-2);
+  border-top: var(--rule);
+  padding: 3.5rem 0 2rem;
+  font-size: 0.95rem;
+}
+.foot-brand { font-weight: 700; font-size: 1.15rem; margin-bottom: 0.1rem; }
+.foot-uni { color: var(--lab-muted); margin-bottom: 0.6rem; }
+.foot-addr { color: var(--lab-muted); font-size: 0.88rem; max-width: 34ch; }
+.foot-head {
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  margin-bottom: 0.7rem;
+}
+.foot-nav { display: flex; flex-direction: column; gap: 0.35rem; }
+.foot-nav a { color: var(--bs-body-color); }
+.foot-nav a:hover { color: var(--lab-orange); }
+.foot-rule { margin: 2.5rem 0 1.2rem; border-color: var(--bs-border-color); opacity: 1; }
+.foot-fine { color: var(--lab-muted); font-size: 0.82rem; margin-bottom: 0; }
+
+/* --------------------------------------------------------------------------
+   Back to top — carried over from maysam-gholampour.github.io, it works.
+   -------------------------------------------------------------------------- */
+
+#backToTop {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  display: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--lab-orange);
+  color: #17131c;
+  font-size: 1.2rem;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#backToTop:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+#backToTop.pulse-once { animation: pulse-once 0.6s ease; }
+@keyframes pulse-once {
+  0%   { transform: scale(0.8); opacity: 0.5; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* --------------------------------------------------------------------------
+   Inner pages
+   Every page except the home page needs top padding to clear the fixed navbar.
+   -------------------------------------------------------------------------- */
+
+.page-hd {
+  padding: 8rem 0 2.5rem;
+  border-bottom: var(--rule);
+  background: var(--lab-surface-2);
+}
+.page-hd h1 { margin-bottom: 0.6rem; }
+.page-hd p {
+  color: var(--lab-muted);
+  font-size: 1.1rem;
+  max-width: 54ch;
+  margin-bottom: 0;
+}
+.page-body { padding: 3.5rem 0 5rem; }
+.page-narrow { max-width: 46rem; }
+
+/* Prose written as Markdown, not generated. Justified, like the source site. */
+.prose { text-align: justify; }
+.prose h2, .prose h3, .prose h1 { text-align: left; }
+.prose h2 { margin-top: 2.5rem; }
+
+/* The source site's section divider: a centred ✦ instead of a rule. */
+.prose hr {
+  text-align: center;
+  display: block;
+  border: 0;
+  line-height: 1px;
+  height: 1px;
+  margin: 2.5rem 0;
+  opacity: 1;
+}
+.prose hr::before {
+  content: "✦";
+  font-size: 1.4rem;
+  color: var(--lab-muted);
+  position: relative;
+}
+.prose table { width: 100%; margin: 1.5rem 0; }
+.prose th { text-align: left; border-bottom: 2px solid var(--bs-border-color); padding: 0.6rem 0.8rem; }
+.prose td { border-top: var(--rule); padding: 0.6rem 0.8rem; vertical-align: top; }
+.prose ul { padding-left: 1.2rem; }
+.prose li { margin-bottom: 0.4rem; }
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+  .lab-nav .navbar-nav { padding-top: 0.75rem; }
+  .lang-switch { display: inline-block; width: fit-content; }
+}
+
+@media (max-width: 767.98px) {
+  :root { --pad-section: 3.25rem; }
+  body { font-size: 1.05rem; }
+
+  /*
+    The hero is `display: flex` on desktop. On mobile the caption stops being
+    absolutely positioned, which turns it into a SECOND FLEX ITEM sitting
+    beside the text and splits the hero into two narrow columns.
+    Switching to `display: block` puts it back underneath where it belongs.
+  */
+  .hero {
+    display: block;
+    min-height: auto;
+    padding: 6.5rem 0 3rem;
+  }
+  .hero-title { font-size: 1.9rem; line-height: 1.15em; max-width: none; }
+  .hero-lead { font-size: 1rem; max-width: none; margin-bottom: 1.6rem; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn { width: 100%; text-align: center; }
+  .hero-caption {
+    position: static;
+    margin: 2.25rem 0 0;
+    padding: 0 var(--bs-gutter-x, 0.75rem);
+    font-size: 0.66rem;
+  }
+
+  .page-hd { padding: 6.5rem 0 2rem; }
+  .pi-block { grid-template-columns: 1fr; gap: 1.5rem; }
+  .pi-photo { max-width: 180px; }
+  .pi-name { font-size: 1.65rem; }
+  .person-row { grid-template-columns: 1fr; gap: 0.15rem; }
+  .stat-num { font-size: 1.75rem; }
+  .prose { text-align: left; }  /* justified text at 390px produces rivers */
+}
+
+/* --------------------------------------------------------------------------
+   Sectors (home page, Industrial R&D band)
+   -------------------------------------------------------------------------- */
+
+.sector { padding-right: 1rem; }
+.sector .card-title { font-size: 1.15rem; }

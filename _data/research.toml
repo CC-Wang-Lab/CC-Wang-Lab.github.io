@@ -1,0 +1,53 @@
+# Research areas. Six maximum on the home page.
+# Each card carries a SCOPE line, not just a category name — an industry visitor
+# must see what is covered without clicking.
+#
+# To add an area: copy a [[area]] block, fill it in, rebuild. No HTML needed.
+
+[[area]]
+id      = "electronics-cooling"
+icon    = "cpu"
+title_en = "Electronics & AI Cooling"
+title_zh = "電子與 AI 散熱"
+scope_en = "Air, liquid, two-phase and immersion thermal management, from chip package to full rack."
+scope_zh = "空氣、液體、兩相與浸沒式散熱，涵蓋晶片封裝到整櫃系統。"
+
+[[area]]
+id      = "data-centre"
+icon    = "hdd-rack"
+title_en = "Data-Centre Thermal Management"
+title_zh = "資料中心熱管理"
+scope_en = "Airflow management, rack and room-level thermal behaviour, cooling energy and waste-heat recovery."
+scope_zh = "氣流管理、機櫃與機房層級熱行為、冷卻能耗與廢熱回收。"
+
+[[area]]
+id      = "two-phase"
+icon    = "droplet-half"
+title_en = "Boiling & Two-Phase Heat Transfer"
+title_zh = "沸騰與兩相熱傳"
+scope_en = "Pool and flow boiling, enhanced and porous surfaces, high-speed visualisation, critical heat flux."
+scope_zh = "池沸騰與流動沸騰、強化與多孔表面、高速可視化、臨界熱通量。"
+
+[[area]]
+id      = "heat-exchangers"
+icon    = "grid-3x3"
+title_en = "Heat Exchangers & Augmentation"
+title_zh = "熱交換器與強化熱傳"
+scope_en = "Fin-and-tube, louver and wavy fin geometries, compact exchangers, pressure drop, fouling forecasting."
+scope_zh = "翅片管、百葉窗與波紋翅片、緊湊型熱交換器、壓降、積垢預測。"
+
+[[area]]
+id      = "hvacr"
+icon    = "thermometer-snow"
+title_en = "HVAC&R, Heat Pumps & Dehumidification"
+title_zh = "空調冷凍、熱泵與除濕"
+scope_en = "High-temperature heat pumps, frost and defrost control, ionic-fluid dehumidification, EV thermal systems."
+scope_zh = "高溫熱泵、結霜與除霜控制、離子液體除濕、電動車熱系統。"
+
+[[area]]
+id      = "ai-thermal"
+icon    = "cpu-fill"
+title_en = "AI-Assisted Thermal Engineering"
+title_zh = "AI 輔助熱工程"
+scope_en = "Physics-informed neural network surrogates, smart thermal control, reinforcement learning, forecasting."
+scope_zh = "物理資訊神經網路代理模型、智慧熱控制、強化學習、預測建模。"

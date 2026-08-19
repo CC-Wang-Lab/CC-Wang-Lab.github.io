@@ -1,0 +1,78 @@
+name: Build and Deploy
+
+# Pushing to main rebuilds the site and publishes it to the gh-pages branch.
+# One manual step is needed ONCE, after the first successful run:
+#   repo Settings -> Pages -> Source -> Deploy from a branch -> gh-pages / (root)
+#
+# There is NO `prepath` in config.md, because CC-Wang-Lab.github.io is a USER
+# site served at the root. Adding one would break every CSS and asset path.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Two runs deploying at once would fight over gh-pages.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Python is used by the pre-rendering / minification step.
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: "1"
+
+      - name: Cache Julia depot
+        uses: actions/cache@v4
+        with:
+          path: ~/.julia
+          key: julia-${{ runner.os }}-${{ hashFiles('Project.toml') }}
+          restore-keys: julia-${{ runner.os }}-
+
+      - name: Build
+        run: |
+          julia --project=. -e '
+            using Pkg; Pkg.instantiate();
+            using NodeJS; run(`$(npm_cmd()) install highlight.js`);
+            using Franklin;
+            optimize()'
+
+      # Fails the build if a generated page still contains an unresolved
+      # Franklin template call. Those render as literal {{...}} on the live
+      # site and are easy to miss in review.
+      - name: Check for unresolved template calls
+        run: |
+          if grep -rqE '\{\{[a-z_ /0-9]+\}\}' __site --include='*.html'; then
+            echo "::error::Unresolved Franklin template calls found:"
+            grep -rnoE '\{\{[a-z_ /0-9]+\}\}' __site --include='*.html' | head -20
+            exit 1
+          fi
+          echo "No unresolved template calls."
+
+      - name: Report site size
+        run: du -sh __site && du -sh __site/assets/video
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: __site

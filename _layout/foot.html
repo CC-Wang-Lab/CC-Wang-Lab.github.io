@@ -1,0 +1,22 @@
+    </main>
+
+    {{footer}}
+
+    <button id="backToTop" class="shadow" type="button" title="{{ui nav top}}" aria-label="{{ui nav top}}">
+      <i class="bi bi-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+            crossorigin="anonymous"></script>
+    <script src="/assets/js/theme-toggle.js"></script>
+    <script src="/assets/js/backtotop.js"></script>
+    {{if hasmath}} {{insert foot_katex.html}} {{end}}
+    {{if hascode}} {{insert foot_highlight.html}} {{end}}
+    <script>
+      window.addEventListener("load", function () {
+        document.body.classList.add("loaded");
+      });
+    </script>
+  </body>
+</html>
