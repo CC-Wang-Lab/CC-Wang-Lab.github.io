@@ -6,6 +6,7 @@
 
 [[area]]
 id      = "electronics-cooling"
+image   = "/assets/img/research/electronics-cooling.jpg"
 icon    = "cpu"
 title_en = "Electronics & AI Cooling"
 title_zh = "電子與 AI 散熱"
@@ -14,6 +15,7 @@ scope_zh = "空氣、液體、兩相與浸沒式散熱，涵蓋晶片封裝到�
 
 [[area]]
 id      = "data-centre"
+image   = "/assets/img/research/data-centre.svg"
 icon    = "hdd-rack"
 title_en = "Data-Centre Thermal Management"
 title_zh = "資料中心熱管理"
@@ -22,6 +24,7 @@ scope_zh = "氣流管理、機櫃與機房層級熱行為、冷卻能耗與廢�
 
 [[area]]
 id      = "two-phase"
+image   = "/assets/img/research/two-phase.jpg"
 icon    = "droplet-half"
 title_en = "Boiling & Two-Phase Heat Transfer"
 title_zh = "沸騰與兩相熱傳"
@@ -30,6 +33,7 @@ scope_zh = "池沸騰與流動沸騰、強化與多孔表面、高速可視化�
 
 [[area]]
 id      = "heat-exchangers"
+image   = "/assets/img/research/heat-exchangers.svg"
 icon    = "grid-3x3"
 title_en = "Heat Exchangers & Augmentation"
 title_zh = "熱交換器與強化熱傳"
@@ -38,6 +42,7 @@ scope_zh = "翅片管、百葉窗與波紋翅片、緊湊型熱交換器、壓�
 
 [[area]]
 id      = "hvacr"
+image   = "/assets/img/research/hvacr.svg"
 icon    = "thermometer-snow"
 title_en = "HVAC&R, Heat Pumps & Dehumidification"
 title_zh = "空調冷凍、熱泵與除濕"
@@ -46,6 +51,7 @@ scope_zh = "高溫熱泵、結霜與除霜控制、離子液體除濕、電動�
 
 [[area]]
 id      = "ai-thermal"
+image   = "/assets/img/research/ai-thermal.svg"
 icon    = "cpu-fill"
 title_en = "AI-Assisted Thermal Engineering"
 title_zh = "AI 輔助熱工程"

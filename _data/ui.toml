@@ -17,18 +17,20 @@ uni_en   = "National Yang Ming Chiao Tung University"
 uni_zh   = "國立陽明交通大學"
 
 [nav]
+home_en         = "Home"
+home_zh         = "首頁"
 research_en     = "Research"
 research_zh     = "研究領域"
-capabilities_en = "Capabilities"
-capabilities_zh = "研究能量"
-industry_en     = "Industry"
-industry_zh     = "產學合作"
+projects_en     = "Projects"
+projects_zh     = "研究專案"
+people_en       = "People"
+people_zh       = "研究成員"
 publications_en = "Publications"
 publications_zh = "研究成果"
-team_en         = "Team"
-team_zh         = "研究團隊"
 news_en         = "News"
 news_zh         = "最新消息"
+about_en        = "About"
+about_zh        = "關於實驗室"
 cta_en          = "Discuss an R&D project"
 cta_zh          = "洽談研發合作"
 switch_en       = "中文"
@@ -94,7 +96,7 @@ final_head_zh    = "有熱管理的問題嗎？"
 final_lead_en    = "Tell us what you are trying to cool, and what is currently stopping you. We will tell you honestly whether we can help."
 final_lead_zh    = "請告訴我們您要冷卻的對象，以及目前遇到的瓶頸。我們會誠實評估能否協助。"
 
-[team]
+[people]
 page_lead_en   = "Prof. Chi-Chuan Wang, the research leads, and the researchers currently in the lab."
 page_lead_zh   = "王啟川教授、研究主持群，以及目前在實驗室的研究人員。"
 lead_head_en   = "Research leads"
@@ -123,6 +125,22 @@ built_en    = "Built with"
 built_zh    = "本站建置於"
 dev_en      = "Developed by Maysam Gholampour"
 dev_zh      = "網站開發：Maysam Gholampour"
+
+[projects]
+page_lead_en   = "What the lab is measuring and building right now. Each project is written up by the researcher doing the work."
+page_lead_zh   = "實驗室目前正在量測與建置的工作。每個專案皆由執行研究的人員撰寫。"
+by_en          = "Researcher"
+by_zh          = "研究人員"
+area_en        = "Research area"
+area_zh        = "研究領域"
+all_en         = "All projects"
+all_zh         = "全部專案"
+back_en        = "Back to projects"
+back_zh        = "回到專案列表"
+
+[about]
+page_lead_en   = "The laboratory, the people who lead it, and how companies work with us."
+page_lead_zh   = "實驗室簡介、主持團隊，以及企業與我們合作的方式。"
 
 [page]
 pubs_lead_en   = "Selected work, grouped by theme. The full record is on Google Scholar."

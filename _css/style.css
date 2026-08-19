@@ -736,3 +736,260 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .foot-addr { max-width: 42ch; }
 .foot-plain { color: var(--lab-muted); }
 .foot-nav .bi { width: 1.1em; }
+
+/* ==========================================================================
+   ANIMATION
+   Values measured from the imec.com stylesheets on 2026-08-19, not guessed.
+   All CSS, no library, no build step.
+
+   REDUCED MOTION: the hover effects below stay ON. They are user-initiated,
+   they last a quarter of a second, and switching them off leaves a site that
+   feels broken to the many Windows users who turn animation effects off.
+   What is suppressed for those visitors is the AUTO-advancing slider, in JS.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Media card — research areas and projects.
+   imec lifts image and text together by 1.25em over .25s ease-out.
+   -------------------------------------------------------------------------- */
+
+.card-media {
+  display: block;
+  height: 100%;
+  color: inherit;
+}
+.card-media:hover { text-decoration: none; color: inherit; }
+
+.card-media-img {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  background: var(--lab-surface-2);
+  box-shadow: 0 0.9375rem 1.5625rem 0 rgba(24, 24, 40, 0.15);
+  transform: translateY(0);
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+[data-bs-theme="dark"] .card-media-img {
+  box-shadow: 0 0.9375rem 1.5625rem 0 rgba(0, 0, 0, 0.45);
+}
+.card-media-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 0.4s ease-out;
+}
+
+.card-media-body {
+  display: block;
+  padding: 1.15rem 0.25rem 0;
+  transform: translateY(0);
+  transition: transform 0.25s ease-out;
+}
+.card-media-body .card-title,
+.card-media-body .card-scope,
+.card-media-body .card-by { display: block; }
+
+/* The lift. Both halves move, exactly as imec does it. */
+.card-media:hover .card-media-img,
+.card-media:hover .card-media-body { transform: translateY(-1.25em); }
+.card-media:hover .card-media-img { box-shadow: 0 1.25rem 2rem 0 rgba(24, 24, 40, 0.22); }
+/* Deliberately tiny. imec uses 1.025 and it reads as depth, not as a zoom. */
+.card-media:hover .card-media-img img { transform: scale(1.025) translateZ(0); }
+
+.card-badge {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--lab-blue);
+  margin-bottom: 0.4rem;
+}
+[data-bs-theme="dark"] .card-badge { color: var(--lab-blue-bright); }
+.card-by {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--lab-muted);
+  margin-top: 0.6rem;
+}
+
+/* --------------------------------------------------------------------------
+   Link underline that grows from the left, and the arrow nudge.
+   -------------------------------------------------------------------------- */
+
+.lab-nav .nav-link { position: relative; }
+.lab-nav .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.15rem;
+  height: 2px;
+  background: var(--lab-orange);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.22s ease-out;
+}
+.lab-nav .nav-link:hover::after { transform: scaleX(1); }
+.lab-nav .nav-link.active { box-shadow: none; }
+.lab-nav .nav-link.active::after { transform: scaleX(1); }
+
+.link-arrow-mark {
+  display: inline-block;
+  transform: translateX(0);
+  transition: transform 0.2s ease-out;
+}
+.link-arrow:hover .link-arrow-mark { transform: translateX(0.625rem); }
+
+/* --------------------------------------------------------------------------
+   News slider (home page, directly under the hero)
+   -------------------------------------------------------------------------- */
+
+.news-slider {
+  background: var(--lab-ink);
+  color: #fff;
+  padding: 3rem 0 2.5rem;
+  border-bottom: 3px solid var(--lab-orange);
+}
+.ns-head {
+  font-family: var(--font-ui);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 1.5rem;
+}
+
+.ns-stage { position: relative; display: grid; }
+/* Slides are stacked on top of each other and cross-fade. */
+.ns-slide {
+  grid-area: 1 / 1;
+  min-width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-out, visibility 0s linear 0.5s;
+}
+.ns-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease-out, visibility 0s;
+}
+.ns-date {
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.5rem;
+}
+.ns-slide .news-tag { background: rgba(255, 255, 255, 0.12); color: var(--lab-orange-bright); }
+.ns-title {
+  color: #fff;
+  font-style: normal;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  max-width: 30ch;
+  margin-bottom: 0.6rem;
+}
+.ns-body { color: rgba(255, 255, 255, 0.78); max-width: 60ch; margin-bottom: 0; }
+
+.ns-arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0.25rem;
+  transition: transform 0.18s ease-out, color 0.18s ease-out;
+}
+.ns-arrow:hover { color: #fff; }
+.ns-prev { left: -2.1875rem; }
+.ns-next { right: -2.1875rem; }
+.ns-prev:hover { transform: translate(-0.3125rem, -50%); }
+.ns-next:hover { transform: translate(0.3125rem, -50%); }
+
+.ns-nav { display: flex; gap: 2.5rem; margin-top: 2.25rem; flex-wrap: wrap; }
+.ns-nav-item {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  max-width: 13.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.25s ease-out;
+}
+.ns-nav-item.is-active { color: #fff; }
+.ns-nav-item:hover { color: #fff; }
+/* The progress line: a track with a fill bar driven from JS. */
+.ns-nav-line {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  width: 13.75rem;
+  max-width: 100%;
+  height: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.22);
+}
+.ns-nav-fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--lab-orange);
+  transform: translateX(-100%);
+  transform-origin: left center;
+}
+.ns-nav-title {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  margin-top: 0.9rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.ns-more { margin: 2rem 0 0; }
+.ns-more a { color: var(--lab-orange-bright); }
+
+/* --------------------------------------------------------------------------
+   Project pages
+   -------------------------------------------------------------------------- */
+
+.project-hd .card-badge { margin-bottom: 0.6rem; }
+.project-crumb { font-family: var(--font-ui); font-size: 0.82rem; margin-bottom: 1rem; }
+.project-by { display: flex; align-items: center; gap: 0.9rem; margin-top: 1.5rem; margin-bottom: 0; }
+.project-by-photo {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+  border: var(--rule); background: var(--lab-surface-2);
+}
+.project-hero { margin: 0; }
+.project-hero img { display: block; width: 100%; max-height: 460px; object-fit: cover; }
+.project-figure { margin: 2rem 0; }
+.project-figure video { width: 100%; border-radius: 0.75rem; display: block; }
+.project-figure figcaption {
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  color: var(--lab-muted);
+  margin-top: 0.6rem;
+}
+
+@media (max-width: 991.98px) {
+  .ns-prev { left: -0.5rem; }
+  .ns-next { right: -0.5rem; }
+  .ns-nav { gap: 1.25rem; }
+  .ns-nav-line { width: 6rem; }
+}
+@media (max-width: 767.98px) {
+  .ns-nav-title { display: none; }
+  .ns-nav-line { width: 3.5rem; }
+  .ns-nav { gap: 0.75rem; margin-top: 1.75rem; }
+  .ns-arrow { display: none; }
+  .project-hero img { max-height: 240px; }
+}

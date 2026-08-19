@@ -1,36 +1,42 @@
 +++
-title = "產學合作"
-descr = "企業如何與本實驗室合作：我們做什麼、合作流程為何、以及聯絡窗口。"
+title = "關於實驗室"
+descr = "實驗室簡介、能為產業專案做什麼，以及企業與我們合作的方式。"
 lang = "zh"
 +++
 
 ~~~
 <header class="page-hd">
   <div class="container">
-    <h1>{{ui nav industry}}</h1>
-    <p>{{ui home industry_lead}}</p>
+    <h1>{{ui nav about}}</h1>
+    <p>{{ui about page_lead}}</p>
   </div>
 </header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>{{ui home cap_head}}</h2>
+      <p>{{ui home cap_lead}}</p>
+    </div>
+    {{capabilities}}
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <h2>{{ui home industry_head}}</h2>
+      <p>{{ui home industry_lead}}</p>
+    </div>
+    {{sectors}}
+    <p class="industry-note mt-5">{{ui home industry_note}}</p>
+  </div>
+</section>
 ~~~
 
 @@page-body
 @@container
 @@page-narrow,prose
-
-## 我們處理的問題
-
-本實驗室同時進行 **20 件以上的產學計畫**，橫跨四個領域：
-
-| 領域 | 常見的委託問題 |
-|---|---|
-| 資料中心與 AI 硬體 | 冷板、浸沒式冷卻槽、機櫃氣流、冷卻能耗、廢熱回收 |
-| 半導體與封裝 | 封裝層級高熱通量、熱阻、熱點 |
-| 空調冷凍與熱泵 | 熱交換器性能、結霜與除霜、除濕、高溫熱泵 |
-| 電動車 | 電池與功率電子熱管理 |
-
-~~~
-<p class="industry-note">{{ui home industry_note}}</p>
-~~~
 
 ## 合作流程
 

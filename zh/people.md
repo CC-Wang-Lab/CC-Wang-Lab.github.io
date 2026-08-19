@@ -7,27 +7,27 @@ lang = "zh"
 ~~~
 <header class="page-hd">
   <div class="container">
-    <h1>{{ui nav team}}</h1>
-    <p>{{ui team page_lead}}</p>
+    <h1>{{ui nav people}}</h1>
+    <p>{{ui people page_lead}}</p>
   </div>
 </header>
 
 <div class="page-body">
   <div class="container">
 
-    {{team_pi}}
+    {{people_pi}}
 
     <div class="section-head mt-5">
-      <h2>{{ui team lead_head}}</h2>
+      <h2>{{ui people lead_head}}</h2>
     </div>
-    {{team_leads}}
+    {{people_leads}}
 
     <div class="section-head mt-5">
-      <h2>{{ui team member_head}}</h2>
+      <h2>{{ui people member_head}}</h2>
     </div>
-    {{team_members}}
+    {{people_members}}
 
-    <p class="mt-4"><a href="{{url team/alumni}}">{{ui team alumni_link}} &rarr;</a></p>
+    <p class="mt-4"><a href="{{url people/alumni}}">{{ui people alumni_link}} &rarr;</a></p>
 
   </div>
 </div>

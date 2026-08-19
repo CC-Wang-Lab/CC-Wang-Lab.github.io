@@ -113,13 +113,21 @@ end
 #  Navigation and language switch
 # ---------------------------------------------------------------------------
 
+# The single source of truth for the top navigation AND the footer's link column.
+# Add a page here and it appears in both, in both languages.
 const NAV = [
+    ("home",         "/"),
     ("research",     "/research/"),
-    ("capabilities", "/capabilities/"),
-    ("industry",     "/industry/"),
+    ("projects",     "/projects/"),
+    ("people",       "/people/"),
     ("publications", "/publications/"),
-    ("team",         "/team/"),
     ("news",         "/news/"),
+]
+
+# Reachable from the footer, not from the top navigation.
+const NAV_FOOT = [
+    ("about",   "/about/"),
+    ("contact", "/contact/"),
 ]
 
 """Relative source path of the page being rendered, e.g. `"zh/research.md"`."""
@@ -291,10 +299,14 @@ function hfun_research_cards()
     areas = data("research")["area"]
     cards = join(["""
       <div class="col-md-6 col-lg-4">
-        <a class="card-area" href="$(pre)/research/#$(esc(a["id"]))">
-          <span class="card-icon">$(icon(a["icon"]))</span>
-          <h3 class="card-title">$(esc(pick(a, "title")))</h3>
-          <p class="card-scope">$(esc(pick(a, "scope")))</p>
+        <a class="card-media" href="$(pre)/research/#$(esc(a["id"]))">
+          <span class="card-media-img">
+            <img src="$(esc(get(a, "image", "/assets/img/projects/placeholder.svg")))" alt="" loading="lazy">
+          </span>
+          <span class="card-media-body">
+            <span class="card-title">$(esc(pick(a, "title")))</span>
+            <span class="card-scope">$(esc(pick(a, "scope")))</span>
+          </span>
         </a>
       </div>""" for a in areas], "\n")
     return """<div class="row g-4">\n$(cards)\n</div>"""
@@ -392,7 +404,104 @@ end
 
 pi_person() = first(filter(p -> get(p, "tier", "") == "pi", people()))
 
-function hfun_team_pi()
+"""Find one person by id, or throw. Used to resolve a project's `student` field."""
+function person_by_id(id::AbstractString)
+    hit = filter(p -> get(p, "id", "") == id, data("team")["person"])
+    isempty(hit) && error("projects.toml refers to student id '$id', which is not in team.toml")
+    return first(hit)
+end
+
+"""Find one research area by id, or throw. Used to resolve a project's `area` field."""
+function area_by_id(id::AbstractString)
+    hit = filter(a -> get(a, "id", "") == id, data("research")["area"])
+    isempty(hit) && error("projects.toml refers to area id '$id', which is not in research.toml")
+    return first(hit)
+end
+
+# ---------------------------------------------------------------------------
+#  Projects
+#
+#  One row in projects.toml plus one Markdown page per project. The row carries
+#  a `student` id and an `area` id, so a name or a research area is never typed
+#  twice and a typo fails the build instead of rendering an empty card.
+# ---------------------------------------------------------------------------
+
+"""Projects sorted by `weight`, lowest first."""
+function projects()
+    ps = copy(data("projects")["project"])
+    sort!(ps; by = p -> get(p, "weight", 999))
+    return ps
+end
+
+"""One card. `href` is resolved for the current language."""
+function project_card(p)
+    person = person_by_id(p["student"])
+    area   = area_by_id(p["area"])
+    href   = prefix() * "/projects/" * p["id"] * "/"
+    return """
+      <div class="col-md-6 col-lg-4">
+        <a class="card-media" href="$(esc(href))">
+          <span class="card-media-img">
+            <img src="$(esc(p["image"]))" alt="" loading="lazy">
+          </span>
+          <span class="card-media-body">
+            <span class="card-badge">$(esc(pick(area, "title")))</span>
+            <span class="card-title">$(esc(pick(p, "title")))</span>
+            <span class="card-scope">$(esc(pick(p, "lead")))</span>
+            <span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>
+          </span>
+        </a>
+      </div>"""
+end
+
+hfun_project_grid() = """<div class="row g-4">\n$(join([project_card(p) for p in projects()], "\n"))\n</div>"""
+
+"""`{{project_featured 3}}` — the first n projects, for the home page."""
+function hfun_project_featured(params::Vector{String})
+    n = isempty(params) ? 3 : parse(Int, params[1])
+    ps = projects()
+    return """<div class="row g-4">\n$(join([project_card(p) for p in ps[1:min(n, length(ps))]], "\n"))\n</div>"""
+end
+
+"""
+`{{project_header}}` on a project page.
+
+The page declares `project = "<id>"` in its front matter; everything shown here
+is looked up from that id, so a project page carries no duplicated facts.
+"""
+function hfun_project_header()
+    id = locvar(:project)
+    id === nothing && error("this page needs `project = \"<id>\"` in its front matter")
+    hit = filter(p -> p["id"] == String(id), projects())
+    isempty(hit) && error("no project with id '$(id)' in projects.toml")
+    p = first(hit)
+    person = person_by_id(p["student"])
+    area   = area_by_id(p["area"])
+    return """
+<header class="page-hd project-hd">
+  <div class="container">
+    <p class="project-crumb">
+      <a href="$(prefix())/projects/">$(esc(ui("projects", "back")))</a>
+    </p>
+    <span class="card-badge">$(esc(pick(area, "title")))</span>
+    <h1>$(esc(pick(p, "title")))</h1>
+    <p>$(esc(pick(p, "lead")))</p>
+    <p class="project-by">
+      <img class="project-by-photo" src="$(esc(get(person, "photo", "/assets/img/team/placeholder.svg")))" alt="">
+      <span>
+        <strong>$(esc(pick(person, "name")))</strong><br>
+        <span class="muted">$(esc(pick(person, "role")))</span>
+      </span>
+    </p>
+  </div>
+</header>
+<figure class="project-hero">
+  <img src="$(esc(p["image"]))" alt="">
+</figure>
+"""
+end
+
+function hfun_people_pi()
     p = pi_person()
     hon = get(p, "honours_" * lang(), get(p, "honours_en", String[]))
     links = String[]
@@ -417,7 +526,7 @@ $(join(["      <li>$(esc(h))</li>" for h in hon], "\n"))
 """
 end
 
-function hfun_team_leads()
+function hfun_people_leads()
     ls = filter(p -> get(p, "tier", "") == "lead" && get(p, "status", "") == "current", people())
     isempty(ls) && return ""
     cards = join(["""
@@ -432,7 +541,7 @@ function hfun_team_leads()
     return """<div class="row g-4">\n$(cards)\n</div>"""
 end
 
-function hfun_team_members()
+function hfun_people_members()
     ms = filter(p -> get(p, "tier", "") == "member" && get(p, "status", "") == "current", people())
     isempty(ms) && return ""
     rows = join(["""
@@ -444,7 +553,7 @@ function hfun_team_members()
     return """<ul class="person-rows">\n$(rows)\n</ul>"""
 end
 
-function hfun_team_alumni()
+function hfun_people_alumni()
     as = filter(p -> get(p, "status", "") == "alumni", people())
     isempty(as) && return """<p class="muted">No alumni recorded yet.</p>"""
     byyear = Dict{Int,Vector{Any}}()
@@ -522,6 +631,59 @@ function hfun_news(params::Vector{String} = String[])
     return """<div class="row g-4">\n$(cards)\n</div>"""
 end
 
+"""
+`{{news_slider}}` — the home page band directly under the hero.
+
+Built to the same pattern as imec.com: the slides CROSS-FADE rather than sliding
+sideways, and the navigation underneath is a row of titles, each sitting above a
+progress line that fills across the slide's dwell time.
+
+The markup carries no timing. `news-slider.js` owns that, so it can refuse to
+auto-advance for a visitor who asked for reduced motion while leaving the arrows
+and the title navigation working.
+"""
+function hfun_news_slider()
+    pre = prefix()
+    its = news_items()
+    isempty(its) && return ""
+    n = min(4, length(its))
+    its = its[1:n]
+
+    slides = join(["""
+        <article class="ns-slide$(k == 1 ? " is-active" : "")" data-index="$(k-1)">
+          <p class="ns-date">$(Dates.format(i["date"], "d u yyyy"))<span class="news-tag">$(esc(get(i, "tag", "")))</span></p>
+          <h3 class="ns-title">$(esc(pick(i, "title")))</h3>
+          <p class="ns-body">$(esc(pick(i, "body")))</p>
+        </article>""" for (k, i) in enumerate(its)], "\n")
+
+    navitems = join(["""
+        <button class="ns-nav-item$(k == 1 ? " is-active" : "")" type="button" data-goto="$(k-1)">
+          <span class="ns-nav-line"><span class="ns-nav-fill"></span></span>
+          <span class="ns-nav-title">$(esc(pick(i, "title")))</span>
+        </button>""" for (k, i) in enumerate(its)], "\n")
+
+    return """
+<section class="news-slider" id="newsSlider" aria-roledescription="carousel"
+         aria-label="$(esc(ui("home", "news_head")))">
+  <div class="container">
+    <p class="ns-head">$(esc(ui("home", "news_head")))</p>
+
+    <div class="ns-stage">
+      <button class="ns-arrow ns-prev" type="button" aria-label="Previous">$(icon("chevron-left"))</button>
+$(slides)
+      <button class="ns-arrow ns-next" type="button" aria-label="Next">$(icon("chevron-right"))</button>
+    </div>
+
+    <div class="ns-nav">
+$(navitems)
+    </div>
+
+    <p class="ns-more"><a class="link-arrow" href="$(pre)/news/">$(esc(ui("home", "news_link"))) <span class="link-arrow-mark">&rarr;</span></a></p>
+  </div>
+</section>
+"""
+end
+
 # ---------------------------------------------------------------------------
 #  Footer
 # ---------------------------------------------------------------------------
@@ -545,7 +707,8 @@ function hfun_footer()
         <p class="foot-head">$(esc(ui("foot", "nav")))</p>
         <nav class="foot-nav">
           $(navlinks)
-          <a href="$(pre)/team/alumni/">$(esc(ui("team", "alumni_link")))</a>
+          <a href="$(pre)/people/alumni/">$(esc(ui("people", "alumni_link")))</a>
+$(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV_FOOT], "\n"))
         </nav>
       </div>
 
@@ -556,7 +719,7 @@ function hfun_footer()
           <span class="foot-plain">$(icon("telephone")) $(esc(ui("foot", "phone")))</span>
           <a href="$(pre)/contact/">$(icon("geo-alt")) $(esc(ui("foot", "contact")))</a>
         </nav>
-        <p class="mt-3"><a class="btn btn-ghost btn-sm" href="$(pre)/contact/">$(esc(ui("team", "join")))</a></p>
+        <p class="mt-3"><a class="btn btn-ghost btn-sm" href="$(pre)/contact/">$(esc(ui("people", "join")))</a></p>
       </div>
 
     </div>
