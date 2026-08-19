@@ -6,7 +6,6 @@ lang = "en"
 
 ~~~
 {{hero}}
-{{numbers}}
 
 <section class="section">
   <div class="container">

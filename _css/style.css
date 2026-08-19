@@ -326,16 +326,37 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   color: rgba(255, 255, 255, 0.55);
 }
 
+/*
+  Reduced motion: DO NOT hide the video.
+  `display: none` was the first version and it was wrong. Windows users who turn
+  animations off - a large share of them - saw a still image with no way to play
+  it, and the hero looked broken rather than considerate. The video now stays on
+  screen, paused on its poster frame, with a button to start it.
+*/
 @media (prefers-reduced-motion: reduce) {
-  .hero-video { display: none; }
-  .hero {
-    background-image: url("/assets/video/hero-poster.jpg");
-    background-size: cover;
-    background-position: center;
-  }
   html { scroll-behavior: auto; }
   body { transition: none; }
 }
+
+.hero-play {
+  position: absolute;
+  z-index: 3;
+  right: 1.25rem;
+  bottom: 3.25rem;
+  display: none;              /* shown by JS only when autoplay did not start */
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem 0.4rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 2rem;
+  background: rgba(11, 11, 18, 0.55);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+}
+.hero-play.is-shown { display: inline-flex; }
+.hero-play:hover { background: rgba(11, 11, 18, 0.8); border-color: #fff; }
 
 /* --------------------------------------------------------------------------
    Numbers band

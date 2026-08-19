@@ -179,7 +179,7 @@ function hfun_navbar()
     <div class="container-fluid px-lg-4">
 
       <a href="$(home)" class="navbar-brand d-flex align-items-center gap-2">
-        <img src="/assets/img/logo-mark.svg" alt="" width="38" height="38" class="brand-mark">
+        <img src="/assets/img/logo-mark.png" alt="" width="46" height="21" class="brand-mark">
         <span class="brand-text">
           <span class="brand-name">$(brand)</span>
           <span class="brand-tag">$(tag)</span>
@@ -223,7 +223,10 @@ function hfun_hero()
     pre = prefix()
     return """
 <section class="hero">
-  <video class="hero-video" autoplay muted loop playsinline
+  <!-- No `autoplay` attribute on purpose. The browser re-triggers it after a
+       script pauses the video, so the reduced-motion preference could not be
+       honoured while it was there. hero-video.js decides whether to start. -->
+  <video class="hero-video" muted loop playsinline preload="auto"
          poster="/assets/video/hero-poster.jpg" aria-hidden="true" tabindex="-1">
     <source src="/assets/video/hero-boiling.mp4" type="video/mp4">
   </video>
@@ -236,6 +239,9 @@ function hfun_hero()
       <a class="btn btn-ghost btn-lg" href="$(pre)/research/">$(esc(ui("hero", "cta1")))</a>
     </div>
   </div>
+  <button class="hero-play" id="heroPlay" type="button">
+    <i class="bi bi-play-fill" aria-hidden="true"></i> $(esc(ui("hero", "play")))
+  </button>
   <p class="hero-caption">$(esc(ui("hero", "caption")))</p>
 </section>
 """
@@ -558,8 +564,12 @@ function hfun_footer()
     <hr class="foot-rule">
 
     <p class="foot-fine">
-      $(esc(ui("foot", "built")))
+      &copy; 2026 $(esc(ui("foot", "copy")))
       &nbsp;&middot;&nbsp;
+      $(esc(ui("foot", "built")))
+      <a href="https://github.com/JuliaDocs/Franklin.jl" rel="noopener">Franklin.jl</a> (MIT).
+      Typeface <a href="https://github.com/edwardtufte/et-book" rel="noopener">ET Book</a> (MIT).
+      <br>
       $(esc(ui("foot", "dev"))) &mdash;
       <a href="mailto:meysam.gholampoor@gmail.com">meysam.gholampoor@gmail.com</a>
     </p>

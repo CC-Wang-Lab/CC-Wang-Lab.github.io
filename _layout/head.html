@@ -6,8 +6,6 @@
     <!-- Theme must be set BEFORE the first paint, or the page flashes white. -->
     <script src="/assets/js/theme-init.js"></script>
     {{insert style.html}}
-    {{if hasmath}} {{insert head_katex.html}} {{end}}
-    {{if hascode}} {{insert head_highlight.html}} {{end}}
     {{isdef title}}<title>{{fill title}} &middot; CC Wang Lab</title>{{end}}
     {{isdef descr}}<meta name="description" content="{{fill descr}}" />{{end}}
   </head>

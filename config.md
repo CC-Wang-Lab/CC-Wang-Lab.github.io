@@ -8,7 +8,7 @@ author = "CC Wang Lab"
 mintoclevel = 2
 lang = "en"
 
-ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", "CLAUDE.md", "_tmp/"]
+ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", "CLAUDE.md", "THIRD-PARTY-LICENSES.md", "_tmp/"]
 
 generate_rss = false
 website_title = "CC Wang Lab"

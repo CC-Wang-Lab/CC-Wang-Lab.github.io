@@ -6,7 +6,6 @@ lang = "zh"
 
 ~~~
 {{hero}}
-{{numbers}}
 
 <section class="section">
   <div class="container">
