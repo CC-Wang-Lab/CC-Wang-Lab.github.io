@@ -807,7 +807,6 @@ $(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k,
           <span class="foot-plain">$(icon("telephone")) $(esc(ui("foot", "phone")))</span>
           <a href="$(pre)/contact/">$(icon("geo-alt")) $(esc(ui("foot", "contact")))</a>
         </nav>
-        <p class="mt-3"><a class="btn btn-ghost btn-sm" href="$(pre)/contact/">$(esc(ui("people", "join")))</a></p>
       </div>
 
     </div>

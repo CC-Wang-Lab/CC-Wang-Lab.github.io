@@ -142,8 +142,6 @@ member_head_en = "Current researchers"
 member_head_zh = "現職研究人員"
 alumni_link_en = "View alumni"
 alumni_link_zh = "歷屆成員"
-join_en        = "Join the lab"
-join_zh        = "加入實驗室"
 
 [foot]
 nav_en      = "Navigate"

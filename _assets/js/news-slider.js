@@ -81,11 +81,14 @@
       });
     }
 
-    // Hold still while somebody is reading or tabbing through it.
+    // Hold still while somebody is TABBING through it.
+    //
+    // Pause-on-hover was here and had to go. The band is wide, so a pointer
+    // resting anywhere inside it stopped the timer, and the slider looked as
+    // though it never advanced at all. Keyboard focus is a deliberate act and
+    // still pauses; a pointer merely passing over is not.
     function hold() { hovered = true; paint(index); stop(); }
     function release() { hovered = false; paint(index); schedule(); }
-    root.addEventListener("mouseenter", hold);
-    root.addEventListener("mouseleave", release);
     root.addEventListener("focusin", hold);
     root.addEventListener("focusout", release);
     document.addEventListener("visibilitychange", function () {

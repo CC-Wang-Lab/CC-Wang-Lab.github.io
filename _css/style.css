@@ -879,12 +879,33 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
    News slider (home page, directly under the hero)
    -------------------------------------------------------------------------- */
 
+/*
+  A contained card, not a full-bleed band.
+
+  The card is the .container itself, so its edges line up EXACTLY with the
+  research grid and every other section on the page. An earlier version gave the
+  card its own max-width and it ended up narrower than the content column, which
+  looked like a mistake rather than a choice.
+
+  The text inside stays short (26ch title, 52ch body) - that was the real ask.
+  A narrow measure is a property of the text, not of the box around it.
+*/
 .news-slider {
+  margin: 4rem 0;
+  padding: 0;
+  background: transparent;
+}
+.news-slider > .container {
   background: var(--lab-ink);
   color: #fff;
-  padding: 3rem 0 2.5rem;
-  border-bottom: 3px solid var(--lab-orange);
+  padding: 2.5rem 2.75rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 1.25rem 2.5rem rgba(24, 24, 40, 0.16);
 }
+[data-bs-theme="dark"] .news-slider > .container {
+  box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.45);
+}
+
 .ns-head {
   font-family: var(--font-ui);
   font-size: 0.74rem;
@@ -920,11 +941,11 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .ns-title {
   color: #fff;
   font-style: normal;
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
-  max-width: 30ch;
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  max-width: 26ch;
   margin-bottom: 0.6rem;
 }
-.ns-body { color: rgba(255, 255, 255, 0.78); max-width: 60ch; margin-bottom: 0; }
+.ns-body { color: rgba(255, 255, 255, 0.78); max-width: 52ch; font-size: 1rem; margin-bottom: 0; }
 
 .ns-arrow {
   position: absolute;
@@ -940,8 +961,8 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   transition: transform 0.18s ease-out, color 0.18s ease-out;
 }
 .ns-arrow:hover { color: #fff; }
-.ns-prev { left: -2.1875rem; }
-.ns-next { right: -2.1875rem; }
+.ns-prev { left: -1.75rem; }
+.ns-next { right: -1.75rem; }
 .ns-prev:hover { transform: translate(-0.3125rem, -50%); }
 .ns-next:hover { transform: translate(0.3125rem, -50%); }
 
@@ -1016,6 +1037,14 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
   .ns-nav-line { width: 6rem; }
 }
 @media (max-width: 767.98px) {
+  /* The container is full-bleed on phones, so the card would touch both edges
+     and its rounded corners would be cut off. Give it a margin of its own. */
+  .news-slider { margin: 2.5rem 0; }
+  .news-slider > .container {
+    width: auto;
+    margin: 0 0.9rem;
+    padding: 1.75rem 1.4rem 1.5rem;
+  }
   .ns-nav-title { display: none; }
   .ns-nav-line { width: 3.5rem; }
   .ns-nav { gap: 0.75rem; margin-top: 1.75rem; }
@@ -1096,10 +1125,6 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
    -------------------------------------------------------------------------- */
 
 .hero { padding-bottom: 6.5rem; }
-.news-slider {
-  border-top: 3px solid var(--lab-orange);
-  padding-top: 3.5rem;
-}
 
 /* --------------------------------------------------------------------------
    Partners marquee

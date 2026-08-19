@@ -29,10 +29,6 @@ Four lines are enough to get a useful answer.
 
 We reply to say honestly whether this lab can help. If it cannot, we say so.
 
-## Joining the lab
-
-Prospective postdoctoral researchers and graduate students are welcome to write directly. Say which of the six research areas interests you and why, and attach a CV. A generic email to many labs at once is easy to recognize and will not get a reply.
-
 @@
 @@col-lg-5
 @@contact-card
