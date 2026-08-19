@@ -79,6 +79,7 @@ with a message naming it. That guard has already caught two real renames.
 | **Logo search returns the wrong logo** | "ASE Group" returned the European Space Agency banner, "Lite-On" an unrelated "TL" mark, "Google" the 2012 Google Play logo. **Look at every file before accepting it.** |
 | **Heredocs break in this shell** | `cat <<'EOF'` fails on apostrophes in the content. Use Python or the Write tool for prose files. |
 | **`prefers-reduced-motion` is not consulted** | Deliberate, and argued out in `.claude/rules/animation.md`. Motion starts for everyone and a visible control stops it. Do not put the old behaviour back without reading that file. |
+| **One section per research area reads as a column** | With six areas and three projects, every section held one card, so the grid never got to put two side by side. `/projects/` is now ONE grid with an area filter bar; `project-filter.js` reads `#<area-id>` from the URL so the home-page research cards still land on the right filter. Put sections back only once each area has several projects. |
 
 ## Where the reasoning is written down
 

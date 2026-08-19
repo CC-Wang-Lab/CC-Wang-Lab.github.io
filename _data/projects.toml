@@ -9,8 +9,11 @@
 #   area    = an id from _data/research.toml
 # Nothing is typed twice, and a wrong id fails the build instead of rendering blank.
 #
-# Ordering: `weight` sorts the grid, lowest first. Leave it out and the project
-# falls to the end.
+# Ordering: research area first (research.toml order), then `weight` inside the
+# area, lowest first. Leave `weight` out and the project falls to the end of its area.
+#
+# The area also becomes a filter button above the grid at /projects/. A button is
+# drawn only for an area that has at least one project, so nothing here is typed twice.
 
 [[project]]
 id       = "porous-pool-boiling"

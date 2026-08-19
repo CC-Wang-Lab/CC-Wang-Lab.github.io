@@ -522,14 +522,23 @@ function projects()
     return ps
 end
 
-"""One card. `href` is resolved for the current language."""
+"""
+One card. `href` is resolved for the current language.
+
+`data-area` is what the filter bar on the Projects page reads. It costs nothing
+on the home page, where the same card is reused and nothing filters.
+
+The link opens in a new tab, by request: a visitor reading the grid is browsing,
+and a project write-up is a side trip, not a destination. Remove `target` and
+`rel` together if that is ever reversed.
+"""
 function project_card(p)
     person = person_by_id(p["student"])
     area   = area_by_id(p["area"])
     href   = prefix() * "/projects/" * p["id"] * "/"
     return """
-      <div class="col-md-6 col-lg-4">
-        <a class="card-media" href="$(esc(href))">
+      <div class="col-md-6 col-lg-4 pg-item" data-area="$(esc(p["area"]))">
+        <a class="card-media" href="$(esc(href))" target="_blank" rel="noopener">
           <span class="card-media-img">
             <img src="$(esc(p["image"]))" alt="" loading="lazy">
           </span>
@@ -544,34 +553,48 @@ function project_card(p)
 end
 
 """
-The Projects page, grouped under research-area headings.
+The Projects page: ONE grid, filtered by research area.
 
-Each group carries `id="<area-id>"`, which is what the research cards on the home
-page link to. Areas are walked in research.toml order, so the groups appear in
-the same order as the cards. An area with no projects is skipped entirely, which
-is why those cards are not links.
+WHY THIS IS NOT A SECTION PER AREA
+It was, and it read as a single column. With six areas and three projects, every
+group held exactly one card, so the layout never got the chance to put two cards
+side by side. Grouping is right once each area has several projects; it is wrong
+while the lab is filling the page up.
+
+So the areas become a filter bar instead. The grid keeps every project in one
+`row`, three across on a wide screen, and a chip narrows it. That keeps the
+contract the home page relies on: a research card links to `/projects/#<area-id>`
+and `project-filter.js` reads that hash on load and selects the chip.
+
+A chip is only drawn for an area that actually has a project, which is the same
+test the home-page cards use to decide whether to be links at all.
 """
 function hfun_project_grid()
     ps = projects()
-    out = String[]
-    for a in data("research")["area"]
-        mine = filter(p -> String(p["area"]) == a["id"], ps)
-        isempty(mine) && continue
-        cards = join([project_card(p) for p in mine], "
-")
-        push!(out, """
-<section class="project-group" id="$(esc(a["id"]))">
-  <div class="section-head">
-    <h2>$(esc(pick(a, "title")))</h2>
-    <p>$(esc(pick(a, "scope")))</p>
-  </div>
-  <div class="row g-4">
-$(cards)
-  </div>
-</section>""")
+    areas = filter(a -> any(p -> String(p["area"]) == a["id"], ps), data("research")["area"])
+
+    # Order the cards by research area, then by weight inside it. The grid is no
+    # longer grouped, but a reader still meets one area before the next.
+    rank = Dict(String(a["id"]) => i for (i, a) in enumerate(data("research")["area"]))
+    sort!(ps; by = p -> (get(rank, String(p["area"]), 999), get(p, "weight", 999)))
+
+    chips = String["""    <button type="button" class="pg-chip is-active" data-area="all" data-scope="" aria-pressed="true">$(esc(ui("projects", "all")))</button>"""]
+    for a in areas
+        push!(chips, """    <button type="button" class="pg-chip" data-area="$(esc(a["id"]))" data-scope="$(esc(pick(a, "scope")))" aria-pressed="false">$(esc(pick(a, "title")))</button>""")
     end
-    return join(out, "
+
+    cards = join([project_card(p) for p in ps], "
 ")
+
+    return """
+<div class="project-filter" id="projectFilter" role="group" aria-label="$(esc(ui("projects", "area")))">
+$(join(chips, "
+"))
+</div>
+<p class="pg-scope" id="projectScope" aria-live="polite"></p>
+<div class="row g-4" id="projectGrid">
+$(cards)
+</div>"""
 end
 
 """`{{project_featured 3}}` — the first n projects, for the home page."""

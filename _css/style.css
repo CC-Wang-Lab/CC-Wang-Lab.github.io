@@ -1292,5 +1292,54 @@ a:hover { color: var(--lab-orange-bright); text-decoration: underline; }
 .card-media.is-static:hover .card-media-body { transform: none; }
 .card-media.is-static:hover .card-media-img img { transform: none; }
 
-.project-group { margin-bottom: 4rem; }
-.project-group:last-child { margin-bottom: 0; }
+/* --------------------------------------------------------------------------
+   Projects — one grid, narrowed by a research-area chip.
+
+   The area sections that used to live here are gone: with six areas and three
+   projects, every section held one card and the page read as a column.
+   -------------------------------------------------------------------------- */
+
+.project-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pg-chip {
+  font-family: var(--font-ui);
+  font-size: 0.84rem;
+  line-height: 1.2;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lab-muted);
+  transition: color 0.2s ease-out, border-color 0.2s ease-out,
+              background-color 0.2s ease-out;
+}
+.pg-chip:hover { color: var(--lab-orange); border-color: var(--lab-orange); }
+.pg-chip:focus-visible { outline: 2px solid var(--lab-blue); outline-offset: 2px; }
+.pg-chip.is-active {
+  background: var(--lab-blue);
+  border-color: var(--lab-blue);
+  color: #fff;
+}
+[data-bs-theme="dark"] .pg-chip.is-active {
+  background: var(--lab-blue-bright);
+  border-color: var(--lab-blue-bright);
+  color: #14141e;
+}
+
+/* Holds its height whether or not a chip is selected, so pressing one does not
+   shove the grid up and down the page. */
+.pg-scope {
+  color: var(--lab-muted);
+  max-width: var(--measure);
+  min-height: 1.5em;
+  margin-bottom: 2.25rem;
+}
+
+/* Bootstrap's .col-* sets `display: block`, which beats the UA sheet's rule for
+   [hidden]. Without !important a filtered-out card stays on screen. */
+.pg-item[hidden] { display: none !important; }

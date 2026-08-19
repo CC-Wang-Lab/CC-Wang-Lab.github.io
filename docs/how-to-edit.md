@@ -86,7 +86,7 @@ written by the person doing the work.
 ```toml
 [[project]]
 id       = "cold-plate-high-flux"    # lowercase, no spaces. Becomes the web address.
-weight   = 3                          # sorts the grid, lowest first
+weight   = 3                          # sorts the grid inside its area, lowest first
 image    = "/assets/img/projects/cold-plate-high-flux.jpg"
 student  = "chen-mei-ling"            # must be an id already in team.toml
 area     = "electronics-cooling"      # must be an id already in research.toml
@@ -109,6 +109,11 @@ write. It is ordinary Markdown: headings, paragraphs, lists, images.
 
 The cover image on the card must be **16:9** and under **250 KB**. Anything larger slows the page
 for everyone.
+
+**Where it appears.** The grid at `/projects/` holds every project, three across on a wide screen.
+The `area` you gave it becomes a filter button above the grid, and that button appears on its own —
+you do not add it anywhere. Projects are ordered by research area first, then by `weight` inside
+the area.
 
 **If you mistype the `student` or `area` id, the build stops with a message naming the bad id.**
 That is deliberate. A silent blank card is worse than a failed build.
