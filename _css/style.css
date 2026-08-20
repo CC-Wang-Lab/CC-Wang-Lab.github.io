@@ -1007,7 +1007,12 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
 .person-row-topic,
 .news-body,
 .pg-scope,
-.ff-lead { text-align: justify; }
+.ff-lead,
+/* The hero lead was left out of this list by oversight, so the one paragraph
+   every visitor reads first was the only ragged one on the site. It sits at
+   `max-width: 46ch`, which is just above the ~45ch floor named above, so it
+   justifies without opening rivers. */
+.hero-lead { text-align: justify; }
 
 /*
   Two selectors were taken OUT of that list on 2026-08-19, both because the
@@ -1207,12 +1212,11 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
   .section-head p,
   .pi-body p,
   .card-scope,
-  .person-topic,
   .person-row-topic,
   .news-body,
   .pg-scope,
   .ff-lead,
-  .foot-addr { text-align: left; }
+  .hero-lead { text-align: left; }
 
   /* Half a phone wide is not enough for two columns of "Publications". */
   .foot-nav-2col { columns: 1; }
