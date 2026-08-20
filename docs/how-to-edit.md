@@ -100,7 +100,7 @@ send. That needs no account anywhere, which is why it is the default.
 **To make it send by itself, two steps.**
 
 1. Create a free account at [formspree.io](https://formspree.io) or
-   [web3forms.com](https://web3forms.com) and point it at `ccwang@nycu.edu.tw`.
+   [web3forms.com](https://web3forms.com) and point it at `juliahsieh@nycu.edu.tw`.
 2. Paste the endpoint into `config.md`:
 
 ```

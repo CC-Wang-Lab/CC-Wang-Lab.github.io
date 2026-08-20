@@ -198,8 +198,8 @@ mailto_note_zh = "此按鈕會開啟您的郵件程式並填入內容，請在�
 
 sent_en        = "Thank you. Your message is with the laboratory, and we reply to every one."
 sent_zh        = "感謝您。訊息已送達實驗室，我們會回覆每一封來信。"
-failed_en      = "The message did not send. Please email us directly at ccwang@nycu.edu.tw."
-failed_zh      = "訊息未能送出，請直接來信 ccwang@nycu.edu.tw。"
+failed_en      = "The message did not send. Please email us directly at juliahsieh@nycu.edu.tw."
+failed_zh      = "訊息未能送出，請直接來信 juliahsieh@nycu.edu.tw。"
 sending_en     = "Sending..."
 sending_zh     = "傳送中……"
 
@@ -209,10 +209,13 @@ privacy_zh     = "您填寫的內容僅送至本實驗室，不會轉交他人�
 [foot]
 nav_en      = "Navigate"
 nav_zh      = "網站導覽"
-email_en    = "ccwang@nycu.edu.tw"
-email_zh    = "ccwang@nycu.edu.tw"
-phone_en    = "+886-3-571-2121 ext. 55105"
-phone_zh    = "+886-3-571-2121 分機 55105"
+# The laboratory's contact address is the lab assistant, not the head.
+# Prof. Wang's own address is on his person page, from team.toml, and
+# repeating it here made two front doors for one laboratory.
+email_en    = "juliahsieh@nycu.edu.tw"
+email_zh    = "juliahsieh@nycu.edu.tw"
+phone_en    = "+886-3-571-2121 ext. 55172"
+phone_zh    = "+886-3-571-2121 分機 55172"
 contact_en  = "Contact us"
 contact_zh  = "聯絡我們"
 address_en  = "Department of Mechanical Engineering, National Yang Ming Chiao Tung University, 1001 University Road, Hsinchu 300093, Taiwan"

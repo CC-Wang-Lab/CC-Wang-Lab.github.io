@@ -821,7 +821,7 @@ message placeholder, so the guidance survives without becoming four more boxes.
 function hfun_contact_form()
     endpoint = try string(globvar(:form_endpoint)) catch; "" end
     key      = try string(globvar(:form_access_key)) catch; "" end
-    to       = try string(globvar(:form_to)) catch; "ccwang@nycu.edu.tw" end
+    to       = try string(globvar(:form_to)) catch; "juliahsieh@nycu.edu.tw" end
     live     = !isempty(endpoint)
 
     # THREE fields. The first version had eight, one per line of the prose list

@@ -52,11 +52,11 @@ lab_people      = "50-60"
 #   "https://formspree.io/f/XXXXXXXX"    -> Formspree, free tier
 #   "https://api.web3forms.com/submit"   -> Web3Forms (also set form_access_key)
 #
-# Create the free account, point it at ccwang@nycu.edu.tw, paste the endpoint
+# Create the free account, point it at juliahsieh@nycu.edu.tw, paste the endpoint
 # here. Nothing else changes.
 form_endpoint   = ""
 form_access_key = ""
-form_to         = "ccwang@nycu.edu.tw"
+form_to         = "juliahsieh@nycu.edu.tw"
 +++
 
 \newcommand{\R}{\mathbb R}

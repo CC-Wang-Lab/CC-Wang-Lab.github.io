@@ -30,15 +30,12 @@ lang = "en"
 
 ## Visiting the lab
 
-**Prof. Chi-Chuan Wang**  \
+**Prof. Chi-Chuan Wang**, Chair Professor  \
 Department of Mechanical Engineering  \
 National Yang Ming Chiao Tung University  \
 1001 University Road, Hsinchu 300093, Taiwan
 
-**Email**: [ccwang@nycu.edu.tw](mailto:ccwang@nycu.edu.tw)  \
-**Phone**: +886-3-571-2121 ext. 55105
-
-## Lab assistant
+## Who to write to
 
 **Julia Hsieh 謝孟娟**  \
 Assistant, CC Wang Lab  \
