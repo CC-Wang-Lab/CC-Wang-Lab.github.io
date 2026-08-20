@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Theme must be set BEFORE the first paint, or the page flashes white. -->
-    <script src="/assets/js/theme-init.js"></script>
+    {{scripts theme-init}}
     {{insert style.html}}
     {{isdef title}}<title>{{fill title}} &middot; CC Wang Lab</title>{{end}}
     {{isdef descr}}<meta name="description" content="{{fill descr}}" />{{end}}

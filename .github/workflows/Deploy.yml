@@ -60,9 +60,9 @@ jobs:
       # site and are easy to miss in review.
       - name: Check for unresolved template calls
         run: |
-          if grep -rqE '\{\{[a-z_ /0-9]+\}\}' __site --include='*.html'; then
+          if grep -rqE '\{\{[a-z_ /0-9.-]+\}\}' __site --include='*.html'; then
             echo "::error::Unresolved Franklin template calls found:"
-            grep -rnoE '\{\{[a-z_ /0-9]+\}\}' __site --include='*.html' | head -20
+            grep -rnoE '\{\{[a-z_ /0-9.-]+\}\}' __site --include='*.html' | head -20
             exit 1
           fi
           echo "No unresolved template calls."

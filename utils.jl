@@ -1,5 +1,6 @@
 using TOML
 using Dates
+using SHA
 
 # =============================================================================
 #  CC Wang Lab — build-time HTML generators
@@ -115,6 +116,75 @@ icon(name) = """<i class="bi bi-$(esc(name))" aria-hidden="true"></i>"""
 function paras(s)
     chunks = filter(!isempty, strip.(split(string(s), "\n\n")))
     return join(["<p>$(esc(c))</p>" for c in chunks], "\n")
+end
+
+# ---------------------------------------------------------------------------
+#  Cache busting
+#
+#  GitHub Pages sends `Cache-Control: max-age=600` on every single file and
+#  there is no way to change it. Pages reads no `_headers` file, no
+#  `.htaccess` and no per-file rule. So a browser holds `/css/style.css` for
+#  ten minutes without asking anybody.
+#
+#  That is what made visitors hard reload. The HTML and the stylesheet expire
+#  independently, so a deploy could hand somebody NEW markup painted with the
+#  OLD stylesheet, and the page looked broken rather than merely old.
+#
+#  The fix is to put the file's own content hash in its URL. Change the file
+#  and the URL changes, so the browser cannot serve the old copy. Leave the
+#  file alone and the URL is identical, so the cache still does its job.
+#
+#  This covers CSS and JavaScript, which are the files that change on a normal
+#  deploy. Fonts, icons and the hero video are deliberately left alone: they
+#  change by being replaced with a differently named file, which busts itself.
+# ---------------------------------------------------------------------------
+
+const _FINGERPRINT = Dict{String,String}()
+
+"""
+    fingerprint(url)
+
+`/css/style.css` -> `/css/style.css?v=1f4c9a2b`, where the tag is the first 8
+hex digits of the SHA-1 of the source file. Computed once per build.
+
+The source path is the URL read backwards through Franklin's copy step:
+`/css/` came from `_css/`, `/assets/` came from `_assets/`.
+
+A URL that maps to no file is returned unchanged rather than throwing. A
+missing asset is already a visible 404, and a build that dies over a cache tag
+is worse than one that ships a file without it.
+"""
+function fingerprint(url::AbstractString)
+    get!(_FINGERPRINT, String(url)) do
+        src = startswith(url, "/css/")    ? joinpath(@__DIR__, "_css",    url[6:end]) :
+              startswith(url, "/assets/") ? joinpath(@__DIR__, "_assets", url[9:end]) : ""
+        (isempty(src) || !isfile(src)) && return String(url)
+        return string(url, "?v=", bytes2hex(sha1(read(src)))[1:8])
+    end
+end
+
+"""`{{asset /css/style.css}}` -> the same URL carrying its content hash."""
+hfun_asset(params::Vector{String}) = fingerprint(first_or_empty(params))
+
+"""
+    {{scripts motion theme-toggle reveal}}
+
+One `<script src="/assets/js/NAME.js?v=HASH"></script>` per name, in the order
+given. The order IS the load order, so it is not decoration.
+
+Why a generator and not `{{asset ...}}` written straight into the tag: Franklin
+tokenizes `<script ` as the opening of a block it must not touch, and copies
+everything up to `</script>` out verbatim. A `{{...}}` inside a script tag
+therefore reaches the live site as literal text. A `<link>` has no such
+problem, which is why the stylesheet worked and eleven script tags did not.
+Measured 2026-08-20, on the first build after the change.
+"""
+function hfun_scripts(params::Vector{String})
+    io = IOBuffer()
+    for name in params
+        println(io, """<script src="$(fingerprint("/assets/js/" * name * ".js"))"></script>""")
+    end
+    return String(take!(io))
 end
 
 # ---------------------------------------------------------------------------

@@ -217,6 +217,66 @@ and 0.60, whose worst case over the four grounds those regions actually use is 9
 
 ---
 
+## Why every stylesheet and script URL ends in `?v=<hash>`
+
+**The symptom.** The site was deployed and visitors still saw the old page until they pressed
+Ctrl+F5. Some saw something worse: the new markup wearing the old stylesheet.
+
+**The cause**, read off the live site on 2026-08-20:
+
+```
+$ curl -sSI https://cc-wang-lab.github.io/css/style.css
+Cache-Control: max-age=600
+```
+
+GitHub Pages sends that on every file it serves. Ten minutes, and it cannot be changed. Pages
+reads no `_headers` file, no `.htaccess`, and has no per-file setting.
+
+Ten minutes on the HTML alone would be harmless. The damage came from the HTML and the stylesheet
+expiring **on separate clocks**. A visitor could hold a fresh `index.html` and a stale `style.css`
+at the same time. That page is not old. It is broken.
+
+**The fix.** The build puts each file's own content hash in its URL.
+
+| | |
+|---|---|
+| The file changed | The URL changed, so the browser must fetch it |
+| The file did not change | The URL is identical, so the cache still works |
+
+`fingerprint()` in `utils.jl` does it, using the first 8 hex digits of the file's SHA-1. Twelve
+URLs, on all 30 pages. Fonts, icons and the hero video are left alone on purpose: those change by
+being replaced with a differently named file, which busts itself.
+
+**What this does not fix, and cannot.** The HTML page is still held for up to ten minutes, and
+nothing on GitHub Pages can shorten that. The ten minutes are now bounded and harmless. A visitor
+gets the whole old page or the whole new page, never a mix, and it heals itself.
+**Nobody has to hard reload, and nobody has to be told to.**
+
+If ten minutes ever becomes too long, the answer is a CDN in front of Pages, or a host that reads
+a `_headers` file. That is a hosting change, not a code change.
+
+### The trap underneath it
+
+Franklin tokenizes `<script ` as the opening of a block it must not touch, and copies everything up
+to `</script>` out verbatim. So this **ships broken and says nothing**:
+
+```html
+<script src="{{asset /assets/js/motion.js}}"></script>
+```
+
+The `{{...}}` reaches the live site as literal text and the script never loads. A `<link>` has no
+such problem, which is why the stylesheet worked on the first try and eleven script tags did not.
+
+`{{scripts motion theme-toggle reveal}}` writes the whole tag from outside the script element.
+That is why the script list in `_layout/foot.html` is a list of names and not eleven lines of HTML.
+**The order of the names is the load order.**
+
+The build gate in `.github/workflows/Deploy.yml` greps `__site` for any surviving `{{...}}` and
+fails the run. It caught this one on the first build. Its character class was widened to include
+`.` and `-` so that it can see a path.
+
+---
+
 ## Three bugs from the source site that were not copied
 
 The client's own site carries these. They are fixed here, and each fix is commented in place.
