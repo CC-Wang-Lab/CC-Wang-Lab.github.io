@@ -4,14 +4,14 @@ person = "cc-wang"
 lang = "zh"
 +++
 
-~~~
-{{person_header}}
-~~~
-
-@@page-body
+@@page-body,person-page
 @@container
 @@row,g-5
-@@col-lg-7,prose
+@@col-lg-4
+~~~
+{{person_portrait}}
+~~~
+@@pi-bio
 
 ## 研究方法
 
@@ -41,14 +41,13 @@ lang = "zh"
 著作數量甚多，不宜列於本頁。[代表性研究成果](/zh/publications/)依主題分類；完整紀錄請見上方連結的
 Google Scholar 與陽明交大學術成果網。
 @@
-@@col-lg-5
+@@
+@@col-lg-8
 ~~~
+{{person_heading}}
 {{person_facts}}
 ~~~
 @@
 @@
-~~~
-{{person_projects}}
-~~~
 @@
 @@

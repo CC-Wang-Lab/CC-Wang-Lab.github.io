@@ -4,14 +4,14 @@ person = "maysam-gholampour"
 lang = "en"
 +++
 
-~~~
-{{person_header}}
-~~~
-
-@@page-body
+@@page-body,person-page
 @@container
 @@row,g-5
-@@col-lg-7,prose
+@@col-lg-4
+~~~
+{{person_portrait}}
+~~~
+@@pi-bio
 
 ## Biography
 
@@ -31,14 +31,13 @@ Mechanical engineering, with a focus on thermal and energy systems.
 
 My personal site is linked above.
 @@
-@@col-lg-5
+@@
+@@col-lg-8
 ~~~
+{{person_heading}}
 {{person_facts}}
 ~~~
 @@
 @@
-~~~
-{{person_projects}}
-~~~
 @@
 @@

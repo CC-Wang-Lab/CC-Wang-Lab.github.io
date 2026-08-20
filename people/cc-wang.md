@@ -4,14 +4,14 @@ person = "cc-wang"
 lang = "en"
 +++
 
-~~~
-{{person_header}}
-~~~
-
-@@page-body
+@@page-body,person-page
 @@container
 @@row,g-5
-@@col-lg-7,prose
+@@col-lg-4
+~~~
+{{person_portrait}}
+~~~
+@@pi-bio
 
 ## The work
 
@@ -47,14 +47,13 @@ The publication list is long enough that this page would be the wrong place for 
 [Selected publications](/publications/) are grouped by theme; the complete record sits on Google
 Scholar and the NYCU Academic Hub, both linked above.
 @@
-@@col-lg-5
+@@
+@@col-lg-8
 ~~~
+{{person_heading}}
 {{person_facts}}
 ~~~
 @@
 @@
-~~~
-{{person_projects}}
-~~~
 @@
 @@

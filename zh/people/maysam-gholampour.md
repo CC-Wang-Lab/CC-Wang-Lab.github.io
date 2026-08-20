@@ -4,14 +4,14 @@ person = "maysam-gholampour"
 lang = "zh"
 +++
 
-~~~
-{{person_header}}
-~~~
-
-@@page-body
+@@page-body,person-page
 @@container
 @@row,g-5
-@@col-lg-7,prose
+@@col-lg-4
+~~~
+{{person_portrait}}
+~~~
+@@pi-bio
 
 ## 研究內容
 
@@ -29,14 +29,13 @@ lang = "zh"
 
 個人網站連結見上方。
 @@
-@@col-lg-5
+@@
+@@col-lg-8
 ~~~
+{{person_heading}}
 {{person_facts}}
 ~~~
 @@
 @@
-~~~
-{{person_projects}}
-~~~
 @@
 @@

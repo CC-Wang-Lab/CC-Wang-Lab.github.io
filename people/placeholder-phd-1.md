@@ -4,14 +4,14 @@ person = "placeholder-phd-1"
 lang = "en"
 +++
 
-~~~
-{{person_header}}
-~~~
-
-@@page-body
+@@page-body,person-page
 @@container
 @@row,g-5
-@@col-lg-7,prose
+@@col-lg-4
+~~~
+{{person_portrait}}
+~~~
+@@pi-bio
 
 ## PLACEHOLDER
 
@@ -38,14 +38,13 @@ Put them in `_assets/img/team/<your-id>/` and use them like this:
 ![](/assets/img/team/your-id/rig.jpg)
 ```
 @@
-@@col-lg-5
+@@
+@@col-lg-8
 ~~~
+{{person_heading}}
 {{person_facts}}
 ~~~
 @@
 @@
-~~~
-{{person_projects}}
-~~~
 @@
 @@

@@ -936,9 +936,6 @@ function hfun_contact_form()
         """<input class="ff-trap" type="checkbox" name="botcheck" tabindex="-1" aria-hidden="true">""" :
         """<input class="ff-trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">""")
 
-    note = live ? "" : """
-      <p class="ff-note">$(esc(ui("form", "mailto_note")))</p>"""
-
     return """
 <form class="contact-form" id="inquiryForm"
       method="POST"
@@ -950,12 +947,11 @@ $(join(hidden, "\n"))
 $(fields)
       <div class="ff-actions">
         <button class="btn btn-cta" type="submit">$(esc(ui("form", "send")))</button>
-      </div>$(note)
+      </div>
   <p class="ff-status" role="status" aria-live="polite"
      data-sending="$(esc(ui("form", "sending")))"
      data-sent="$(esc(ui("form", "sent")))"
      data-failed="$(esc(ui("form", "failed")))"></p>
-  <p class="ff-privacy">$(esc(ui("form", "privacy")))</p>
 </form>
 """
 end
@@ -987,17 +983,9 @@ function person_link(p, inner)
 end
 
 """
-`{{person_header}}` on a person's own page.
-
-The page declares `person = "<id>"` in its front matter; the name, role, topic,
-photo and links all come from team.toml, so a page carries no duplicated facts
-and a wrong id stops the build.
+Shared by the three generators that build a person page.
 """
-function hfun_person_header()
-    id = locvar(:person)
-    id === nothing && error("this page needs `person = \"<id>\"` in its front matter")
-    p = person_by_id(String(id))
-
+function person_links(p)
     links = String[]
     # A raw URL as link text reads badly. Only the email shows its own value,
     # because an address is worth seeing before it is clicked.
@@ -1011,26 +999,48 @@ function hfun_person_header()
         text = isempty(label) ? v : label
         push!(links, """<a href="$(esc(href))" rel="noopener">$(icon(ico)) $(esc(text))</a>""")
     end
+    return links
+end
 
-    topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
+function this_person()
+    id = locvar(:person)
+    id === nothing && error("this page needs `person = \"<id>\"` in its front matter")
+    return person_by_id(String(id))
+end
 
+"""
+`{{person_portrait}}` — the LEFT column: the photograph, then the contact links.
+
+The prose written in the Markdown file follows underneath it in the same column.
+That order is the whole point of the layout: a reader meets the face, then the
+story, and the checkable record sits alongside in the other column.
+"""
+function hfun_person_portrait()
+    p = this_person()
+    links = person_links(p)
     return """
-<header class="page-hd person-hd">
-  <div class="container">
-    <p class="project-crumb">
-      <a href="$(prefix())/people/">$(esc(ui("people", "back")))</a>
-    </p>
-    <div class="person-hd-row">
-      <img class="person-hd-photo" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="">
-      <div>
-        <h1>$(esc(pick(p, "name")))</h1>
-        <p class="pi-role">$(esc(pick(p, "role")))</p>
-$(isempty(topic) ? "" : "        <p class=\"person-hd-topic\">" * esc(topic) * "</p>")
-        <p class="pi-links">$(join(links, " &middot; "))</p>
-      </div>
-    </div>
-  </div>
-</header>
+<p class="project-crumb">
+  <a href="$(prefix())/people/">$(esc(ui("people", "back")))</a>
+</p>
+<img class="pi-portrait" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
+$(isempty(links) ? "" : """<p class="pi-portrait-links">""" * join(links, "<br>") * "</p>")
+"""
+end
+
+"""
+`{{person_heading}}` — the RIGHT column head: name, titles, and the accent rule.
+
+The `PI:` prefix is driven by `tier` in team.toml, so it appears on the head of
+the laboratory and on nobody else without anyone having to remember.
+"""
+function hfun_person_heading()
+    p = this_person()
+    pre = get(p, "tier", "") == "pi" ? "PI: " : ""
+    topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
+    return """
+<h1 class="pi-heading">$(esc(pre))$(esc(pick(p, "name")))</h1>
+<p class="pi-titles">$(esc(pick(p, "role")))$(isempty(topic) ? "" : "<br>" * esc(topic))</p>
+<div class="pi-rule"></div>
 """
 end
 
@@ -1061,20 +1071,30 @@ function hfun_person_facts()
 
     ints = String.(get(p, "interests", String[]))
     isempty(ints) || push!(rows,
-        (ui("people", "interests_head"), [pick(area_by_id(i), "title") for i in ints]))
+        (ui("people", "interests_head"), [esc(pick(area_by_id(i), "title")) for i in ints]))
 
     for (k, label) in (("positions", "positions_head"),
                        ("education", "education_head"),
                        ("honors",    "awards_head"))
-        v = lst(k)
+        v = esc.(lst(k))
         isempty(v) || push!(rows, (ui("people", label), v))
     end
+
+    # Projects are a LIST OF LINKS, not a grid of cards. The cards repeated the
+    # image and the summary that the project's own page already opens with, and
+    # a person page is a record, not a second index. Asked for on 2026-08-20.
+    mine = filter(pr -> String(pr["student"]) == String(id), projects())
+    isempty(mine) || push!(rows, (ui("people", "projects_head"),
+        ["""<a href="$(esc(prefix()))/projects/$(esc(pr["id"]))/">$(esc(pick(pr, "title")))</a>"""
+         for pr in mine]))
 
     isempty(rows) && return ""
 
     blocks = String[]
     for (label, vals) in rows
-        items = join(["      <li>" * esc(v) * "</li>" for v in vals], "\n")
+        # `vals` may already contain markup (the project links), so the
+        # escaping happens where each value is built, not here.
+        items = join(["      <li>" * v * "</li>" for v in vals], "\n")
         push!(blocks, """
   <div class="pf-row">
     <div class="pf-label">$(esc(label))</div>
@@ -1087,29 +1107,6 @@ $(items)
     return """<div class="person-facts">
 $(join(blocks, "\n"))
 </div>"""
-end
-
-"""
-`{{person_projects}}` — the projects this person is running.
-
-Reads projects.toml, which already names its researcher by a team.toml id. A
-person with no project renders nothing at all rather than an empty heading.
-"""
-function hfun_person_projects()
-    id = locvar(:person)
-    id === nothing && return ""
-    mine = filter(p -> String(p["student"]) == String(id), projects())
-    isempty(mine) && return ""
-    return """
-<section class="person-projects">
-  <div class="section-head">
-    <h2>$(esc(ui("people", "projects_head")))</h2>
-  </div>
-  <div class="row g-4">
-$(join([project_card(p) for p in mine], "
-"))
-  </div>
-</section>"""
 end
 
 # ---------------------------------------------------------------------------
