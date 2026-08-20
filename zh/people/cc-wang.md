@@ -4,7 +4,11 @@ person = "cc-wang"
 lang = "zh"
 +++
 
-@@page-body,person-page
+~~~
+{{person_header}}
+~~~
+
+@@page-body
 @@container
 @@row,g-5
 @@col-lg-4
@@ -44,7 +48,6 @@ Google Scholar 與陽明交大學術成果網。
 @@
 @@col-lg-8
 ~~~
-{{person_heading}}
 {{person_facts}}
 ~~~
 @@

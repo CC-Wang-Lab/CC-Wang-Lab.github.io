@@ -58,6 +58,12 @@
     ".pub-theme",
     ".pg-item",
     ".project-filter",
+    /* The person page. Its blocks arrive in document order, so the portrait
+       lands, then the bio, then each row of the record in turn. */
+    ".pi-portrait-frame",
+    ".pi-chips",
+    ".pi-bio > h2",
+    ".pf-row",
     ".contact-card",
     ".contact-form",
     ".band-cta .container",

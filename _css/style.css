@@ -978,10 +978,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    column, where the facts under it read as its continuation.
    -------------------------------------------------------------------------- */
 
-/* No full-width header band on this page, so the body itself has to clear the
-   fixed navbar. .page-hd used to carry 8rem of top padding and did that job. */
-.person-page { padding-top: 7.5rem; }
-
 /* The photograph, framed like a card so it belongs to the same site. */
 .pi-portrait-frame {
   margin: 0;
@@ -1009,7 +1005,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .pi-chip {
   font-family: var(--font-ui);
-  font-size: 0.78rem;
+  font-size: var(--fs-2xs);
   line-height: 1.2;
   padding: 0.38rem 0.8rem;
   border: 1px solid var(--bs-border-color);
@@ -1027,12 +1023,12 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    sidebar to the record beside it, not the main reading. */
 .pi-bio {
   margin-top: 1.9rem;
-  font-size: 0.95rem;
+  font-size: var(--fs-sm);
   line-height: 1.6;
   text-align: justify;
 }
 .pi-bio h2 {
-  font-size: 1.15rem;
+  font-size: var(--fs-md);
   font-style: italic;
   margin: 1.8rem 0 0.5rem;
   text-align: left;
@@ -1041,6 +1037,14 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .pi-bio p { margin-bottom: 0.9rem; }
 
 .pi-eyebrow { margin-bottom: 0.45rem; }
+
+/* The name block sits in the standard .page-hd band now, so it clears the
+   navbar and reads like every other page header on the site. Only the pieces
+   .page-hd does not already handle are set here. */
+.person-hd .project-crumb { margin-bottom: 1.1rem; }
+.person-hd .pi-heading { margin-bottom: 0.5rem; }
+.person-hd .pi-titles { margin-bottom: 1.1rem; max-width: none; }
+.person-hd .pi-rule { margin-bottom: 0; }
 .pi-heading {
   color: var(--lab-accent);
   font-size: var(--fs-2xl);
@@ -1048,7 +1052,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   margin: 0 0 0.7rem;
 }
 .pi-titles {
-  font-size: 1.05rem;
+  font-size: var(--fs-md);
   line-height: 1.6;
   color: var(--bs-body-color);
   margin-bottom: 1.2rem;
@@ -1698,25 +1702,33 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    Typed line under the hero headline
    -------------------------------------------------------------------------- */
 
-/* This used to be --fs-sm, and the comment here used to explain that a larger
-   size would wrap the longest phrase on a narrow screen. Both are still true.
+/* This used to be --fs-sm, and the old comment here explained that a larger
+   size would wrap the longest phrase on a narrow screen. That is still true.
    The hero lead was removed on 2026-08-20 and this line took its size, so the
-   wrapping is now expected rather than avoided, and the height is RESERVED for
-   it instead. See the min-height note below. */
+   wrap is now expected rather than avoided, and the room is reserved for it.
+
+   How the room is reserved: `.typed-sizer` holds an invisible copy of the
+   longest phrase, and the grid puts it and the live line in the SAME cell, so
+   the taller of the two sets the height. Whatever types, the element is
+   already as tall as the worst case, and the buttons underneath never move.
+
+   A `min-height` in `em` was tried first and thrown away. It cannot work: the
+   longest phrase measured 2.00 lines at 492px and 1.10 lines at 600px, so any
+   single number is either too small somewhere or leaves a gap somewhere else.
+   The sizer needs no breakpoint and no measurement, and it stays right if the
+   phrases, the font or the size ever change. */
 .typed-line {
+  display: grid;
   font-family: var(--font-ui);
   font-size: var(--fs-lg);
   line-height: var(--lh-normal);
   letter-spacing: var(--tracking-tight);
   color: var(--on-dark-1);
   margin: -0.4rem 0 2rem;
-  /* MEASURED, not guessed. The longest phrase is 50 characters and it sets on
-     one line down to the narrow breakpoint, so one line is reserved here and
-     the mobile block reserves more. A number that is too small lets the
-     buttons underneath jump on every typed cycle. */
-  min-height: 1.7em;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
 }
+.typed-line > * { grid-area: 1 / 1; }
+.typed-sizer { visibility: hidden; }
 .typed-lead { color: var(--on-dark-3); margin-right: 0.5rem; }
 .typed-text { color: var(--lab-orange-bright); font-weight: 700; }
 .typed-caret {

@@ -4,7 +4,11 @@ person = "maysam-gholampour"
 lang = "en"
 +++
 
-@@page-body,person-page
+~~~
+{{person_header}}
+~~~
+
+@@page-body
 @@container
 @@row,g-5
 @@col-lg-4
@@ -34,7 +38,6 @@ My personal site is linked above.
 @@
 @@col-lg-8
 ~~~
-{{person_heading}}
 {{person_facts}}
 ~~~
 @@

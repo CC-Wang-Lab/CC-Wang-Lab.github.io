@@ -312,6 +312,11 @@ function hfun_hero()
     # takes over only once it runs.
     first_phrase = first_or_empty(phrases)
     json = "[" * join(["\"" * replace(esc(p), "\"" => "&quot;") * "\"" for p in phrases], ",") * "]"
+    # The line reserves its room with an invisible copy of the longest phrase,
+    # so a long phrase that wraps and a short one that does not cannot move the
+    # buttons underneath. `textwidth` counts a CJK glyph as two columns, which
+    # is what makes this pick the right phrase on the Chinese pages too.
+    longest = isempty(phrases) ? "" : phrases[argmax(textwidth.(phrases))]
     return """
 <section class="hero">
   <!-- No `autoplay` attribute on purpose. The browser re-triggers it after a
@@ -325,8 +330,11 @@ function hfun_hero()
   <div class="hero-inner container">
     <h1 class="hero-title">$(esc(ui("hero", "title")))</h1>
     <p class="typed-line" id="typedLine" data-phrases='$(json)'>
-      <span class="typed-lead">$(esc(ui("hero", "typed_lead")))</span>
-      <span class="typed-text">$(esc(first_phrase))</span><span class="typed-caret" aria-hidden="true"></span>
+      <span class="typed-sizer" aria-hidden="true">$(esc(ui("hero", "typed_lead"))) $(esc(longest))</span>
+      <span class="typed-run">
+        <span class="typed-lead">$(esc(ui("hero", "typed_lead")))</span>
+        <span class="typed-text">$(esc(first_phrase))</span><span class="typed-caret" aria-hidden="true"></span>
+      </span>
     </p>
     <div class="hero-actions">
       <a class="btn btn-cta btn-lg" href="$(pre)/contact/">$(esc(ui("hero", "cta2")))</a>
@@ -1018,9 +1026,6 @@ function hfun_person_portrait()
     p = this_person()
     links = person_links(p)
     return """
-<p class="project-crumb">
-  <a class="link-arrow" href="$(prefix())/people/"><span class="link-arrow-mark">&larr;</span> $(esc(ui("people", "back")))</a>
-</p>
 <figure class="pi-portrait-frame">
   <img class="pi-portrait" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
 </figure>
@@ -1029,7 +1034,7 @@ $(isempty(links) ? "" : """<div class="pi-chips">""" * join(links, "") * "</div>
 end
 
 """
-`{{person_heading}}` — the RIGHT column head: name, titles, and the accent rule.
+`{{person_header}}` — the page header band: crumb, eyebrow, name, titles, rule.
 
 The `PI:` prefix is driven by `tier` in team.toml, so it appears on the head of
 the laboratory and on nobody else without anyone having to remember.
@@ -1042,7 +1047,7 @@ const TIER_LABEL = Dict(
     "msc"     => "msc_head",
 )
 
-function hfun_person_heading()
+function hfun_person_header()
     p = this_person()
     tier = String(get(p, "tier", ""))
     # The eyebrow reuses the SAME strings as the section headings on the People
@@ -1051,10 +1056,17 @@ function hfun_person_heading()
               haskey(TIER_LABEL, tier) ? ui("people", TIER_LABEL[tier]) : ""
     topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
     return """
-$(isempty(eyebrow) ? "" : """<p class="card-badge pi-eyebrow">""" * esc(eyebrow) * "</p>")
-<h1 class="pi-heading">$(esc(pick(p, "name")))</h1>
-<p class="pi-titles">$(esc(pick(p, "role")))$(isempty(topic) ? "" : "<br><span class=\"pi-topic\">" * esc(topic) * "</span>")</p>
-<div class="pi-rule"></div>
+<header class="page-hd person-hd">
+  <div class="container">
+    <p class="project-crumb">
+      <a class="link-arrow" href="$(prefix())/people/"><span class="link-arrow-mark">&larr;</span> $(esc(ui("people", "back")))</a>
+    </p>
+$(isempty(eyebrow) ? "" : """    <p class="card-badge pi-eyebrow">""" * esc(eyebrow) * "</p>")
+    <h1 class="pi-heading">$(esc(pick(p, "name")))</h1>
+    <p class="pi-titles">$(esc(pick(p, "role")))$(isempty(topic) ? "" : "<br><span class=\"pi-topic\">" * esc(topic) * "</span>")</p>
+    <div class="pi-rule"></div>
+  </div>
+</header>
 """
 end
 

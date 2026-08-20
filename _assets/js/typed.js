@@ -8,9 +8,10 @@
  * 1. The first phrase is already in the HTML. So a screen reader, a search
  *    engine, and a visitor with JavaScript off all see a real sentence. The
  *    script only takes over once it runs.
- * 2. The line reserves the width of the LONGEST phrase up front, in a hidden
- *    sizing span. Without that the layout shifts on every character and the
- *    buttons underneath jump around.
+ * 2. The line reserves the room the LONGEST phrase needs, in a hidden sizing
+ *    span that utils.jl writes and the CSS stacks under the live line. Without
+ *    it the layout shifts on every character and the buttons underneath jump.
+ *    This span was described here before it existed; it exists now.
  *
  * Governed by the shared flag in motion.js: paused means the current phrase
  * stays on screen, complete. It never leaves a half-typed word.

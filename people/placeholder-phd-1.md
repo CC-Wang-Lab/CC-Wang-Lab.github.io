@@ -4,7 +4,11 @@ person = "placeholder-phd-1"
 lang = "en"
 +++
 
-@@page-body,person-page
+~~~
+{{person_header}}
+~~~
+
+@@page-body
 @@container
 @@row,g-5
 @@col-lg-4
@@ -41,7 +45,6 @@ Put them in `_assets/img/team/<your-id>/` and use them like this:
 @@
 @@col-lg-8
 ~~~
-{{person_heading}}
 {{person_facts}}
 ~~~
 @@

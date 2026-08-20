@@ -4,7 +4,11 @@ person = "cc-wang"
 lang = "en"
 +++
 
-@@page-body,person-page
+~~~
+{{person_header}}
+~~~
+
+@@page-body
 @@container
 @@row,g-5
 @@col-lg-4
@@ -50,7 +54,6 @@ Scholar and the NYCU Academic Hub, both linked above.
 @@
 @@col-lg-8
 ~~~
-{{person_heading}}
 {{person_facts}}
 ~~~
 @@

@@ -4,7 +4,11 @@ person = "maysam-gholampour"
 lang = "zh"
 +++
 
-@@page-body,person-page
+~~~
+{{person_header}}
+~~~
+
+@@page-body
 @@container
 @@row,g-5
 @@col-lg-4
@@ -32,7 +36,6 @@ lang = "zh"
 @@
 @@col-lg-8
 ~~~
-{{person_heading}}
 {{person_facts}}
 ~~~
 @@
