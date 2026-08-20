@@ -34,7 +34,6 @@ minutes later.
 | [docs/architecture.md](docs/architecture.md) | The four diagrams: rules, branches, build, workflow. |
 | [docs/reference/design-decisions.md](docs/reference/design-decisions.md) | Every design choice, with its reason. |
 | [docs/reference/video-guide.md](docs/reference/video-guide.md) | The hero video: measurements, ffmpeg recipes, what to film next. |
-| [CLAUDE.md](CLAUDE.md) | Rules index for AI-assisted work on this repo. |
 
 ## Before this goes public
 
