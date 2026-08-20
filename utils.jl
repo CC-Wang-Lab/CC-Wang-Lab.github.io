@@ -328,7 +328,6 @@ function hfun_hero()
       <span class="typed-lead">$(esc(ui("hero", "typed_lead")))</span>
       <span class="typed-text">$(esc(first_phrase))</span><span class="typed-caret" aria-hidden="true"></span>
     </p>
-    <p class="hero-lead">$(esc(replace(ui("hero", "lead"), "{projects}" => string(globvar(:lab_projects)))))</p>
     <div class="hero-actions">
       <a class="btn btn-cta btn-lg" href="$(pre)/contact/">$(esc(ui("hero", "cta2")))</a>
       <a class="btn btn-ghost btn-lg" href="$(pre)/#research">$(esc(ui("hero", "cta1")))</a>

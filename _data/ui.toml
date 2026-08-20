@@ -57,27 +57,39 @@ top_zh          = "回到頂端"
 # future headline names a research area, it is repeating the typed line again.
 title_en = "Every watt has to go somewhere"
 title_zh = "每一瓦熱都必須有去處"
-# The lead dropped the topic list for the same reason, and spends the room on
-# the fact an industrial visitor actually weighs.
+# THERE IS NO LEAD PARAGRAPH ANY MORE. Asked for directly, 2026-08-20.
 #
-# {projects} is filled from lab_projects in config.md. The number is NOT typed
-# here, because a figure written in two places is a figure that goes stale in
-# one of them.
-lead_en  = "Experimental and computational thermal engineering at National Yang Ming Chiao Tung University, with {projects} live industrial projects."
-lead_zh  = "國立陽明交通大學的實驗與計算熱工程研究，目前有 {projects} 件進行中的產學合作專案。"
+# It read "Experimental and computational thermal engineering at National Yang
+# Ming Chiao Tung University, with {projects} live industrial projects." The
+# first half is now the FIRST typed phrase below, at the size the lead used to
+# have. The university and the project count were dropped on purpose; both are
+# still in the navigation bar and the footer.
+#
+# The hero is now two lines: the physical fact, and what the laboratory studies.
 play_en  = "Play the experiment"
 play_zh  = "播放實驗影片"
 cta1_en  = "Research areas"
 cta1_zh  = "研究領域"
 cta2_en  = "Contact us"
 cta2_zh  = "聯絡我們"
-# The typed line under the headline. Wording from the Write For Me GPT,
-# 2026-08-19: six phrases, one per research area, all 17-23 characters so the
-# line does not reflow as it types. Do not add a long one without checking the
-# others still line up.
+# The typed line under the headline. It is now the ONLY prose in the hero, and
+# it is set at --fs-lg, the size the lead paragraph used to carry.
+#
+# Six of the seven phrases came from the Write For Me GPT, 2026-08-19, one per
+# research area, all 17 to 23 characters so the line does not reflow as it
+# types.
+#
+# The FIRST one breaks that rule at 50 characters, on purpose: it is the old
+# lead sentence, and it was asked for. It is first so that it is the phrase
+# sitting in the HTML for a crawler and for a visitor with JavaScript off.
+# `.typed-line` reserves the height it needs at every width, measured, so the
+# buttons underneath still do not jump. Before adding another long phrase,
+# re-measure - the reserved height is in `_css/style.css` and it is a number,
+# not a guess.
 typed_lead_en = "We study"
 typed_lead_zh = "我們研究"
 typed_en = [
+  "Experimental and computational thermal engineering",
   "Immersion cooling",
   "Data-center airflow",
   "Pool and flow boiling",
@@ -86,6 +98,7 @@ typed_en = [
   "Smart thermal control",
 ]
 typed_zh = [
+  "實驗與計算熱工程",
   "浸沒式冷卻",
   "資料中心氣流",
   "池沸騰與流動沸騰",
@@ -152,11 +165,8 @@ note_en   = "Names and logos are the property of their respective owners. Shown 
 note_zh   = "所有名稱與標誌均屬其各自所有人。此處僅說明過去與現在的合作關係，不代表任何背書。"
 
 [people]
-# Says only what the page shows. The tier sections are commented out in
-# people.md while everyone but Prof. Wang is a placeholder; when they come
-# back, widen this line with them.
-page_lead_en   = "Prof. Chi-Chuan Wang, who leads the laboratory."
-page_lead_zh   = "王啟川教授，本實驗室主持人。"
+page_lead_en   = "Prof. Chi-Chuan Wang, the research leads, and the researchers currently in the lab."
+page_lead_zh   = "王啟川教授、研究主持群，以及目前在實驗室的研究人員。"
 lead_head_en   = "Research leads"
 lead_head_zh   = "研究主持群"
 postdoc_head_en = "Postdoctoral researchers"

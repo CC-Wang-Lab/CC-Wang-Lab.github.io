@@ -474,14 +474,6 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
    orphaned its last one: 每一瓦熱都必須有去 / 處. `em` is the unit that matches
    CJK, and it is measured against the same font size. */
 html[lang^="zh"] .hero-title { max-width: 18em; }
-.hero-lead {
-  color: var(--on-dark-1);
-  font-size: var(--fs-lg);
-  line-height: var(--lh-normal);
-  max-width: 46ch;
-  margin-bottom: 2rem;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
-}
 .hero-actions { display: flex; flex-wrap: wrap; gap: 0.85rem; }
 .hero .btn-ghost { color: #fff; border-color: var(--on-dark-3); }
 .hero .btn-ghost:hover { background: #fff; color: #14141e; }
@@ -1167,12 +1159,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-row-topic,
 .news-body,
 .pg-scope,
-.ff-lead,
-/* The hero lead was left out of this list by oversight, so the one paragraph
-   every visitor reads first was the only ragged one on the site. It sits at
-   `max-width: 46ch`, which is just above the ~45ch floor named above, so it
-   justifies without opening rivers. */
-.hero-lead { text-align: justify; }
+.ff-lead { text-align: justify; }
 
 /*
   Two selectors were taken OUT of that list on 2026-08-19, both because the
@@ -1342,7 +1329,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     padding: 6.5rem 0 3rem;
   }
   .hero-title { line-height: var(--lh-tight); max-width: none; }
-  .hero-lead { max-width: none; margin-bottom: 1.6rem; }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions .btn { width: 100%; text-align: center; }
   .hero-caption {
@@ -1366,8 +1352,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .person-row-topic,
   .news-body,
   .pg-scope,
-  .ff-lead,
-  .hero-lead { text-align: left; }
+  .ff-lead { text-align: left; }
 
   /* Half a phone wide is not enough for two columns of "Publications". */
   .foot-nav-2col { columns: 1; }
@@ -1713,16 +1698,23 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    Typed line under the hero headline
    -------------------------------------------------------------------------- */
 
+/* This used to be --fs-sm, and the comment here used to explain that a larger
+   size would wrap the longest phrase on a narrow screen. Both are still true.
+   The hero lead was removed on 2026-08-20 and this line took its size, so the
+   wrapping is now expected rather than avoided, and the height is RESERVED for
+   it instead. See the min-height note below. */
 .typed-line {
   font-family: var(--font-ui);
-  /* --fs-sm, not --fs-md: `min-height: 1.7em` below holds ONE line so the
-     hero does not jump on every typed cycle, and a larger size would wrap the
-     longest phrase on a narrow screen. */
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-normal);
   letter-spacing: var(--tracking-tight);
   color: var(--on-dark-1);
-  margin: -0.4rem 0 1.4rem;
-  min-height: 1.7em;              /* holds its line so nothing below jumps */
+  margin: -0.4rem 0 2rem;
+  /* MEASURED, not guessed. The longest phrase is 50 characters and it sets on
+     one line down to the narrow breakpoint, so one line is reserved here and
+     the mobile block reserves more. A number that is too small lets the
+     buttons underneath jump on every typed cycle. */
+  min-height: 1.7em;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
 }
 .typed-lead { color: var(--on-dark-3); margin-right: 0.5rem; }
