@@ -997,7 +997,7 @@ function person_links(p)
         isempty(v) && continue
         href = k == "email" ? "mailto:" * v : v
         text = isempty(label) ? v : label
-        push!(links, """<a href="$(esc(href))" rel="noopener">$(icon(ico)) $(esc(text))</a>""")
+        push!(links, """<a class="pi-chip" href="$(esc(href))" rel="noopener">$(icon(ico)) $(esc(text))</a>""")
     end
     return links
 end
@@ -1020,10 +1020,12 @@ function hfun_person_portrait()
     links = person_links(p)
     return """
 <p class="project-crumb">
-  <a href="$(prefix())/people/">$(esc(ui("people", "back")))</a>
+  <a class="link-arrow" href="$(prefix())/people/"><span class="link-arrow-mark">&larr;</span> $(esc(ui("people", "back")))</a>
 </p>
-<img class="pi-portrait" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
-$(isempty(links) ? "" : """<p class="pi-portrait-links">""" * join(links, "<br>") * "</p>")
+<figure class="pi-portrait-frame">
+  <img class="pi-portrait" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
+</figure>
+$(isempty(links) ? "" : """<div class="pi-chips">""" * join(links, "") * "</div>")
 """
 end
 
@@ -1033,13 +1035,26 @@ end
 The `PI:` prefix is driven by `tier` in team.toml, so it appears on the head of
 the laboratory and on nobody else without anyone having to remember.
 """
+const TIER_LABEL = Dict(
+    "pi"      => "pi_head",
+    "lead"    => "lead_head",
+    "postdoc" => "postdoc_head",
+    "phd"     => "phd_head",
+    "msc"     => "msc_head",
+)
+
 function hfun_person_heading()
     p = this_person()
-    pre = get(p, "tier", "") == "pi" ? "PI: " : ""
+    tier = String(get(p, "tier", ""))
+    # The eyebrow reuses the SAME strings as the section headings on the People
+    # page, so a person is described by one word everywhere on the site.
+    eyebrow = tier == "pi" ? ui("home", "pi_head") :
+              haskey(TIER_LABEL, tier) ? ui("people", TIER_LABEL[tier]) : ""
     topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
     return """
-<h1 class="pi-heading">$(esc(pre))$(esc(pick(p, "name")))</h1>
-<p class="pi-titles">$(esc(pick(p, "role")))$(isempty(topic) ? "" : "<br>" * esc(topic))</p>
+$(isempty(eyebrow) ? "" : """<p class="card-badge pi-eyebrow">""" * esc(eyebrow) * "</p>")
+<h1 class="pi-heading">$(esc(pick(p, "name")))</h1>
+<p class="pi-titles">$(esc(pick(p, "role")))$(isempty(topic) ? "" : "<br><span class=\"pi-topic\">" * esc(topic) * "</span>")</p>
 <div class="pi-rule"></div>
 """
 end

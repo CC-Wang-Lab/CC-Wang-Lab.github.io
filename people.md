@@ -17,31 +17,31 @@ lang = "en"
 
     {{people_pi}}
 
-    <div class="section-head mt-5">
-      <h2>{{ui people lead_head}}</h2>
-    </div>
-    {{people_leads}}
+<!--
+  ONLY PROF. WANG IS SHOWN HERE, ON PURPOSE (2026-08-20).
 
-    <div class="section-head mt-5">
-      <h2>{{ui people postdoc_head}}</h2>
-    </div>
-    {{people_postdocs}}
+  Everyone else in team.toml is still a lorem-ipsum placeholder, and a page of
+  invented colleagues does the laboratory more harm than a short page does.
 
-    <div class="section-head mt-5">
-      <h2>{{ui people phd_head}}</h2>
-    </div>
-    {{people_phd}}
+  TO BRING THE REST BACK, add these six blocks in place of this comment. They
+  are written without the braces on purpose: Franklin does NOT resolve a
+  template call inside an HTML comment, it leaves it as literal text, and the
+  deploy workflow fails the build when it finds one in __site. Put the double
+  braces back as you paste each line in.
 
-    <div class="section-head mt-5">
-      <h2>{{ui people msc_head}}</h2>
-    </div>
-    {{people_msc}}
+    section-head mt-5  ->  h2: ui people lead_head       then  people_leads
+    section-head mt-5  ->  h2: ui people postdoc_head    then  people_postdocs
+    section-head mt-5  ->  h2: ui people phd_head        then  people_phd
+    section-head mt-5  ->  h2: ui people msc_head        then  people_msc
+    section-head mt-5  ->  h2: ui people table_head
+                           p:  ui people table_lead      then  people_table
 
-    <div class="section-head mt-5">
-      <h2>{{ui people table_head}}</h2>
-      <p>{{ui people table_lead}}</p>
-    </div>
-    {{people_table}}
+  Every one of those generators still exists in utils.jl and still works.
+
+  Widen [people] page_lead in _data/ui.toml at the same time. It was
+  narrowed to name only Prof. Wang, because the old line promised research
+  leads and researchers that this page no longer shows.
+-->
 
     <p class="mt-5"><a class="link-arrow" href="{{url people/alumni}}">{{ui people alumni_link}} <span class="link-arrow-mark">&rarr;</span></a></p>
 

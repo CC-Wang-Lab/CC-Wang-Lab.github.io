@@ -152,8 +152,11 @@ note_en   = "Names and logos are the property of their respective owners. Shown 
 note_zh   = "所有名稱與標誌均屬其各自所有人。此處僅說明過去與現在的合作關係，不代表任何背書。"
 
 [people]
-page_lead_en   = "Prof. Chi-Chuan Wang, the research leads, and the researchers currently in the lab."
-page_lead_zh   = "王啟川教授、研究主持群，以及目前在實驗室的研究人員。"
+# Says only what the page shows. The tier sections are commented out in
+# people.md while everyone but Prof. Wang is a placeholder; when they come
+# back, widen this line with them.
+page_lead_en   = "Prof. Chi-Chuan Wang, who leads the laboratory."
+page_lead_zh   = "王啟川教授，本實驗室主持人。"
 lead_head_en   = "Research leads"
 lead_head_zh   = "研究主持群"
 postdoc_head_en = "Postdoctoral researchers"
