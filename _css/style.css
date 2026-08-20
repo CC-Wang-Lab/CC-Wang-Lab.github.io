@@ -1045,6 +1045,61 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-hd .pi-heading { margin-bottom: 0.5rem; }
 .person-hd .pi-titles { margin-bottom: 1.1rem; max-width: none; }
 .person-hd .pi-rule { margin-bottom: 0; }
+
+/* --------------------------------------------------------------------------
+   The page-open entrance
+
+   reveal.js deliberately does NOT animate anything already on screen at load:
+   it marks those blocks done before it hides anything, so the top of a page is
+   never blank. Correct, and it left a person page opening with nothing but the
+   site-wide 0.4s body fade.
+
+   So the header band gets its own entrance, in CSS only, and it is keyed on
+   `body.loaded` - the class the site ALREADY uses for that fade. That is what
+   makes it safe: if the class never arrives, the body is at opacity 0 anyway,
+   so this can never hide something that was otherwise visible.
+
+   The values are the reveal vocabulary, halved: 0.75rem instead of 1.25rem,
+   0.5s instead of 0.55s, because a header is read first and should not keep
+   the reader waiting.
+   -------------------------------------------------------------------------- */
+
+.person-hd .pi-eyebrow,
+.person-hd .pi-heading,
+.person-hd .pi-titles,
+.person-hd .pi-rule,
+.person-hd .project-crumb {
+  opacity: 0;
+  transform: translateY(0.75rem);
+}
+body.loaded .person-hd .project-crumb,
+body.loaded .person-hd .pi-eyebrow,
+body.loaded .person-hd .pi-heading,
+body.loaded .person-hd .pi-titles,
+body.loaded .person-hd .pi-rule {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s ease-out var(--in-delay, 0ms),
+              transform 0.5s ease-out var(--in-delay, 0ms);
+}
+/* One step per line down the band, so it reads top to bottom rather than as
+   one block appearing. */
+.person-hd .project-crumb { --in-delay: 0ms; }
+.person-hd .pi-eyebrow    { --in-delay: 70ms; }
+.person-hd .pi-heading    { --in-delay: 140ms; }
+.person-hd .pi-titles     { --in-delay: 210ms; }
+.person-hd .pi-rule       { --in-delay: 280ms; }
+
+/* The pause button wins, here as everywhere. */
+.motion-off .person-hd .project-crumb,
+.motion-off .person-hd .pi-eyebrow,
+.motion-off .person-hd .pi-heading,
+.motion-off .person-hd .pi-titles,
+.motion-off .person-hd .pi-rule {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
 .pi-heading {
   color: var(--lab-accent);
   font-size: var(--fs-2xl);
