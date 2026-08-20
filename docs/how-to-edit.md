@@ -93,23 +93,36 @@ of your page automatically.
 
 ## Turn the contact form on
 
-The form at `/contact/` works today, but it does not send the email itself. It
-opens the visitor's mail program with every answer filled in, and they press
-send. That needs no account anywhere, which is why it is the default.
+Right now the form does **not** send. It opens the visitor's own mail program
+with the message filled in, addressed to `juliahsieh@nycu.edu.tw`, and they
+press send there. That needs no account anywhere, which is why it is the
+default rather than a dead button.
 
-**To make it send by itself, two steps.**
+**To make it deliver by itself, three steps.**
 
-1. Create a free account at [formspree.io](https://formspree.io) or
-   [web3forms.com](https://web3forms.com) and point it at `juliahsieh@nycu.edu.tw`.
-2. Paste the endpoint into `config.md`:
+1. Go to [web3forms.com](https://web3forms.com) and enter
+   **`juliahsieh@nycu.edu.tw`**. There is no account and no password — the
+   access key arrives by email.
+2. Paste the key into `form_access_key` in `config.md`.
+3. Set `form_endpoint` to `https://api.web3forms.com/submit`.
 
 ```
-form_endpoint   = "https://formspree.io/f/XXXXXXXX"
-form_access_key = ""                 # Web3Forms only; Formspree needs nothing here
+form_endpoint   = "https://api.web3forms.com/submit"
+form_access_key = "the key from the email"
 ```
 
-That one line is the whole switch. The form's markup does not change, and the
-visitor stops leaving the page: the reply appears underneath the button.
+**Use Julia's address at step 1, not anyone else's.** Web3Forms delivers to
+whichever address created the key. `form_to` in `config.md` does not control
+that — it is only used by the mail-program fallback and by the "it did not
+send" message. A key made with the wrong address sends the mail somewhere else
+and nothing on the site will say so.
+
+Replies go to the visitor automatically, because the form's email box is named
+`email` and both services treat that as the reply-to address.
+
+Formspree works too: set `form_endpoint` to `https://formspree.io/f/XXXXXXXX`
+and leave `form_access_key` empty. The two services do not use the same hidden
+field names, and `utils.jl` emits whichever set the endpoint needs.
 
 To change what the form asks, edit the `[form]` section of `_data/ui.toml`.
 Both languages sit on adjacent lines, as everywhere else.

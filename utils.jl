@@ -835,13 +835,36 @@ function hfun_contact_form()
     ], "
 ")
 
-    # Web3Forms wants its key in the body; Formspree wants nothing extra.
+    # THE TWO SERVICES DO NOT SHARE FIELD NAMES.
+    #
+    # Checked against each project's own documentation on 2026-08-20, because
+    # getting this wrong fails SILENTLY: the wrong honeypot name is just an
+    # ordinary field, so it never blocks a bot and it turns up as junk in the
+    # notification email instead.
+    #
+    #                 Web3Forms            Formspree
+    #   key           access_key           - (in the URL)
+    #   subject       subject              _subject
+    #   honeypot      botcheck (checkbox)  _gotcha (text)
+    #   sender name   from_name            -
+    #   reply-to      replyto, or auto from a field named `email`
+    #
+    # Our email field IS named `email`, so replies go to the visitor on both.
+    w3 = occursin("web3forms.com", endpoint)
+    subj_name = w3 ? "subject" : "_subject"
+    trap_name = w3 ? "botcheck" : "_gotcha"
+
     hidden = String[]
     isempty(key) || push!(hidden, """<input type="hidden" name="access_key" value="$(esc(key))">""")
-    push!(hidden, """<input type="hidden" name="_subject" value="Project inquiry &mdash; CC Wang Lab website">""")
+    push!(hidden, """<input type="hidden" name="$(subj_name)" value="Project inquiry &mdash; CC Wang Lab website">""")
+    w3 && push!(hidden, """<input type="hidden" name="from_name" value="CC Wang Lab website">""")
+
     # The honeypot. A bot fills every field it finds; a person never sees this
-    # one. `tabindex="-1"` keeps it out of the keyboard path too.
-    push!(hidden, """<input class="ff-trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">""")
+    # one. `tabindex="-1"` keeps it out of the keyboard path too. Web3Forms
+    # wants a CHECKBOX here, Formspree a text input - not interchangeable.
+    push!(hidden, w3 ?
+        """<input class="ff-trap" type="checkbox" name="botcheck" tabindex="-1" aria-hidden="true">""" :
+        """<input class="ff-trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">""")
 
     note = live ? "" : """
       <p class="ff-note">$(esc(ui("form", "mailto_note")))</p>"""
@@ -851,6 +874,7 @@ function hfun_contact_form()
       method="POST"
       action="$(esc(live ? endpoint : "mailto:" * to))"
       data-mailto="$(esc(to))"
+      data-trap="$(trap_name)"
       data-live="$(live ? "1" : "0")">
 $(join(hidden, "\n"))
 $(fields)

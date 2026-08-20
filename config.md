@@ -44,16 +44,24 @@ lab_people      = "50-60"
 
 # --- the contact form ---
 # GitHub Pages has no server, so the form on /contact/ posts to a third party.
+# Until an endpoint is set it falls back to mailto:, which opens the visitor's
+# own mail program instead of sending anything itself.
 #
-#   ""                                   -> the form falls back to mailto:.
-#                                           Works today, needs no account, but it
-#                                           opens the visitor's mail app instead
-#                                           of sending anything itself.
-#   "https://formspree.io/f/XXXXXXXX"    -> Formspree, free tier
-#   "https://api.web3forms.com/submit"   -> Web3Forms (also set form_access_key)
+# TO MAKE IT SEND, FOR REAL, TO JULIA
 #
-# Create the free account, point it at juliahsieh@nycu.edu.tw, paste the endpoint
-# here. Nothing else changes.
+#   1. Go to https://web3forms.com and enter juliahsieh@nycu.edu.tw.
+#      No account and no password: the access key arrives by email.
+#   2. Paste that key into form_access_key below.
+#   3. Set form_endpoint to https://api.web3forms.com/submit
+#
+# THE DESTINATION IS BAKED INTO THE KEY, NOT INTO THIS FILE. Web3Forms delivers
+# to whichever address created the key. `form_to` below is only used by the
+# mailto: fallback and by the "it did not send" message. If the key is created
+# with a different address, mail goes there and nothing here will say so.
+#
+# Formspree works too - set form_endpoint to https://formspree.io/f/XXXXXXXX and
+# leave form_access_key empty. utils.jl emits the right hidden field names for
+# whichever endpoint it sees; the two services do not share them.
 form_endpoint   = ""
 form_access_key = ""
 form_to         = "juliahsieh@nycu.edu.tw"
