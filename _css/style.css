@@ -498,6 +498,75 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
 
 
 /* --------------------------------------------------------------------------
+   Scroll effects
+   Driven by _assets/js/reveal.js. Read that file first: it explains why every
+   rule here is keyed off an attribute the SCRIPT sets, never off the markup.
+
+   The short version: if the script does not run, `[data-reveal]` never appears,
+   so nothing is ever hidden. A reveal effect that hides content and then fails
+   to un-hide it is the worst bug this site can ship, and .js-reveal plus
+   [data-reveal] is the belt and the braces.
+
+   The numbers are the imec family already in this file: the card lift is
+   translateY(-1.25em) over .25s ease-out, the slider cross-fades over .5s
+   ease-out. A reveal that rises 1.25rem over .55s is the same vocabulary,
+   read the other way up.
+   -------------------------------------------------------------------------- */
+
+.js-reveal [data-reveal=""] {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  will-change: opacity, transform;
+}
+.js-reveal [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  /* 60ms per step, capped at five steps by the script, so a row of cards
+     arrives left to right instead of all at once. */
+  transition: opacity 0.55s ease-out calc(var(--reveal-i, 0) * 60ms),
+              transform 0.55s ease-out calc(var(--reveal-i, 0) * 60ms);
+  will-change: auto;
+}
+
+/*
+  The pause button wins, always, and it wins with !important because these
+  elements carry inline transform and opacity from the scroll handler. Motion
+  off must mean "everything visible, nothing moving" - never "content hidden".
+*/
+.motion-off [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+.motion-off .hero-inner {
+  opacity: 1 !important;
+  transform: none !important;
+}
+.motion-off .scroll-progress { display: none; }
+
+/*
+  Read-progress bar, 2px under the navbar. The script creates it and drives
+  scaleX from 0 to 1, so nothing here needs a markup change. It uses the same
+  orange and the same left-origin growth as the nav underline, so it reads as
+  part of the navbar rather than as a separate widget.
+*/
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--lab-orange);
+  pointer-events: none;
+}
+
+/* The hero text drifts and fades from the scroll handler. Nothing to declare
+   here except the compositor hint; the values are all inline from the script. */
+.hero-inner { will-change: transform, opacity; }
+
+/* --------------------------------------------------------------------------
    Numbers band
    -------------------------------------------------------------------------- */
 
