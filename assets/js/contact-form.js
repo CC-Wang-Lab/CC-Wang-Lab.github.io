@@ -48,14 +48,25 @@
     function fields() {
       return [].slice.call(form.elements).filter(function (el) {
         return el.name && el.name.charAt(0) !== "_" &&
-               el.name !== "access_key" && el.type !== "submit";
+               el.name !== "access_key" && el.name !== "botcheck" &&
+               el.name !== "subject" && el.name !== "from_name" &&
+               el.type !== "submit";
       });
     }
 
     form.addEventListener("submit", function (e) {
       // The honeypot. A person never sees it, so anything in it is a bot.
-      var trap = form.querySelector('[name="_gotcha"]');
-      if (trap && trap.value) { e.preventDefault(); return; }
+      //
+      // The NAME is not fixed: Formspree wants _gotcha (a text input) and
+      // Web3Forms wants botcheck (a checkbox). utils.jl emits whichever the
+      // configured endpoint needs and tells us which in data-trap, so this
+      // check cannot drift out of step with the markup.
+      var trapName = form.getAttribute("data-trap") || "_gotcha";
+      var trap = form.querySelector('[name="' + trapName + '"]');
+      if (trap && (trap.type === "checkbox" ? trap.checked : trap.value)) {
+        e.preventDefault();
+        return;
+      }
 
       if (!live) {
         e.preventDefault();
