@@ -70,6 +70,14 @@ jobs:
       - name: Report site size
         run: du -sh __site && du -sh __site/assets/video
 
+      # GitHub Pages runs the published branch through Jekyll unless this file
+      # exists, and Jekyll silently drops every path starting with _ or . .
+      # Nothing in the site starts with either today, so this changes nothing
+      # now. It is here so that the day somebody adds one, the assets do not
+      # quietly stop loading on the live site only.
+      - name: Disable Jekyll processing
+        run: touch __site/.nojekyll
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
