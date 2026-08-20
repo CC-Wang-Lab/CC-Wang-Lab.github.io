@@ -1,0 +1,64 @@
+This repository carries TWO sets of terms. They are different on purpose.
+
+===============================================================================
+ 1. THE SITE MACHINERY  --  MIT
+===============================================================================
+
+Applies to: utils.jl, _css/, _assets/js/, _layout/, scripts/, config.md,
+the .toml files in _data/ as STRUCTURE, and the GitHub Actions workflow.
+
+MIT License
+
+Copyright (c) 2026 CC Wang Lab, National Yang Ming Chiao Tung University
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+===============================================================================
+ 2. THE LABORATORY'S OWN CONTENT  --  ALL RIGHTS RESERVED
+===============================================================================
+
+Applies to: every word of page text, every photograph, figure, diagram and
+video, the publication list, the news items, the people and project write-ups,
+and the CC Wang Lab logo -- that is, the VALUES inside _data/*.toml, the prose
+in every .md file, and everything under _assets/img/ and _assets/video/ that
+the laboratory made.
+
+Copyright (c) 2026 CC Wang Lab, National Yang Ming Chiao Tung University.
+All rights reserved.
+
+You may read this site and link to it. You may not republish, redistribute or
+create derivative works from this content without written permission.
+
+Why the two halves differ: much of the laboratory's work is done under
+agreements with industrial partners. Content that looks harmless can carry an
+obligation that a permissive licence would quietly break. The machinery carries
+no such obligation, so it is given away.
+
+The CC Wang Lab logo is a trademark of the laboratory. The MIT licence above
+does not grant any right to use it.
+
+===============================================================================
+ 3. THIRD-PARTY MATERIAL
+===============================================================================
+
+Neither section above applies to third-party material in this repository. The
+ET Book typeface, redistributed under _assets/et-book/, is MIT and carries its
+own notice.
+
+See THIRD-PARTY-LICENSES.md for the full list and the required notices.

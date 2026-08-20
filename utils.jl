@@ -1127,7 +1127,6 @@ $(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k,
       &nbsp;&middot;&nbsp;
       $(esc(ui("foot", "built")))
       <a href="https://github.com/JuliaDocs/Franklin.jl" rel="noopener">Franklin.jl</a> (MIT).
-      Typeface <a href="https://github.com/edwardtufte/et-book" rel="noopener">ET Book</a> (MIT).
       <br>
       $(esc(ui("foot", "dev"))) &mdash;
       <a href="mailto:meysam.gholampoor@gmail.com">meysam.gholampoor@gmail.com</a>
