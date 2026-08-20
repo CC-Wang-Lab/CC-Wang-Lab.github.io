@@ -44,10 +44,27 @@ top_en          = "Back to top"
 top_zh          = "回到頂端"
 
 [hero]
-title_en = "Thermal engineering from electronics to energy systems"
-title_zh = "熱工程研究：從電子元件到能源系統"
-lead_en  = "Experimental and computational research in electronics cooling, data-center thermal management, boiling heat transfer and HVAC&R at National Yang Ming Chiao Tung University."
-lead_zh  = "國立陽明交通大學的實驗與計算研究，涵蓋電子散熱、資料中心熱管理、沸騰熱傳與空調冷凍。"
+# THE HEADLINE IS NOT A TOPIC LIST, ON PURPOSE.
+#
+# It was "Thermal engineering from electronics to energy systems", and the fault
+# was not the words: the hero said the SAME topic list three times over. The
+# headline listed the topics, the typed line below it listed them again one at a
+# time, and the lead listed them a third time. The most valuable line on the
+# site was spending itself on what the two lines under it already said better.
+#
+# So the headline now states the physical fact the whole laboratory exists to
+# answer, and everything below it reads as the answer. Keep it that way: if a
+# future headline names a research area, it is repeating the typed line again.
+title_en = "Every watt has to go somewhere"
+title_zh = "每一瓦熱都必須有去處"
+# The lead dropped the topic list for the same reason, and spends the room on
+# the fact an industrial visitor actually weighs.
+#
+# {projects} is filled from lab_projects in config.md. The number is NOT typed
+# here, because a figure written in two places is a figure that goes stale in
+# one of them.
+lead_en  = "Experimental and computational thermal engineering at National Yang Ming Chiao Tung University, with {projects} live industrial projects."
+lead_zh  = "國立陽明交通大學的實驗與計算熱工程研究，目前有 {projects} 件進行中的產學合作專案。"
 play_en  = "Play the experiment"
 play_zh  = "播放實驗影片"
 cta1_en  = "Research areas"

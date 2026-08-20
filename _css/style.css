@@ -456,7 +456,16 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
   max-width: 20ch;
   margin-bottom: 1.4rem;
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+  /* Never leave one word alone on the last line of the headline. */
+  text-wrap: balance;
 }
+
+/* THE CHINESE HEADLINE NEEDS ITS OWN WIDTH.
+   `ch` is the width of the "0" glyph. A CJK glyph is about twice that, so
+   20ch holds only about nine Chinese characters, and a ten-character headline
+   orphaned its last one: 每一瓦熱都必須有去 / 處. `em` is the unit that matches
+   CJK, and it is measured against the same font size. */
+html[lang^="zh"] .hero-title { max-width: 18em; }
 .hero-lead {
   color: var(--on-dark-1);
   font-size: var(--fs-lg);
