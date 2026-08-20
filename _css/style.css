@@ -123,6 +123,14 @@
      .section-head at 46rem and everything else at the full container. That is
      why an intro paragraph wrapped early above cards that ran much wider.
 
+     `.page-hd p` was taken back OUT of this on 2026-08-20. Unifying the number
+     did not fix the symptom, because a page header sits above a body that runs
+     the full container, so 74ch still wrapped it 510px short. The reason is
+     written out at the `.page-hd p` rule itself.
+
+     Note that 74ch is not one pixel width. It scales with the element's font
+     size, so it is 810px at --fs-lg and 663px at --fs-md.
+
      It is in `ch`, which scales with the font size. That is what lets --fs-md
      be fluid without changing the characters per line, so the justified text
      keeps the same word gaps at every width. */
@@ -932,10 +940,30 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   background: var(--lab-surface-2);
 }
 .page-hd h1 { margin-bottom: 0.6rem; }
+/* No `max-width` here, on purpose, and it is not an oversight.
+
+   The page header sits directly above a body that runs the FULL container on
+   every inner page except About. Capping the lead at the prose measure left it
+   wrapping well short of everything underneath it. Measured at 1440px on
+   2026-08-20, on /contact/, /people/, /publications/ and /projects/ alike:
+
+       .page-hd .container   1320px
+       .page-hd p             810px   <- 510px short
+       .page-body .container 1320px
+
+   Dropping the cap costs nothing to read. Every lead on this site is 35 to 127
+   characters, so at the container width they set as ONE line. A one-line
+   paragraph has no line return, and the line return is the thing a measure
+   exists to protect. /publications/ is the only one that takes two lines, and
+   its first line is 119 of about 120 characters, so justification barely
+   stretches it.
+
+   /about/ is the exception and needs nothing: its body is `.page-narrow` at
+   663px, but its lead is 71 characters and ends at about 780px on its own, so
+   a cap at 810px would never have bound anyway. */
 .page-hd p {
   color: var(--lab-muted);
   font-size: var(--fs-lg);
-  max-width: var(--measure);
   margin-bottom: 0;
 }
 .page-body { padding: 3.5rem 0 5rem; }
@@ -973,22 +1001,27 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .pi-portrait-links {
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: var(--fs-xs);
   line-height: 1.9;
   margin: 1.1rem 0 0;
   max-width: 260px;
 }
 
 /* The bio under the photograph. Smaller than page prose, because it is a
-   sidebar to the record beside it, not the main reading. */
+   sidebar to the record beside it, not the main reading.
+
+   This block and the .pf-* block below arrived with the person-page template
+   carrying six literal sizes and one literal tracking, and never went through
+   the ladder. Put back on it 2026-08-20, after the audit caught .pf-label at
+   11.52px against the 12.80px floor. Nothing else moved by more than 0.8px. */
 .pi-bio {
   margin-top: 1.75rem;
-  font-size: 0.95rem;
+  font-size: var(--fs-sm);
   line-height: 1.6;
   text-align: justify;
 }
 .pi-bio h2 {
-  font-size: 1.15rem;
+  font-size: var(--fs-md);
   font-style: italic;
   margin: 1.8rem 0 0.5rem;
   text-align: left;
@@ -1004,7 +1037,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   margin: 0 0 0.7rem;
 }
 .pi-titles {
-  font-size: 1rem;
+  font-size: var(--fs-sm);
   line-height: 1.55;
   color: var(--bs-body-color);
   margin-bottom: 1.1rem;
@@ -1066,8 +1099,8 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .pf-label {
   font-family: var(--font-ui);
-  font-size: 0.72rem;
-  letter-spacing: 0.09em;
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--lab-muted);
   line-height: 1.5;
@@ -1076,7 +1109,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 0.95rem;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   color: var(--lab-muted);
 }
