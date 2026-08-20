@@ -10,9 +10,10 @@ lang = "en"
 
 @@page-body
 @@container
-@@project-body,prose
+@@row,g-5
+@@col-lg-7,prose
 
-## What I work on
+## Biography
 
 Thermal system modeling, simulation and visualization. Most of my work sits between a solver and a
 decision: a model is only useful if somebody can see what it says and act on it, so the same
@@ -29,6 +30,12 @@ Mechanical engineering, with a focus on thermal and energy systems.
 ## Elsewhere
 
 My personal site is linked above.
+@@
+@@col-lg-5
+~~~
+{{person_facts}}
+~~~
+@@
 @@
 ~~~
 {{person_projects}}

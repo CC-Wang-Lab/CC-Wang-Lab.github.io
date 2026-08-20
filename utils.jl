@@ -1012,13 +1012,6 @@ function hfun_person_header()
         push!(links, """<a href="$(esc(href))" rel="noopener">$(icon(ico)) $(esc(text))</a>""")
     end
 
-    hon = get(p, "honors_" * lang(), get(p, "honors_en", String[]))
-    honors = isempty(hon) ? "" : """
-    <ul class="pi-honors">
-$(join(["      <li>$(esc(h))</li>" for h in hon], "
-"))
-    </ul>"""
-
     topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
 
     return """
@@ -1033,13 +1026,67 @@ $(join(["      <li>$(esc(h))</li>" for h in hon], "
         <h1>$(esc(pick(p, "name")))</h1>
         <p class="pi-role">$(esc(pick(p, "role")))</p>
 $(isempty(topic) ? "" : "        <p class=\"person-hd-topic\">" * esc(topic) * "</p>")
-$(honors)
         <p class="pi-links">$(join(links, " &middot; "))</p>
       </div>
     </div>
   </div>
 </header>
 """
+end
+
+"""
+`{{person_facts}}` — the structured record beside a person's prose.
+
+The shape is how research groups usually present a principal investigator: the
+narrative on one side, the checkable facts on the other, each under its own
+label. Somebody deciding whether to approach the laboratory reads the right-hand
+column; somebody who wants to know what the work is like reads the left.
+
+Every row is OPTIONAL. A person with nothing but a topic renders nothing at all
+rather than a table of empty labels, so one page template serves the head of the
+laboratory and a first-year student alike.
+
+`interests` is a list of research-area IDS, resolved through area_by_id. The
+titles are therefore never typed twice, they come out in the language being
+built, and a wrong id stops the build with the id named.
+"""
+function hfun_person_facts()
+    id = locvar(:person)
+    id === nothing && return ""
+    p = person_by_id(String(id))
+
+    lst(k) = String.(get(p, k * "_" * lang(), get(p, k * "_en", String[])))
+
+    rows = Tuple{String,Vector{String}}[]
+
+    ints = String.(get(p, "interests", String[]))
+    isempty(ints) || push!(rows,
+        (ui("people", "interests_head"), [pick(area_by_id(i), "title") for i in ints]))
+
+    for (k, label) in (("positions", "positions_head"),
+                       ("education", "education_head"),
+                       ("honors",    "awards_head"))
+        v = lst(k)
+        isempty(v) || push!(rows, (ui("people", label), v))
+    end
+
+    isempty(rows) && return ""
+
+    blocks = String[]
+    for (label, vals) in rows
+        items = join(["      <li>" * esc(v) * "</li>" for v in vals], "\n")
+        push!(blocks, """
+  <div class="pf-row">
+    <div class="pf-label">$(esc(label))</div>
+    <ul class="pf-values">
+$(items)
+    </ul>
+  </div>""")
+    end
+
+    return """<div class="person-facts">
+$(join(blocks, "\n"))
+</div>"""
 end
 
 """

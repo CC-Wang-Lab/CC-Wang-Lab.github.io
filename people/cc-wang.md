@@ -10,35 +10,48 @@ lang = "en"
 
 @@page-body
 @@container
-@@project-body,prose
+@@row,g-5
+@@col-lg-7,prose
 
-## Research
+## The work
 
-Prof. Wang leads thermal engineering research at NYCU across electronics and data-center cooling,
-boiling and two-phase heat transfer, compact heat exchangers, HVAC&R, and AI-assisted thermal
-control. The thread running through all of it is the same: measure what the equipment actually
-does, then build a model that holds outside the conditions it was fitted to.
+The thread running through everything in this laboratory is the same: measure what the equipment
+actually does, then build a model that holds outside the conditions it was fitted to. A correlation
+that only works on the rig it came from is not a result.
 
-## Before NYCU
+That is why the laboratory keeps its own rigs and its own solvers in the same building. A number
+that has never been measured and a measurement that has never been explained are each half a
+finding.
 
-Twenty-one years of industrial R&D at the Industrial Technology Research Institute, from 1989
-to 2010. That is the part of the record that matters most to a company deciding whether to work
-with this laboratory: the questions a production line asks are not the questions a journal asks,
-and both have been answered here.
+## Twenty-one years before the university
 
-He was a visiting researcher at UC Berkeley in 2003, and took his BS, MS and PhD in Mechanical
-Engineering at National Chiao Tung University.
+The line in the record that matters most to a company is not the citation count. It is the
+twenty-one years at the Industrial Technology Research Institute, from 1989 to 2010, before
+returning to the university.
 
-## Recognition
+The questions a production line asks are not the questions a journal asks. A journal asks whether
+the mechanism is understood. A production line asks whether it still works at the third shift, in
+August, with the tolerances the supplier actually delivered. Both kinds of question have been
+answered here, and knowing which one is being asked is most of the job.
 
-Fellow of ASHRAE since 2006 and of ASME since 2009. Outstanding Research Award of the Ministry of
-Science and Technology in 2017.
+## Working with the laboratory
+
+Industrial projects usually start with a measurement somebody cannot make, or a design that will
+not close. The reply says honestly whether this laboratory can help, and if it cannot, it says so.
+
+[Contact us](/contact/) with what you are cooling and what is stopping you.
 
 ## The full record
 
 The publication list is long enough that this page would be the wrong place for it.
 [Selected publications](/publications/) are grouped by theme; the complete record sits on Google
 Scholar and the NYCU Academic Hub, both linked above.
+@@
+@@col-lg-5
+~~~
+{{person_facts}}
+~~~
+@@
 @@
 ~~~
 {{person_projects}}

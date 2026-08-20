@@ -10,7 +10,8 @@ lang = "zh"
 
 @@page-body
 @@container
-@@project-body,prose
+@@row,g-5
+@@col-lg-7,prose
 
 ## 研究內容
 
@@ -27,6 +28,12 @@ lang = "zh"
 ## 其他
 
 個人網站連結見上方。
+@@
+@@col-lg-5
+~~~
+{{person_facts}}
+~~~
+@@
 @@
 ~~~
 {{person_projects}}

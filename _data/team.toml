@@ -36,6 +36,49 @@ photo     = "/assets/img/team/placeholder.svg"
 email     = "ccwang@nycu.edu.tw"
 scholar   = "https://scholar.google.com/citations?user=QlIdSPIAAAAJ&hl=en"
 nycu      = "https://scholar.nycu.edu.tw/en/persons/chi-chuan-wang/"
+# THE STRUCTURED RECORD BELOW IS VERIFIED, LINE BY LINE.
+#
+# Source: the NYCU Academic Hub, the university's own record.
+# https://scholar.nycu.edu.tw/en/persons/chi-chuan-wang/  (read 2026-08-20)
+#
+# Do not add a line here that the Hub does not carry. The prose bio may
+# summarise; this block is the record, and a visitor deciding whether to work
+# with the laboratory is entitled to take every date in it literally.
+#
+# `interests` holds research-area IDS from research.toml, never titles. The
+# titles are resolved at build time, so they are never typed twice and they
+# come out in the right language; a wrong id stops the build.
+interests = [
+  "electronics-cooling",
+  "data-center",
+  "two-phase",
+  "heat-exchangers",
+  "hvacr",
+  "ai-thermal",
+]
+positions_en = [
+  "Professor, Department of Mechanical Engineering, National Chiao Tung University, 2010-",
+  "Visiting Industrial Fellow, Department of Mechanical Engineering, University of California, Berkeley, 2003",
+  "Senior Lead Researcher, Energy and Resources Laboratory, ITRI, 2005-2010",
+  "Senior Researcher, Energy and Resources Laboratory, ITRI, 1998-2005",
+  "Researcher, Energy and Resources Laboratory, ITRI, 1989-1997",
+]
+positions_zh = [
+  "國立交通大學 機械工程學系 教授，2010 年起",
+  "美國加州大學柏克萊分校 機械工程學系 訪問產業學者，2003 年",
+  "工業技術研究院 能源與資源研究所 資深研究員兼組長，2005-2010",
+  "工業技術研究院 能源與資源研究所 資深研究員，1998-2005",
+  "工業技術研究院 能源與資源研究所 研究員，1989-1997",
+]
+# The Hub lists the doctorate only. The BS and MS are stated in the prose bio
+# but are NOT on the Hub, so they are deliberately absent here until somebody
+# in the laboratory confirms them.
+education_en = [
+  "PhD, Mechanical Engineering, National Chiao Tung University",
+]
+education_zh = [
+  "國立交通大學 機械工程學系 博士",
+]
 honors_en = [
   "Fellow, ASHRAE (2006)",
   "Fellow, ASME (2009)",
@@ -46,15 +89,26 @@ honors_zh = [
   "美國機械工程師學會 ASME 會士（2009）",
   "科技部傑出研究獎（2017）",
 ]
+# The bio below says only what the NYCU Academic Hub says. Two earlier claims
+# were removed on 2026-08-20 because the Hub does not carry them:
+#   "visiting researcher"     -> the Hub says Visiting Industrial Fellow
+#   "his BS, MS and PhD"      -> the Hub lists the doctorate only
+# If somebody in the laboratory confirms the BS and MS, add them to
+# education_en / education_zh above AND put them back here, not one or the other.
+#
+# STILL UNRESOLVED: role_en below says "Chair Professor". The Hub says
+# "Professor, Department of Mechanical Engineering, National Chiao Tung
+# University, 2010-". A later promotion the Hub has not picked up is the likely
+# explanation, so the higher title is kept. Confirm it with his office.
 bio_en = """
 Prof. Wang leads thermal engineering research at NYCU, spanning electronics and data-center cooling, boiling and two-phase heat transfer, heat exchangers, HVAC&R, and AI-assisted thermal control.
 
-He spent twenty-one years in industrial R&D at the Industrial Technology Research Institute (ITRI) from 1989 to 2010 before returning to academia, and was a visiting researcher at UC Berkeley in 2003. He took his BS, MS and PhD in Mechanical Engineering at National Chiao Tung University.
+He spent twenty-one years in industrial R&D at the Industrial Technology Research Institute (ITRI) from 1989 to 2010 before returning to the university, and was a Visiting Industrial Fellow at UC Berkeley in 2003. He took his doctorate in Mechanical Engineering at National Chiao Tung University.
 """
 bio_zh = """
 王啟川教授於陽明交通大學主持熱工程研究，領域涵蓋電子與資料中心散熱、沸騰與兩相熱傳、熱交換器、空調冷凍，以及 AI 輔助熱控制。
 
-投入學界前，他於 1989 至 2010 年間在工業技術研究院（ITRI）從事二十一年產業研發工作，並於 2003 年赴美國加州大學柏克萊分校擔任訪問學者。學士、碩士與博士學位皆取得自國立交通大學機械工程學系。
+投入學界前，他於 1989 至 2010 年間在工業技術研究院（ITRI）從事二十一年產業研發工作，並於 2003 年赴美國加州大學柏克萊分校擔任訪問產業學者。博士學位取得自國立交通大學機械工程學系。
 """
 
 # ---------------------------------------------------------------------------

@@ -971,6 +971,55 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-hd-topic { color: var(--lab-muted); margin-bottom: 0.9rem; }
 .person-projects { margin-top: 3.5rem; }
 
+/* --------------------------------------------------------------------------
+   The fact table beside a person's prose
+
+   Narrative on the left, checkable facts on the right, each under its own
+   label. A visitor deciding whether to approach the laboratory reads this
+   column; a visitor who wants to know what the work is like reads the prose.
+
+   Labels sit ABOVE their values rather than beside them. A two-column
+   label/value grid inside a five-column page column leaves about 15 characters
+   for the label, and "Awards and fellowships" then wraps to four lines beside a
+   single value.
+   -------------------------------------------------------------------------- */
+
+.person-facts {
+  border-top: 2px solid var(--lab-orange);
+  margin-top: 0.35rem;
+}
+.pf-row {
+  padding: 1.1rem 1.25rem;
+  border-bottom: var(--rule);
+}
+/* Banded, so the eye can tell where one fact stops and the next begins without
+   a rule doing all the work. */
+.pf-row:nth-child(odd) { background: var(--lab-surface-2); }
+
+.pf-label {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  margin-bottom: 0.55rem;
+}
+.pf-values {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.97rem;
+  line-height: 1.45;
+}
+.pf-values li { margin-bottom: 0.45rem; text-align: left; }
+.pf-values li:last-child { margin-bottom: 0; }
+
+/* The prose column carries the reading; the facts column is reference, so it
+   does not need the page measure. */
+@media (min-width: 992px) {
+  .person-facts { position: sticky; top: 6rem; }
+}
+
 /* A card is a link only when that person has written a page. One that has not
    must not pretend, so the lift belongs to the link and nothing else. */
 .person-card.is-link {

@@ -10,7 +10,8 @@ lang = "zh"
 
 @@page-body
 @@container
-@@project-body,prose
+@@row,g-5
+@@col-lg-7,prose
 
 ## 範例頁面
 
@@ -34,6 +35,12 @@ lang = "zh"
 ```markdown
 ![](/assets/img/team/your-id/rig.jpg)
 ```
+@@
+@@col-lg-5
+~~~
+{{person_facts}}
+~~~
+@@
 @@
 ~~~
 {{person_projects}}

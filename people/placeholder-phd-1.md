@@ -10,7 +10,8 @@ lang = "en"
 
 @@page-body
 @@container
-@@project-body,prose
+@@row,g-5
+@@col-lg-7,prose
 
 ## PLACEHOLDER
 
@@ -36,6 +37,12 @@ Put them in `_assets/img/team/<your-id>/` and use them like this:
 ```markdown
 ![](/assets/img/team/your-id/rig.jpg)
 ```
+@@
+@@col-lg-5
+~~~
+{{person_facts}}
+~~~
+@@
 @@
 ~~~
 {{person_projects}}
