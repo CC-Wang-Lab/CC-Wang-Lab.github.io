@@ -1,9 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Placeholder image">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#D89030"/><stop offset="1" stop-color="#4080A8"/>
-  </linearGradient></defs>
-  <rect width="480" height="270" fill="url(#g)" opacity="0.85"/>
-  <rect width="480" height="270" fill="#181828" opacity="0.25"/>
-  <text x="240" y="142" text-anchor="middle" font-family="Georgia,serif" font-size="15"
-        fill="#ffffff" opacity="0.75">image to be supplied</text>
+<!--
+  Data-centre thermal management, in section.
+
+  Cold air travels the under-floor plenum, rises through a perforated tile in
+  the cold aisle, passes through three racks, and leaves hot at the ceiling.
+
+  The racks SIT ON the floor slab. They floated 22 units above it in the first
+  version, which nothing in the drawing explained and which the eye reads as a
+  mistake long before it reads as a data centre.
+
+  RULES THIS FILE OBEYS. All four are load-bearing; see .claude/rules/animation.md.
+    1. NO id ATTRIBUTE. Four of these are inlined into one page by
+       card_media_art() in utils.jl, so any id would collide with its twin.
+    2. NO <text>. SVG text escapes the 12.8px floor that shoot.py --measure
+       enforces, and getComputedStyle reports the unscaled size, so nothing in
+       the toolchain would catch it. The card title says what this is.
+    3. NO fill and NO stroke here. Every colour comes from .card-art in
+       style.css, so both themes are one place.
+    4. EVERY stroked element is a <path> carrying pathLength="1". That is what
+       lets one CSS rule draw any path with no getTotalLength() call. <circle>
+       and <rect> honour pathLength unreliably in Safari, so a circle is a path.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" class="card-art" aria-hidden="true" focusable="false">
+  <path class="ca-ground" d="M0 0h480v270H0z"/>
+
+  <!-- The room: raised floor slab, ceiling, and three racks standing on it. -->
+  <g class="ca-l1">
+    <path class="ca-line" pathLength="1" d="M40 228h400M40 242h400"/>
+    <path class="ca-line" pathLength="1" d="M150 62h60v166h-60zM234 62h60v166h-60zM318 62h60v166h-60z"/>
+  </g>
+
+  <!-- Ceiling, server slots, and the perforated supply tile in the cold aisle. -->
+  <g class="ca-l2">
+    <path class="ca-thin" pathLength="1" d="M40 40h400"/>
+    <path class="ca-thin" pathLength="1" d="M150 92h60M150 122h60M150 152h60M150 182h60M150 212h60M234 92h60M234 122h60M234 152h60M234 182h60M234 212h60M318 92h60M318 122h60M318 152h60M318 182h60M318 212h60"/>
+    <path class="ca-thin" pathLength="1" d="M74 228v14M136 228v14"/>
+    <path class="ca-thin" pathLength="1" d="M88 228v14M102 228v14M116 228v14M130 228v14"/>
+  </g>
+
+  <!-- Supply: along the plenum, up through the tile, into the rack fronts. -->
+  <g class="ca-l3">
+    <path class="ca-cool" pathLength="1" d="M48 256h56"/>
+    <path class="ca-cool" pathLength="1" d="M92 228C92 178 88 138 142 138"/>
+    <path class="ca-cool" pathLength="1" d="M116 228C116 150 112 96 142 96"/>
+    <path class="ca-cool" pathLength="1" d="M136 228C136 210 132 192 142 186"/>
+    <path class="ca-cool" pathLength="1" d="M104 250l8 6-8 6M142 132l8 6-8 6M142 90l8 6-8 6M142 180l8 6-8 6"/>
+  </g>
+
+  <!-- Return: off the back of the last rack, up to the ceiling. -->
+  <g class="ca-l4">
+    <path class="ca-hot" pathLength="1" d="M378 96C424 96 430 76 430 52"/>
+    <path class="ca-hot" pathLength="1" d="M378 158C410 158 414 100 406 52"/>
+    <path class="ca-hot" pathLength="1" d="M424 60l6-10 6 10M400 60l6-10 6 10"/>
+  </g>
 </svg>

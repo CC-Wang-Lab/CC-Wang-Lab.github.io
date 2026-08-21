@@ -28,7 +28,7 @@
  * prefers-reduced-motion is deliberately not consulted, for the reasons set out
  * at length in motion.js. The pause button is the mechanism.
  *
- * FOUR FAILSAFES, because this file can hide content
+ * FIVE FAILSAFES, because this file can hide content
  * --------------------------------------------------
  *   a. The CSS only hides elements carrying data-reveal, and only this script
  *      ever sets that attribute. If the script does not run, nothing is hidden.
@@ -37,6 +37,9 @@
  *   d. Anything already inside the viewport is marked done BEFORE anything is
  *      hidden, so the top of the page is never blank and pressing play halfway
  *      down a page never blinks the block you are reading.
+ *   e. A 2.6 s timer finishes any line drawing whose animation never got a
+ *      frame. See DRAW_MS below; that one guards a different failure from the
+ *      other four and it is the only reason the drawings are safe to ship.
  */
 (function () {
   "use strict";
@@ -46,6 +49,11 @@
   var TARGETS = [
     ".section-head",
     ".card-media",
+    /* .hp-stop only, never .hp-figure: below 992 the figure is display:none, so
+       it would be marked hidden, its 0x0 rect would miss the already-on-screen
+       pre-pass, the observer would never fire for it, and it would sit hidden
+       until the 4s failsafe. */
+    ".hp-stop",
     ".cap-card",
     ".cap-list",
     ".sector",
@@ -74,6 +82,25 @@
   var STAGGER_MAX = 5;
   var FAILSAFE_MS = 4000;
 
+  /* A fifth failsafe, and it guards a different thing from the other four.
+     -------------------------------------------------------------------
+     .is-in also starts the line drawing on a research card, which is a CSS
+     animation, and an animation that never advances holds its FIRST frame -
+     an empty card - for as long as the page is open.
+
+     That is not hypothetical. Under `--virtual-time-budget` the headless
+     window used by scripts/shoot.py produces no frames, the animation clock
+     never moves, and all four drawings screenshot blank. Whatever else can
+     freeze an animation clock - a throttled tab, an extension, a browser
+     nobody has tested - would do the same.
+
+     So every .is-in is paired with a timer that forces the finished state.
+     Timers are not frame-driven, so this fires where the animation cannot.
+     2600ms is the longest the drawing can legitimately take, 900ms of draw
+     plus 780ms of worst-case stagger, and some room. If the animation did
+     run, this changes nothing: it is already at the finished state. */
+  var DRAW_MS = 2600;
+
   var observer = null;
   var revealed = false;
   var onScroll = null;
@@ -81,6 +108,18 @@
 
   function all(sel, root) {
     return Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  }
+
+  /** Reveal one block. `instant` also finishes any line drawing at once. */
+  function markIn(el, instant) {
+    el.classList.add("is-in");
+    if (instant) {
+      el.classList.add("is-drawn");
+      return;
+    }
+    window.setTimeout(function () {
+      el.classList.add("is-drawn");
+    }, DRAW_MS);
   }
 
   /** Failsafe (a) and the pause path: show everything, immediately, for good. */
@@ -93,7 +132,9 @@
     }
     all("[data-reveal]").forEach(function (el) {
       el.setAttribute("data-reveal", "done");
-      el.classList.add("is-in");
+      /* instant: this is the "something went wrong, show everything" path and
+         the pause path. Neither one should sit through a drawing. */
+      markIn(el, true);
     });
   }
 
@@ -115,7 +156,7 @@
       var r = el.getBoundingClientRect();
       if (r.top < vh && r.bottom > 0) {
         el.setAttribute("data-reveal", "done");
-        el.classList.add("is-in");
+        markIn(el, false);
       } else {
         el.setAttribute("data-reveal", "");
       }
@@ -145,7 +186,7 @@
         arriving.forEach(function (entry, i) {
           var el = entry.target;
           el.style.setProperty("--reveal-i", Math.min(i, STAGGER_MAX));
-          el.classList.add("is-in");
+          markIn(el, false);
           el.setAttribute("data-reveal", "done");
           observer.unobserve(el);
         });

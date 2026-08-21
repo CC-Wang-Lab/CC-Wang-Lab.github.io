@@ -1,9 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Placeholder image">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#4080A8"/><stop offset="1" stop-color="#181828"/>
-  </linearGradient></defs>
-  <rect width="480" height="270" fill="url(#g)" opacity="0.85"/>
-  <rect width="480" height="270" fill="#181828" opacity="0.25"/>
-  <text x="240" y="142" text-anchor="middle" font-family="Georgia,serif" font-size="15"
-        fill="#ffffff" opacity="0.75">image to be supplied</text>
+<!--
+  A surrogate model: a temperature field on the left, a 4-5-3 network on the
+  right, and the mapping between them.
+
+  The innermost isotherm is drawn hot because that is the hot spot the surrogate
+  has to predict. That is the whole picture in one line.
+
+  The nodes are FILLED with the same colour as the ground, on purpose. It is
+  what lets the 35 edges pass behind them instead of through them, and it costs
+  nothing at draw time because a fill the colour of the ground is invisible
+  until a stroke lands on top of it.
+
+  The four rules every one of these files obeys are written out in full at the
+  top of data-center.svg. In short: no id, no <text>, no colour, and every
+  stroked element is a <path> carrying pathLength="1".
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" class="card-art" aria-hidden="true" focusable="false">
+  <path class="ca-ground" d="M0 0h480v270H0z"/>
+
+  <!-- The field.
+
+       THE THREE CENTRES DO NOT COINCIDE, AND THAT IS THE POINT. The first
+       version used one centre and near-circular ratios, and three concentric
+       circles read as a target, not as a temperature field. Real isotherms
+       crowd toward the hot spot, so each one here is more elongated than the
+       last and each sits a little up and to the right of the one outside it.
+       The whole group is turned off square for the same reason. -->
+  <g class="ca-l1" transform="rotate(-14 118 136)">
+    <path class="ca-thin" pathLength="1" d="M56 138a62 44 0 1 0 124 0a62 44 0 1 0-124 0"/>
+    <path class="ca-thin" pathLength="1" d="M82 132a42 29 0 1 0 84 0a42 29 0 1 0-84 0"/>
+    <path class="ca-hot" pathLength="1" d="M107 127a22 15 0 1 0 44 0a22 15 0 1 0-44 0"/>
+  </g>
+
+  <!-- Field in, prediction out. -->
+  <g class="ca-l2">
+    <path class="ca-line" pathLength="1" d="M192 136h46"/>
+    <path class="ca-line" pathLength="1" d="M232 130l8 6-8 6"/>
+  </g>
+
+  <!-- Every edge, as one path. Generated, not typed. -->
+  <g class="ca-l3">
+    <path class="ca-mesh" pathLength="1" d="M262 76L336 60M262 76L336 98M262 76L336 136M262 76L336 174M262 76L336 212M262 116L336 60M262 116L336 98M262 116L336 136M262 116L336 174M262 116L336 212M262 156L336 60M262 156L336 98M262 156L336 136M262 156L336 174M262 156L336 212M262 196L336 60M262 196L336 98M262 196L336 136M262 196L336 174M262 196L336 212M336 60L410 98M336 60L410 136M336 60L410 174M336 98L410 98M336 98L410 136M336 98L410 174M336 136L410 98M336 136L410 136M336 136L410 174M336 174L410 98M336 174L410 136M336 174L410 174M336 212L410 98M336 212L410 136M336 212L410 174"/>
+  </g>
+
+  <!-- The nodes, painted after the edges so they cover them. -->
+  <g class="ca-l4">
+    <path class="ca-node" pathLength="1" d="M254 76a8 8 0 1 0 16 0a8 8 0 1 0-16 0M254 116a8 8 0 1 0 16 0a8 8 0 1 0-16 0M254 156a8 8 0 1 0 16 0a8 8 0 1 0-16 0M254 196a8 8 0 1 0 16 0a8 8 0 1 0-16 0M328 60a8 8 0 1 0 16 0a8 8 0 1 0-16 0M328 98a8 8 0 1 0 16 0a8 8 0 1 0-16 0M328 136a8 8 0 1 0 16 0a8 8 0 1 0-16 0M328 174a8 8 0 1 0 16 0a8 8 0 1 0-16 0M328 212a8 8 0 1 0 16 0a8 8 0 1 0-16 0M402 98a8 8 0 1 0 16 0a8 8 0 1 0-16 0M402 136a8 8 0 1 0 16 0a8 8 0 1 0-16 0M402 174a8 8 0 1 0 16 0a8 8 0 1 0-16 0"/>
+  </g>
 </svg>

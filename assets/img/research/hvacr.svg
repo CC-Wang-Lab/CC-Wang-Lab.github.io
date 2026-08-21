@@ -1,9 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Placeholder image">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#D89030"/><stop offset="1" stop-color="#181828"/>
-  </linearGradient></defs>
-  <rect width="480" height="270" fill="url(#g)" opacity="0.85"/>
-  <rect width="480" height="270" fill="#181828" opacity="0.25"/>
-  <text x="240" y="142" text-anchor="middle" font-family="Georgia,serif" font-size="15"
-        fill="#ffffff" opacity="0.75">image to be supplied</text>
+<!--
+  The vapour-compression loop: compressor, condenser, expansion valve,
+  evaporator.
+
+  Colour carries the physics and is not decoration. Everything from the
+  compressor discharge round to the expansion valve is warm and is drawn with
+  .ca-hot. Everything from the valve round to the compressor suction is cold and
+  is drawn with .ca-cool. The compressor and the valve are the two components
+  where the state changes, so they stay neutral.
+
+  The four rules every one of these files obeys are written out in full at the
+  top of data-center.svg. In short: no id, no <text>, no colour, and every
+  stroked element is a <path> carrying pathLength="1".
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" class="card-art" aria-hidden="true" focusable="false">
+  <path class="ca-ground" d="M0 0h480v270H0z"/>
+
+  <!-- The two components that change the state. -->
+  <g class="ca-l1">
+    <path class="ca-line" pathLength="1" d="M90 137a20 20 0 1 0 40 0a20 20 0 1 0-40 0"/>
+    <path class="ca-line" pathLength="1" d="M356 124v26l28-26v26z"/>
+  </g>
+
+  <!-- High side: discharge up the left, condenser across the top, liquid down
+       the right to the valve. -->
+  <g class="ca-l2">
+    <path class="ca-hot" pathLength="1" d="M110 117V76a10 10 0 0 1 10-10h30"/>
+    <path class="ca-hot" pathLength="1" d="M150 66h12l10-16 20 32 20-32 20 32 20-32 20 32 20-32 20 32 10-16h12"/>
+    <path class="ca-hot" pathLength="1" d="M334 66h26a10 10 0 0 1 10 10v48"/>
+  </g>
+
+  <!-- Low side: down out of the valve, evaporator across the bottom, suction up
+       the left back into the compressor. -->
+  <g class="ca-l3">
+    <path class="ca-cool" pathLength="1" d="M370 150v48a10 10 0 0 1-10 10h-26"/>
+    <path class="ca-cool" pathLength="1" d="M334 208h-12l-10-16-20 32-20-32-20 32-20-32-20 32-20-32-20 32-10-16h-12"/>
+    <path class="ca-cool" pathLength="1" d="M150 208h-30a10 10 0 0 1-10-10v-41"/>
+  </g>
+
+  <!-- Which way round it goes. -->
+  <g class="ca-l4">
+    <path class="ca-line" pathLength="1" d="M102 127l16 10-16 10"/>
+    <path class="ca-hot" pathLength="1" d="M104 100l6-10 6 10M150 60l10 6-10 6"/>
+    <path class="ca-cool" pathLength="1" d="M364 178l6 10 6-10M170 202l-10 6 10 6"/>
+  </g>
 </svg>
