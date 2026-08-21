@@ -1,9 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Placeholder image">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#4080A8"/><stop offset="1" stop-color="#D89030"/>
-  </linearGradient></defs>
-  <rect width="480" height="270" fill="url(#g)" opacity="0.85"/>
-  <rect width="480" height="270" fill="#181828" opacity="0.25"/>
-  <text x="240" y="142" text-anchor="middle" font-family="Georgia,serif" font-size="15"
-        fill="#ffffff" opacity="0.75">image to be supplied</text>
+<!--
+  Fin-and-tube heat exchanger, seen along the tube axis.
+
+  Wavy fin plates edge-on as horizontal lines, two staggered tube rows cutting
+  through them, air entering left and leaving right. Wavy rather than louvered:
+  a louver is a slit about 1 mm wide, which is under half a pixel here, so it
+  would read as dirt on the screen rather than as a geometry.
+
+  The four rules every one of these files obeys are written out in full at the
+  top of data-center.svg. In short: no id, no <text>, no colour, and every
+  stroked element is a <path> carrying pathLength="1".
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" class="card-art" aria-hidden="true" focusable="false">
+  <path class="ca-ground" d="M0 0h480v270H0z"/>
+
+  <!-- The core envelope. -->
+  <g class="ca-l1">
+    <path class="ca-line" pathLength="1" d="M146 58h228v156H146z"/>
+  </g>
+
+  <!-- Six wavy fins. One <path>, six subpaths, so they draw as one gesture. -->
+  <g class="ca-l2">
+    <path class="ca-thin" pathLength="1" d="M152 76q13.5-7 27 0t27 0t27 0t27 0t27 0t27 0t27 0t27 0M152 100q13.5-7 27 0t27 0t27 0t27 0t27 0t27 0t27 0t27 0M152 124q13.5-7 27 0t27 0t27 0t27 0t27 0t27 0t27 0t27 0M152 148q13.5-7 27 0t27 0t27 0t27 0t27 0t27 0t27 0t27 0M152 172q13.5-7 27 0t27 0t27 0t27 0t27 0t27 0t27 0t27 0M152 196q13.5-7 27 0t27 0t27 0t27 0t27 0t27 0t27 0t27 0"/>
+  </g>
+
+  <!-- Two tube rows, staggered. Staggered, not in-line, because that is the
+       arrangement the lab's own fin-and-tube work uses. -->
+  <g class="ca-l3">
+    <path class="ca-line ca-tube" pathLength="1" d="M175 100a15 15 0 1 0 30 0a15 15 0 1 0-30 0M247 100a15 15 0 1 0 30 0a15 15 0 1 0-30 0M319 100a15 15 0 1 0 30 0a15 15 0 1 0-30 0M211 172a15 15 0 1 0 30 0a15 15 0 1 0-30 0M283 172a15 15 0 1 0 30 0a15 15 0 1 0-30 0"/>
+  </g>
+
+  <!-- Air in cool on the left, out warm on the right. -->
+  <g class="ca-l4">
+    <path class="ca-cool" pathLength="1" d="M70 94h62M70 142h62M70 190h62"/>
+    <path class="ca-cool" pathLength="1" d="M132 88l8 6-8 6M132 136l8 6-8 6M132 184l8 6-8 6"/>
+    <path class="ca-hot" pathLength="1" d="M382 94h50M382 142h50M382 190h50"/>
+    <path class="ca-hot" pathLength="1" d="M432 88l8 6-8 6M432 136l8 6-8 6M432 184l8 6-8 6"/>
+  </g>
 </svg>

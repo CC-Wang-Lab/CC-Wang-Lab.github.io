@@ -80,6 +80,7 @@ flowchart LR
     D4["_data/sectors.toml"]
     D5["_data/publications.toml"]
     D6["_data/news.toml"]
+    D8["_data/facilities.toml"]
   end
 
   subgraph src["Page sources"]
@@ -90,11 +91,13 @@ flowchart LR
   UTILS["utils.jl<br/>hfun_* generators<br/>pick() picks _en or _zh<br/>{{url}} adds the /zh prefix"]
   LAY["_layout/"]
   CSS["_css/style.css"]
-  JS["_assets/js/<br/>theme, hero video, news slider"]
+  JS["_assets/js/<br/>theme, hero video, news slider,<br/>motion flag, scroll reveal, card pointer"]
+  ART["_assets/img/research/*.svg<br/>line art, inlined at build time"]
   ASSET["_assets/<br/>video, fonts, images"]
 
   D7 -.->|student id| D1
   D7 -.->|area id| D2
+  D8 -.->|area id| D2
 
   UI --> UTILS
   D1 --> UTILS
@@ -104,6 +107,7 @@ flowchart LR
   D4 --> UTILS
   D5 --> UTILS
   D6 --> UTILS
+  D8 --> UTILS
 
   EN --> FR["Franklin.jl"]
   ZH --> FR
@@ -111,9 +115,10 @@ flowchart LR
   LAY --> FR
   CSS --> FR
   JS --> FR
+  ART --> UTILS
   ASSET --> FR
 
-  FR --> SITE["__site/<br/>26 pages, 2 languages"]
+  FR --> SITE["__site/<br/>32 pages, 2 languages"]
   SITE --> GHA["GitHub Action<br/>optimize + brace check"]
   GHA --> PAGES[("gh-pages branch<br/>cc-wang-lab.github.io")]
 
@@ -122,7 +127,7 @@ flowchart LR
   classDef conv fill:#BF8700,stroke:#BF8700,color:#fff
   class UTILS,FR arch
   class PAGES crit
-  class UI,D1,D2,D7,D3,D4,D5,D6 conv
+  class UI,D1,D2,D7,D3,D4,D5,D6,D8 conv
 ```
 
 ## Adding a person to the site
@@ -148,6 +153,39 @@ sequenceDiagram
   F->>S: publish to gh-pages
   Note over S: The card appears on /team/ and /zh/team/.<br/>No HTML was written by anyone.
 ```
+
+## How a research card gets its picture
+
+Two pictures on the home page are photographs and four are line drawings of the physics. The card
+markup is the same for both, so the choice happens once, at build time, in `card_media_art()`.
+
+A drawing is **inlined into the page** rather than linked. That is the whole reason it can draw
+itself: an SVG behind `<img src=...>` is a closed document that neither the stylesheet nor any
+script can reach into.
+
+```mermaid
+flowchart TD
+  T["_data/research.toml<br/>image = /assets/img/research/x.svg"] --> C{"card_media_art()"}
+  C -->|"not an .svg"| IMG["&lt;img src=... alt=&quot; &quot;&gt;<br/>a photograph, linked"]
+  C -->|".svg, but no class=card-art"| IMG
+  C -->|".svg carrying class=card-art"| READ["read the file<br/>strip the comment header<br/>collapse to one line"]
+  READ --> INL["inline &lt;svg class=card-art&gt;<br/>in the page"]
+  INL --> COL["_css/style.css paints it<br/>tokens, both themes"]
+  INL --> DRAW["_assets/js/reveal.js adds .is-in<br/>-> keyframes ca-draw, 0.9 s"]
+
+  classDef data fill:#fdf3e3,stroke:#d89030,color:#181828
+  classDef code fill:#e8f0f6,stroke:#4080a8,color:#181828
+  classDef out fill:#eef6ee,stroke:#4a8a4a,color:#181828
+  class T data
+  class C,READ code
+  class IMG,INL,COL,DRAW out
+```
+
+**Nothing is ever hidden.** A path with no dash is a whole path, and the dash exists only for the
+0.9 s the animation runs. If `reveal.js` never runs, `.is-in` never lands and every drawing is
+simply complete. That is a structural guarantee rather than a guard, and it is there because a
+card that fades in and then fails to arrive is the worst bug this site can ship. The measurements
+behind it are in `.claude/rules/animation.md`.
 
 ## What the news slider does, and for whom
 

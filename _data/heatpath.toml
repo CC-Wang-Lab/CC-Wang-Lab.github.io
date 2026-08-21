@@ -1,0 +1,69 @@
+# The heat path. Five stations, in the order a watt actually travels.
+#
+# This is the one thing the research cards cannot say: what ORDER the work
+# happens in. A watt appears at a junction, is lifted off the surface, is handed
+# to a second fluid, is carried out of the room, and is then rejected or lifted
+# again for reuse. Each station points at the research area that owns that step.
+#
+#   area = an id from _data/research.toml. A wrong id stops the build.
+#   icon = a Bootstrap Icons 1.11.3 name. It is rendered in the HTML list UNDER
+#          the diagram, never inside the SVG. See hfun_heat_path in utils.jl for
+#          why that is not a style choice.
+#
+# ORDER IS THE DATA. The rows are drawn left to right in file order, and the
+# geometry is derived from the count, so adding a sixth stop needs no CSS and no
+# change to utils.jl.
+#
+# `ai-thermal` IS DELIBERATELY ABSENT. It is a method applied at every station,
+# not a place a watt passes through, and putting it on the pipe would be a lie
+# about the physics. All six areas are already listed by the research cards two
+# sections above. Do not "fix" this omission.
+#
+# KEEP TITLES SHORT. At 992px each column is 163px wide. A single unbreakable
+# English word longer than about 15 characters widens the page and fails
+# `python scripts/shoot.py --measure`. Notes run to about 60 characters.
+
+[[stop]]
+id       = "source"
+icon     = "cpu"
+area     = "electronics-cooling"
+title_en = "Chip and package"
+title_zh = "晶片與封裝"
+note_en  = "Where the watt appears: junction, die, lid, board."
+note_zh  = "熱在此產生：接面、晶粒、上蓋與電路板。"
+
+[[stop]]
+id       = "carry"
+icon     = "droplet-half"
+area     = "two-phase"
+title_en = "Boiling and flow"
+title_zh = "沸騰與流動"
+note_en  = "Two-phase and liquid loops lift it off the surface."
+note_zh  = "兩相與液冷迴路將熱自表面帶走。"
+
+[[stop]]
+id       = "exchange"
+icon     = "grid-3x3"
+area     = "heat-exchangers"
+title_en = "Heat exchanger"
+title_zh = "熱交換器"
+note_en  = "Fins and tubes hand it to a second fluid."
+note_zh  = "翅片與管路將熱傳遞給第二流體。"
+
+[[stop]]
+id       = "room"
+icon     = "hdd-rack"
+area     = "data-center"
+title_en = "Rack and room"
+title_zh = "機櫃與機房"
+note_en  = "Airflow and layout carry it out of the room."
+note_zh  = "氣流與機櫃配置將熱帶離機房。"
+
+[[stop]]
+id       = "reject"
+icon     = "recycle"
+area     = "hvacr"
+title_en = "Reject or reuse"
+title_zh = "排除或回收"
+note_en  = "A heat pump rejects it, or lifts it for reuse."
+note_zh  = "由熱泵排至外氣，或提升溫度後回收再利用。"

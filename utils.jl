@@ -112,6 +112,16 @@ end
 """A Bootstrap icon span."""
 icon(name) = """<i class="bi bi-$(esc(name))" aria-hidden="true"></i>"""
 
+"""
+A number for SVG markup.
+
+Julia prints `120.0` for a whole Float64, and a coordinate reading `120.0` in a
+drawing is noise a reviewer has to look past. Whole numbers come out whole;
+everything else keeps two decimals, which on a 1200-unit canvas is under half a
+pixel at any width this site renders at.
+"""
+svgnum(x) = (r = round(float(x); digits = 2); isinteger(r) ? string(Int(r)) : string(r))
+
 """Turn a blank-line-separated string into paragraphs."""
 function paras(s)
     chunks = filter(!isempty, strip.(split(string(s), "\n\n")))
@@ -196,6 +206,7 @@ end
 const NAV = [
     ("home",         "/"),
     ("projects",     "/projects/"),
+    ("facilities",   "/facilities/"),
     ("people",       "/people/"),
     ("publications", "/publications/"),
     ("news",         "/news/"),
@@ -391,23 +402,91 @@ end
 #  Research cards
 # ---------------------------------------------------------------------------
 
+"""
+The picture inside a `.card-media` frame: an inline `<svg>` for a line drawing,
+a plain `<img>` for a photograph. The file extension in `_data/` decides, so
+swapping a drawing for a real photograph is one line of TOML and nothing else.
+
+WHY AN SVG IS INLINED RATHER THAN LINKED
+
+An SVG loaded through `<img src=...>` is a CLOSED DOCUMENT. Neither the page's
+stylesheet nor its scripts can reach inside it, so `stroke-dashoffset` could
+never be driven from `style.css` and a drawing could not draw itself. Inlining
+is what buys the effect.
+
+It pays for itself twice more. Four fewer HTTP requests on the home page, and no
+`fingerprint()` cache tag needed, because the bytes travel inside the HTML and a
+new deploy therefore cannot hand anybody a stale drawing.
+
+The art stays in FILES under `_assets/img/research/`, where it is editable and
+diffable, and is read once per build. `_ART` is the same module-level cache
+`_FINGERPRINT` uses, for the same reason: `index.md` and `zh/index.md` ask for
+the same six pictures.
+
+WHAT IS STRIPPED ON THE WAY THROUGH
+
+The comment header. Every one of those files opens with an explanation of the
+four rules it obeys, which is worth a lot to the next person editing it and
+nothing at all to a visitor. Four of them would put about 4 kB of prose on the
+home page. The comments stay in the repository and never reach the wire.
+
+AN SVG HAS TO OPT IN, BY CARRYING class="card-art"
+
+Not every `.svg` under `_assets/` wants inlining. `projects/placeholder.svg` is
+the one that proved it: it carries `role="img"` and an `aria-label`, which are
+right for a file loaded through `<img>` and wrong once the same markup is part
+of the page, because a screen reader then announces "No image yet" on a card
+whose title has already said what it is. It also hard-codes its colours, so it
+would not follow the dark theme.
+
+So inlining is not decided by the extension alone. A file opts in by being card
+art, and the ones that do carry `aria-hidden="true"` and no colour. Everything
+else keeps the `<img>` it always had.
+
+A path that is not an opted-in `.svg`, or one that is not on disk, falls back to
+`<img>`. A missing picture is already a visible 404. A build that dies over one
+is worse. Same call as `fingerprint()` makes.
+"""
+const _ART = Dict{String,String}()
+
+function card_media_art(path)
+    url = String(path)
+    if endswith(lowercase(url), ".svg") && startswith(url, "/assets/")
+        src = joinpath(@__DIR__, "_assets", url[9:end])
+        if isfile(src) && occursin("class=\"card-art\"", read(src, String))
+            return get!(_ART, url) do
+                art = read(src, String)
+                art = replace(art, r"<!--.*?-->"s => "")
+                # Collapse to one line. Every `d` attribute in these files is
+                # written on a single line, so nothing inside a path can be
+                # joined to its neighbour by this.
+                return join(strip.(split(art, '\n')), "")
+            end
+        end
+    end
+    return """<img src="$(esc(url))" alt="" loading="lazy">"""
+end
+
 function hfun_research_cards()
     pre = prefix()
     areas = data("research")["area"]
     used  = Set(String(p["area"]) for p in data("projects")["project"])
     cards = String[]
     for a in areas
-        img  = esc(get(a, "image", "/assets/img/projects/placeholder.svg"))
+        art  = card_media_art(get(a, "image", "/assets/img/projects/placeholder.svg"))
         body = """
           <span class="card-media-img">
-            <img src="$(img)" alt="" loading="lazy">
+            $(art)
           </span>
           <span class="card-media-body">
             <span class="card-title">$(esc(pick(a, "title")))</span>
             <span class="card-scope">$(esc(pick(a, "scope")))</span>
           </span>"""
-        # An area with no project yet is NOT a link. A card that lifts on hover
-        # and then goes nowhere reads as a broken page.
+        # An area with no project yet is NOT a link, and says so with
+        # `is-static`: the cursor stays an arrow. It still lifts on hover like
+        # every other card, because a row where half the cards answer the mouse
+        # and half ignore it reads as a broken page. See .card-media.is-static
+        # in style.css; nothing about the motion is decided here.
         inner = a["id"] in used ?
             """<a class="card-media" href="$(pre)/projects/#$(esc(a["id"]))">$(body)</a>""" :
             """<div class="card-media is-static">$(body)</div>"""
@@ -419,6 +498,154 @@ $(inner)
 $(join(cards, "
 "))
 </div>"""
+end
+
+# ---------------------------------------------------------------------------
+#  Heat path
+#
+#  NOT CALLED BY ANY PAGE YET. It was built for the laboratory-head slot on the
+#  home page, it builds clean and both gates pass, and then it was parked for a
+#  look first. Preview it by opening _internal-docs/preview/heat-path.html;
+#  how-to-switch-it-on.md beside it carries the one markup block that turns it
+#  on, and the list of what to delete if the answer is no.
+#
+#  One pipe, one station per research area, dots travelling from the hot end to
+#  the cold end. It answers the question the research cards do not: what ORDER
+#  does this work happen in.
+#
+#  TWO THINGS ARE EMITTED, NOT ONE, AND THAT SPLIT IS THE WHOLE DESIGN
+#
+#  1. An <svg> carrying ONLY geometry: two pipe walls, an inlet tick, the
+#     flowing fluid, an outlet arrow and one ring per station.
+#
+#     No TEXT, because SVG text does not obey the 12.8px floor that
+#     `scripts/shoot.py --measure` enforces. A 16-unit label on a 1200-unit
+#     canvas renders at 4.6px on a phone, and getComputedStyle still reports the
+#     unscaled 16px, so NOTHING in the toolchain would catch it.
+#
+#     No ICONS, because Bootstrap Icons is a webfont here and the glyph arrives
+#     through `.bi-cpu::before`. ::before does not exist on an SVG element in
+#     any browser. The icons therefore live in the list below, in the same
+#     .card-icon tile the rest of the site uses, at a real font size.
+#
+#  2. An <ol> underneath carrying the icon, the title and the note. Everything
+#     readable is there, translated from _data/heatpath.toml like every other
+#     list on this site. An ORDERED list, because the order IS the point, and
+#     because that is the accessible form of "a path" - which is also why the
+#     SVG is aria-hidden rather than role="img". It holds nothing the list does
+#     not already say, and a <title> would make a screen reader announce all
+#     five stations twice.
+#
+#  THE ALIGNMENT CONTRACT, WHICH IS NOT NEGOTIABLE
+#
+#  Station i sits at x = W(2i-1)/2n, the centre of the i-th of n EQUAL columns.
+#  The list underneath must therefore be n equal columns with NO gutter between
+#  them, the breathing room living as padding INSIDE each cell. A Bootstrap
+#  `row g-4` will NOT do: its negative outer margins make it 1.5rem wider than
+#  the container, which slides the first and last labels about 10px off their
+#  own nodes at every width. A CSS grid with `gap` misses by 0.4 x gap for the
+#  same reason. See .hp-stops in _css/style.css.
+# ---------------------------------------------------------------------------
+
+"""
+`{{heat_path}}` - the animated heat-path diagram on the home page.
+
+Geometry is derived from the number of `[[stop]]` rows, so adding a sixth
+station needs no CSS and no change here.
+
+A station LINKS to `/projects/#<area-id>` when that area has a project and is a
+plain block when it does not. Same rule and same reason as `hfun_research_cards`
+above: a block that answers the mouse and then goes nowhere reads as broken.
+
+Every `url(#hpGrad)` below is a presentation ATTRIBUTE and not a stylesheet
+rule, on purpose. A `url()` written in an external stylesheet resolves its
+fragment against the STYLESHEET's own URL in some engines, and
+`/css/style.css?v=...#hpGrad` does not exist. The reverse also holds, which is
+why `stop-color`, `fill` and `stroke-width` are in the stylesheet instead: a
+presentation attribute cannot take `var()`, so a colour token could never reach
+one. A presentation attribute loses to any author rule, so the two halves never
+collide.
+"""
+function hfun_heat_path()
+    pre   = prefix()
+    stops = data("heatpath")["stop"]
+    n     = length(stops)
+    n >= 2 || error("heatpath.toml needs at least two [[stop]] rows, found $(n)")
+
+    # Checked HERE and not by area_by_id, whose message names projects.toml and
+    # would send the next person to the wrong file entirely.
+    known = Set(String(a["id"]) for a in data("research")["area"])
+    for s in stops
+        String(get(s, "area", "")) in known || error(
+            "heatpath.toml: stop '$(get(s, "id", "?"))' has area = " *
+            "'$(get(s, "area", ""))', which is not an id in research.toml")
+    end
+    used = Set(String(p["area"]) for p in data("projects")["project"])
+
+    # --- geometry, all in viewBox units --------------------------------------
+    W, H = 1200, 120     # 120, not 200: at 1296px wide a 6:1 box would be 216px
+    Y    = 60            # tall with 170 of that empty. A pipe is long and thin.
+    X0   = 24            # inlet, a little before the first station
+    X1   = W - X0        # the point of the outlet arrow
+    TIP  = 30            # length of the arrowhead
+    BORE = 12            # half the bore; the two walls sit at Y +/- BORE
+    RING, CORE = 15, 5   # station ring, and its filled core
+
+    # The centre of column i of n equal columns. This is the contract.
+    xs = [W * (2i - 1) / (2n) for i in 1:n]
+
+    nodes = join(["""
+    <circle class="hp-ring" cx="$(svgnum(x))" cy="$(Y)" r="$(RING)" stroke="url(#hpGrad)"/>
+    <circle class="hp-core" cx="$(svgnum(x))" cy="$(Y)" r="$(CORE)" fill="url(#hpGrad)"/>"""
+    for x in xs], "\n")
+
+    # gradientUnits="userSpaceOnUse" is REQUIRED, not stylistic: a horizontal
+    # line has a zero-HEIGHT bounding box, and the objectBoundingBox default
+    # degenerates on it. It also means every element painting with #hpGrad picks
+    # up the colour belonging to its own x, so station 1's ring comes out hot
+    # and station 5's cool from one gradient, with no second definition.
+    svg = """
+  <svg class="hp-figure" viewBox="0 0 $(W) $(H)" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="hpGrad" gradientUnits="userSpaceOnUse"
+                      x1="$(X0)" y1="0" x2="$(X1)" y2="0">
+        <stop class="hp-hot" offset="0"/>
+        <stop class="hp-cool" offset="1"/>
+      </linearGradient>
+    </defs>
+    <path class="hp-wall" d="M $(X0) $(Y - BORE) H $(X1 - TIP) M $(X0) $(Y + BORE) H $(X1 - TIP)"/>
+    <path class="hp-inlet" d="M $(X0) $(Y - BORE - 6) V $(Y + BORE + 6)" stroke="url(#hpGrad)"/>
+    <path class="hp-flow" d="M $(X0) $(Y) H $(X1 - TIP - 6)" stroke="url(#hpGrad)"/>
+    <path class="hp-tip" d="M $(X1) $(Y) L $(X1 - TIP) $(Y - BORE - 4) L $(X1 - TIP) $(Y + BORE + 4) Z" fill="url(#hpGrad)"/>
+$(nodes)
+  </svg>"""
+
+    cells = String[]
+    for s in stops
+        aid  = String(s["area"])
+        body = """
+          <span class="card-icon">$(icon(s["icon"]))</span>
+          <h3 class="card-title">$(esc(pick(s, "title")))</h3>
+          <p class="card-scope">$(esc(pick(s, "note")))</p>"""
+        inner = aid in used ?
+            """<a class="hp-link" href="$(pre)/projects/#$(esc(aid))">$(body)
+        </a>""" :
+            """<div class="hp-body">$(body)
+        </div>"""
+        push!(cells, """      <li class="hp-stop" data-area="$(esc(aid))">
+        $(inner)
+      </li>""")
+    end
+
+    # role="list" is explicit because .hp-stops sets list-style:none, and
+    # Safari/VoiceOver drops list semantics the moment it sees that.
+    return """
+<figure class="hp" data-stops="$(n)">
+$(svg)
+  <ol class="hp-stops" role="list">
+$(join(cells, "\n"))
+  </ol>
+</figure>"""
 end
 
 # ---------------------------------------------------------------------------
@@ -562,6 +789,43 @@ function hfun_sectors()
 end
 
 # ---------------------------------------------------------------------------
+#  Facilities — the equipment underneath the capabilities.
+#
+#  The SAME card as a project card, on purpose: image, research area, title,
+#  one line of scope. A facility has no page of its own to open, so the card is
+#  a static <div> and not a link, exactly like a research area with no project.
+# ---------------------------------------------------------------------------
+
+"""
+`{{facilities}}` — the equipment grid at /facilities/.
+
+`area` is optional and is an id from research.toml, so the badge is bilingual
+for free and a typo stops the build. `image` is optional too and falls back to
+the shared placeholder, which is what every other card on this site does.
+"""
+function hfun_facilities()
+    cards = String[]
+    for f in data("facilities")["item"]
+        badge = haskey(f, "area") ? """
+            <span class="card-badge">$(esc(pick(area_by_id(String(f["area"]), "facilities.toml"), "title")))</span>""" : ""
+        img = esc(get(f, "image", "/assets/img/projects/placeholder.svg"))
+        push!(cards, """
+      <div class="col-md-6 col-lg-4">
+        <div class="card-media is-static" id="$(esc(f["id"]))">
+          <span class="card-media-img">
+            <img src="$(img)" alt="" loading="lazy">
+          </span>
+          <span class="card-media-body">$(badge)
+            <span class="card-title">$(esc(pick(f, "title")))</span>
+            <span class="card-scope">$(esc(pick(f, "lead")))</span>
+          </span>
+        </div>
+      </div>""")
+    end
+    return """<div class="row g-4">\n$(join(cards, "\n"))\n</div>"""
+end
+
+# ---------------------------------------------------------------------------
 #  Team
 #
 #  Staleness check: a `status = "current"` row whose `last_verified` is more
@@ -596,9 +860,9 @@ function person_by_id(id::AbstractString)
 end
 
 """Find one research area by id, or throw. Used to resolve a project's `area` field."""
-function area_by_id(id::AbstractString)
+function area_by_id(id::AbstractString, src::AbstractString = "projects.toml")
     hit = filter(a -> get(a, "id", "") == id, data("research")["area"])
-    isempty(hit) && error("projects.toml refers to area id '$id', which is not in research.toml")
+    isempty(hit) && error("$src refers to area id '$id', which is not in research.toml")
     return first(hit)
 end
 
@@ -635,7 +899,7 @@ function project_card(p)
       <div class="col-md-6 col-lg-4 pg-item" data-area="$(esc(p["area"]))">
         <a class="card-media" href="$(esc(href))" target="_blank" rel="noopener">
           <span class="card-media-img">
-            <img src="$(esc(p["image"]))" alt="" loading="lazy">
+            $(card_media_art(p["image"]))
           </span>
           <span class="card-media-body">
             <span class="card-badge">$(esc(pick(area, "title")))</span>

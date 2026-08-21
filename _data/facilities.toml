@@ -1,0 +1,69 @@
+# Facilities — the rigs, chambers and instruments the lab measures with.
+#
+# One [[item]] here makes ONE card in the grid at /facilities/, in both
+# languages. The card is the same one the Projects page uses: image, research
+# area, title, one line of scope. Nobody writes HTML for a facility.
+#
+# ALL SIX ENTRIES BELOW ARE PLACEHOLDERS. Replace them before launch.
+#
+# FIELDS
+#   id     required   the anchor, /facilities/#<id>
+#   area   optional   an id from research.toml. Draws the label above the
+#                     title, in both languages. A wrong id STOPS the build.
+#   image  optional   a photo. Left out, the card shows the shared placeholder.
+#   title  required   what the thing is called
+#   lead   required   one or two sentences: what it measures, and for whom
+
+[[item]]
+id       = "placeholder-facility-1"
+area     = "two-phase"
+image    = "/assets/img/projects/placeholder.svg"
+title_en = "Lorem ipsum dolor sit amet consectetur"
+title_zh = "佔位設備名稱：實驗平台敘述"
+lead_en  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為何，以及企業可以送什麼樣品來測試。"
+
+[[item]]
+id       = "placeholder-facility-2"
+area     = "heat-exchangers"
+image    = "/assets/img/projects/placeholder.svg"
+title_en = "Lorem ipsum dolor sit amet consectetur"
+title_zh = "佔位設備名稱：實驗平台敘述"
+lead_en  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為何，以及企業可以送什麼樣品來測試。"
+
+[[item]]
+id       = "placeholder-facility-3"
+area     = "hvacr"
+image    = "/assets/img/projects/placeholder.svg"
+title_en = "Lorem ipsum dolor sit amet consectetur"
+title_zh = "佔位設備名稱：實驗平台敘述"
+lead_en  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為何，以及企業可以送什麼樣品來測試。"
+
+[[item]]
+id       = "placeholder-facility-4"
+area     = "electronics-cooling"
+image    = "/assets/img/projects/placeholder.svg"
+title_en = "Lorem ipsum dolor sit amet consectetur"
+title_zh = "佔位設備名稱：實驗平台敘述"
+lead_en  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為何，以及企業可以送什麼樣品來測試。"
+
+[[item]]
+id       = "placeholder-facility-5"
+area     = "data-center"
+image    = "/assets/img/projects/placeholder.svg"
+title_en = "Lorem ipsum dolor sit amet consectetur"
+title_zh = "佔位設備名稱：實驗平台敘述"
+lead_en  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為何，以及企業可以送什麼樣品來測試。"
+
+[[item]]
+id       = "placeholder-facility-6"
+area     = "ai-thermal"
+image    = "/assets/img/projects/placeholder.svg"
+title_en = "Lorem ipsum dolor sit amet consectetur"
+title_zh = "佔位設備名稱：實驗平台敘述"
+lead_en  = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為何，以及企業可以送什麼樣品來測試。"

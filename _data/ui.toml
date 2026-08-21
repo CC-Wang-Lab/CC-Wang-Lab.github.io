@@ -21,6 +21,8 @@ home_en         = "Home"
 home_zh         = "首頁"
 projects_en     = "Projects"
 projects_zh     = "研究專案"
+facilities_en   = "Facilities"
+facilities_zh   = "實驗設備"
 people_en       = "People"
 people_zh       = "研究成員"
 publications_en = "Publications"
@@ -140,6 +142,17 @@ industry_link_en = "How we collaborate"
 industry_link_zh = "合作方式"
 pi_head_en       = "Laboratory head"
 pi_head_zh       = "實驗室主持人"
+# The heat-path diagram. It replaced the laboratory-head block on the home page,
+# but pi_head above is STILL USED - hfun_person_heading reads it for the top of
+# a person's own page. Do not delete it.
+#
+# The heading answers the hero. The hero says every watt has to go somewhere;
+# this says where. Keep that relationship: a heading here that names a research
+# area is repeating the research cards one section above.
+heat_head_en     = "Where the heat goes"
+heat_head_zh     = "熱的去處"
+heat_lead_en     = "One watt, followed from the junction to the outside air. Every stop is a research area."
+heat_lead_zh     = "追蹤一瓦熱，從接面一路到外氣。每一站都對應一個研究領域。"
 pubs_head_en     = "Selected publications"
 pubs_head_zh     = "代表性研究成果"
 pubs_link_en     = "All publications"
@@ -270,6 +283,13 @@ all_en         = "All projects"
 all_zh         = "全部專案"
 back_en        = "Back to projects"
 back_zh        = "回到專案列表"
+
+# The equipment page. The lead sends the reader to /about/ for what the
+# equipment can DO, because that is the question an industrial visitor came
+# with and this page deliberately does not answer it twice.
+[facilities]
+page_lead_en   = "The rigs, chambers and instruments this laboratory measures with. What they can do for a project is on the About page."
+page_lead_zh   = "本實驗室用於量測的實驗平台、環境室與儀器。這些設備能為專案做什麼，請見關於實驗室頁面。"
 
 [about]
 page_lead_en   = "The laboratory, the people who lead it, and how companies work with us."

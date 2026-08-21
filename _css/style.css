@@ -175,6 +175,28 @@
   --lab-nav-bg: rgba(253, 252, 250, 0.92);
   --lab-shadow: 0 2px 14px rgba(24, 24, 40, 0.07);
   --lab-shadow-lift: 0 10px 28px rgba(24, 24, 40, 0.13);
+
+  /*
+    The line-drawing cards (.card-art). The ground is one step deeper than
+    --lab-surface-2, so a drawn card reads as an IMAGE sitting in the card and
+    not as a card somebody forgot to fill in. That one step is the whole reason
+    it is not just --lab-surface-2.
+
+    The strokes are the tokens above, unchanged, so a drawing cannot drift away
+    from the rest of the site. Measured against this ground, all six clear the
+    WCAG 1.4.11 non-text floor of 3:1 with room to spare:
+
+      --lab-muted    #6b6b78   4.26      --lab-muted    #9a9aae   6.22
+      --lab-accent   #9c6014   4.16      --lab-accent   #eda43f   8.17
+      --lab-accent-2 #2d5c7a   5.83      --lab-accent-2 #5aa0cc   6.00
+                     (light)                            (dark)
+
+    --lab-glow is the cursor spotlight. It is a wash over an image, so it has no
+    contrast duty; it is here rather than in the rule because no hex belongs in
+    a rule.
+  */
+  --lab-art-ground: #ece7dd;
+  --lab-glow: rgba(216, 144, 48, 0.22);
 }
 
 /*
@@ -203,6 +225,11 @@
   --lab-nav-bg: rgba(20, 20, 30, 0.92);
   --lab-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
   --lab-shadow-lift: 0 10px 28px rgba(0, 0, 0, 0.55);
+  /* Deeper than --lab-surface-2 for the same reason as in light: a drawing sits
+     in a well, not on the card face. The measured ratios are in the light
+     block above. */
+  --lab-art-ground: #1a1a28;
+  --lab-glow: rgba(237, 164, 63, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -836,6 +863,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .news-title { margin-bottom: 0.4rem; }
 .news-body { color: var(--lab-muted); font-size: var(--fs-sm); margin-bottom: 0; }
 
+
 /* --------------------------------------------------------------------------
    Final CTA
    -------------------------------------------------------------------------- */
@@ -1045,61 +1073,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-hd .pi-heading { margin-bottom: 0.5rem; }
 .person-hd .pi-titles { margin-bottom: 1.1rem; max-width: none; }
 .person-hd .pi-rule { margin-bottom: 0; }
-
-/* --------------------------------------------------------------------------
-   The page-open entrance
-
-   reveal.js deliberately does NOT animate anything already on screen at load:
-   it marks those blocks done before it hides anything, so the top of a page is
-   never blank. Correct, and it left a person page opening with nothing but the
-   site-wide 0.4s body fade.
-
-   So the header band gets its own entrance, in CSS only, and it is keyed on
-   `body.loaded` - the class the site ALREADY uses for that fade. That is what
-   makes it safe: if the class never arrives, the body is at opacity 0 anyway,
-   so this can never hide something that was otherwise visible.
-
-   The values are the reveal vocabulary, halved: 0.75rem instead of 1.25rem,
-   0.5s instead of 0.55s, because a header is read first and should not keep
-   the reader waiting.
-   -------------------------------------------------------------------------- */
-
-.person-hd .pi-eyebrow,
-.person-hd .pi-heading,
-.person-hd .pi-titles,
-.person-hd .pi-rule,
-.person-hd .project-crumb {
-  opacity: 0;
-  transform: translateY(0.75rem);
-}
-body.loaded .person-hd .project-crumb,
-body.loaded .person-hd .pi-eyebrow,
-body.loaded .person-hd .pi-heading,
-body.loaded .person-hd .pi-titles,
-body.loaded .person-hd .pi-rule {
-  opacity: 1;
-  transform: none;
-  transition: opacity 0.5s ease-out var(--in-delay, 0ms),
-              transform 0.5s ease-out var(--in-delay, 0ms);
-}
-/* One step per line down the band, so it reads top to bottom rather than as
-   one block appearing. */
-.person-hd .project-crumb { --in-delay: 0ms; }
-.person-hd .pi-eyebrow    { --in-delay: 70ms; }
-.person-hd .pi-heading    { --in-delay: 140ms; }
-.person-hd .pi-titles     { --in-delay: 210ms; }
-.person-hd .pi-rule       { --in-delay: 280ms; }
-
-/* The pause button wins, here as everywhere. */
-.motion-off .person-hd .project-crumb,
-.motion-off .person-hd .pi-eyebrow,
-.motion-off .person-hd .pi-heading,
-.motion-off .person-hd .pi-titles,
-.motion-off .person-hd .pi-rule {
-  opacity: 1 !important;
-  transform: none !important;
-  transition: none !important;
-}
 .pi-heading {
   color: var(--lab-accent);
   font-size: var(--fs-2xl);
@@ -1460,13 +1433,87 @@ body.loaded .person-hd .pi-rule {
   border-radius: 0.75rem;
   background: var(--lab-surface-2);
   box-shadow: 0 0.9375rem 1.5625rem 0 rgba(24, 24, 40, 0.15);
-  transform: translateY(0);
+  /*
+    ONE transform declaration doing two jobs, and it has to be one.
+
+    The lift is imec's, unchanged: translateY(-1.25em) on hover. The tilt is
+    driven by cards.js, which writes --rx and --ry as the cursor moves. A second
+    `transform` rule for the tilt would REPLACE this one rather than add to it,
+    and the lift would silently die. Custom properties are what let both live in
+    a single declaration.
+
+    perspective() is written here as a transform FUNCTION rather than as a
+    `perspective` property on .card-media. The property would need a parent, and
+    that parent is the element reveal.js transforms, so the two would fight over
+    the same stacking context. The function needs nobody.
+
+    THE TRANSITION IS 0.25s ease-out FOR BOTH, AND THAT IS THE DESIGN.
+    A pointer move restarts this transition every frame, which turns a plain
+    ease into a damped follow: the card trails the cursor by a few frames and
+    settles. That IS the spring feel, produced by the imec number this file
+    already used, with nothing new to tune and nothing to measure again.
+  */
+  transform: perspective(56rem)
+             translateY(var(--lift, 0))
+             rotateX(var(--rx, 0deg))
+             rotateY(var(--ry, 0deg));
   transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+
+/*
+  The cursor spotlight. cards.js writes --mx and --my; everything else is here.
+
+  No mix-blend-mode. `screen` looks right on a dark photo and washes a light one
+  out, so it would need a per-theme override that does not survive a photo being
+  swapped. Plain alpha compositing behaves the same on every image in both
+  themes, and it is the same thing headless Edge paints during a screenshot.
+*/
+.card-media-img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  background: radial-gradient(
+    16rem 16rem at var(--mx, 50%) var(--my, 50%),
+    var(--lab-glow),
+    transparent 68%
+  );
+}
+/* .is-tracking is set by cards.js on pointerenter and only for a mouse, so a
+   finger tap can never leave a card wearing a spotlight it cannot remove. */
+.card-media.is-tracking .card-media-img::after { opacity: 1; }
+/* On for the hover, off again after. Six cards each holding a promoted layer
+   for the life of the page costs memory whether or not anybody hovers one. */
+.card-media.is-tracking .card-media-img { will-change: transform; }
+
+/*
+  The tilt is a MOUSE effect. A touch device has no hover to leave, so a card
+  would keep the last angle the finger gave it. cards.js checks pointerType and
+  this query is the second lock on the same door.
+*/
+@media (hover: none), (pointer: coarse) {
+  .card-media-img {
+    transform: translateY(var(--lift, 0));
+  }
+  .card-media-img::after { display: none; }
 }
 [data-bs-theme="dark"] .card-media-img {
   box-shadow: 0 0.9375rem 1.5625rem 0 rgba(0, 0, 0, 0.45);
 }
-.card-media-img img {
+/*
+  An <img> for a photograph, an inline <svg> for a line drawing. Which one is
+  decided at build time by card_media_art() in utils.jl, from the file
+  extension in _data/research.toml. Both fill the frame the same way.
+
+  object-fit does nothing to an inline <svg>, because an <svg> element is not a
+  replaced element. The drawings do not need it: they are authored in a 480x270
+  viewBox, which is the 16/9 this frame already is, so preserveAspectRatio's
+  default lands them exactly. Nothing is cropped on either path.
+*/
+.card-media-img > img,
+.card-media-img > svg {
   display: block;
   width: 100%;
   height: 100%;
@@ -1485,12 +1532,193 @@ body.loaded .person-hd .pi-rule {
 .card-media-body .card-scope,
 .card-media-body .card-by { display: block; }
 
-/* The lift. Both halves move, exactly as imec does it. */
-.card-media:hover .card-media-img,
+/*
+  The lift. Both halves move, exactly as imec does it.
+
+  SPLIT INTO TWO RULES ON PURPOSE. The body still takes a plain transform. The
+  image cannot, because its own `transform` declaration is already carrying the
+  perspective and the tilt, and a second declaration here would replace all
+  three rather than add to it. So the image gets the same 1.25em over the same
+  0.25s, handed over as a variable instead of as a transform.
+*/
 .card-media:hover .card-media-body { transform: translateY(-1.25em); }
-.card-media:hover .card-media-img { box-shadow: 0 1.25rem 2rem 0 rgba(24, 24, 40, 0.22); }
+.card-media:hover .card-media-img {
+  --lift: -1.25em;
+  box-shadow: 0 1.25rem 2rem 0 rgba(24, 24, 40, 0.22);
+}
 /* Deliberately tiny. imec uses 1.025 and it reads as depth, not as a zoom. */
-.card-media:hover .card-media-img img { transform: scale(1.025) translateZ(0); }
+.card-media:hover .card-media-img > img,
+.card-media:hover .card-media-img > svg { transform: scale(1.025) translateZ(0); }
+
+/* --------------------------------------------------------------------------
+   Line-drawing cards (.card-art)
+
+   Four research areas have no photograph yet. They used to carry a grey
+   gradient reading "image to be supplied", which told an industry visitor that
+   half the home page was unfinished. They now carry a drawing of the physics,
+   and the drawing paints itself as the card scrolls into view.
+
+   THE COLOUR IS IN HERE, NOT IN THE FILES.
+   Every .svg under _assets/img/research/ is stroke geometry with no `fill`, no
+   `stroke` and no `id`. That is what lets one set of tokens serve both themes,
+   and it is what makes an id collision impossible when four of these are inlined
+   into a single page. The reasoning is written out at the top of
+   data-center.svg.
+
+   THE DRAW COSTS NO JAVASCRIPT.
+   reveal.js already puts .is-in on every .card-media as it arrives. The rules
+   below hang off that class, so the whole effect is a transition. There is no
+   getTotalLength() call anywhere, because every path carries pathLength="1" and
+   a dash of 1 therefore covers exactly one whole path whatever its real length.
+   -------------------------------------------------------------------------- */
+
+.card-art { display: block; }
+.card-art .ca-ground { fill: var(--lab-art-ground); }
+
+/* Specificity: `.card-art path` is (0,1,1) and every class rule below is (0,2,0),
+   so the two fills above and below survive this. */
+.card-art path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.card-art .ca-line { stroke: var(--lab-muted); stroke-width: 3; }
+.card-art .ca-thin { stroke: var(--lab-muted); stroke-width: 1.6; }
+.card-art .ca-tube { stroke-width: 2.4; }
+.card-art .ca-hot { stroke: var(--lab-accent); stroke-width: 2.4; }
+.card-art .ca-cool { stroke: var(--lab-accent-2); stroke-width: 2.4; }
+/* Texture, not information: the 35 edges say "a network", and the nodes carry
+   the shape. Held back so it cannot compete with the nodes drawn over it. */
+.card-art .ca-mesh { stroke: var(--lab-muted); stroke-width: 1; stroke-opacity: 0.45; }
+.card-art .ca-node {
+  stroke: var(--lab-accent-2);
+  stroke-width: 2;
+  fill: var(--lab-art-ground);
+}
+
+/* The four layers of every drawing, in the order a hand would draw them. */
+.card-art .ca-l1 { --ca-step: 0; }
+.card-art .ca-l2 { --ca-step: 1; }
+.card-art .ca-l3 { --ca-step: 2; }
+.card-art .ca-l4 { --ca-step: 3; }
+
+/*
+  THE DRAW: A KEYFRAME ANIMATION, NOT A TRANSITION, AND NOTHING IS EVER HIDDEN.
+
+  This is the oldest trap in .claude/rules/animation.md wearing new clothes. An
+  effect that hides something and then shows it is one failure away from a card
+  that is simply empty, with no clue why. Here that failure cannot happen,
+  because nothing is hidden in the first place: a path with no dash is a whole
+  path. The animation supplies its own starting value for the 0.9s it runs and
+  the drawing is complete before and after.
+
+  A TRANSITION WAS TRIED FIRST AND IT DOES NOT WORK. MEASURED 2026-08-20.
+
+  A transition needs a previous value to travel FROM, so it needs the path to be
+  hidden beforehand, which means a rule keyed off something reveal.js sets:
+  `[data-reveal=""]` on the card, or even just `.js-reveal` on <html>. Both were
+  built and both failed the same way.
+
+  Probed in headless Edge, sampling stroke-dashoffset every 60ms across the
+  moment the grid arrives, the offset read 0px at EVERY sample. The drawing
+  appeared fully formed. At page load those same paths computed
+  `stroke-dasharray: none` although the selector matched them, which
+  .matches() confirmed by returning true. The rule matched and the value was
+  still stale: Chrome had not re-resolved these SVG paint properties after the
+  ancestor changed. Appending any stylesheet afterwards forced a recalc and the
+  animation appeared, which is what proved it was invalidation and not the
+  cascade.
+
+  An animation asks for none of that. Everything it needs arrives in the single
+  moment .is-in lands on the card, which is the one invalidation that was
+  measured to work. Offsets after the change run 1 -> 0.75 -> 0.45 -> 0.16 -> 0.
+
+  THE GUARDS, WHICH ARE NOW MOSTLY STRUCTURAL
+    a. Only .is-in can start it, and only reveal.js sets .is-in. No script means
+       a complete drawing, not a blank one.
+    b. Nothing is hidden at any point, so there is no hidden state to get stuck
+       in. This is the guard that used to need three rules and now needs none.
+    c. Motion off never adds .is-in, so the animation never starts. The rule
+       below makes that explicit rather than leaving it to be inferred.
+    d. reveal.js's 4s failsafe adds .is-in to whatever is left, which starts the
+       drawing rather than rescuing it.
+
+  0.9s to draw. The reveal itself is 0.55s, so the line is still arriving as the
+  card finishes fading in, which is what makes it read as drawing rather than as
+  a second fade.
+
+  Two delays add up. --reveal-i is the card's own place in its row, 60ms a step,
+  which reveal.js already sets and caps at five. --ca-step is the layer, 160ms a
+  step, four layers. Worst case is 300 + 480 = 780ms of wait on top of 900ms of
+  draw, and only for the last layer of the last card in a row.
+
+  animation-fill-mode: both is what makes the stagger work. During the delay the
+  path holds the `from` frame and is not yet drawn; without it every layer would
+  sit there fully drawn and then blink back to nothing when its turn came.
+
+  Written longhand. `animation: ca-draw .9s ease-out both calc(...)` is correct
+  but rests on the reader knowing that the second <time> in the shorthand is the
+  delay, and one calc() in the wrong slot here is a silent no-animation.
+*/
+.js-reveal .card-media.is-in .card-art path[pathLength] {
+  animation-name: ca-draw;
+  animation-duration: 0.9s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  animation-delay: calc(var(--reveal-i, 0) * 60ms + var(--ca-step, 0) * 160ms);
+}
+
+/*
+  DECREASING the offset paints the line in. Increasing it would rub it out.
+
+  stroke-dasharray is set INSIDE the keyframes, not on the rule above. That is
+  what makes "no animation" mean "whole path" everywhere, with nothing to
+  remember: cancel the animation for any reason and the base style has no dash
+  left in it. Both .is-drawn and .motion-off below rely on exactly that.
+*/
+@keyframes ca-draw {
+  from { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  to { stroke-dasharray: 1; stroke-dashoffset: 0; }
+}
+
+/*
+  THE FIFTH FAILSAFE, AND THE ONLY REASON THIS EFFECT IS SAFE TO SHIP.
+
+  An animation that never advances holds its FIRST frame, and the first frame of
+  a draw-in is an empty card. Measured 2026-08-20: under `--virtual-time-budget`
+  the headless window scripts/shoot.py uses produces no frames, so all four
+  drawings screenshot blank while the audit still reports AUDIT CLEAN, because
+  the audit checks opacity and knows nothing about a dash.
+
+  reveal.js therefore pairs every .is-in with a 2.6s timer that adds .is-drawn.
+  Timers are not frame-driven, so this fires exactly where the animation cannot.
+  Dropping the animation drops the dash with it, and a path with no dash is a
+  whole path.
+
+  If the animation did run, this rule changes nothing: it lands on a drawing
+  that is already finished.
+*/
+.card-media.is-drawn .card-art path[pathLength] {
+  animation: none !important;
+}
+
+/*
+  Guard (c), said out loud.
+
+  With motion off reveal.js marks nothing at all: it calls revealEverything(),
+  which walks `[data-reveal]`, and no element carries that attribute because
+  startReveal() never ran. So .is-in never lands, the rule above never applies,
+  and the drawing is complete because it was never anything else.
+
+  This line therefore changes nothing today. It is here so that a future change
+  which does put .is-in on a card while motion is off cannot start an animation
+  a paused visitor asked not to see. Dropping the animation drops the dash with
+  it, and a path with no dash is a whole path.
+*/
+.motion-off .card-art path[pathLength] {
+  animation: none !important;
+}
+}
 
 .card-badge {
   display: inline-block;
@@ -1976,12 +2204,18 @@ body.loaded .person-hd .pi-rule {
 /* Publications header: the two profile links sit on one line. */
 .pub-links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.25rem; }
 
-/* A research card whose area has no project yet is not a link, so it must not
-   pretend to be one. */
+/* A research card whose area has no project yet is not a link. It still lifts,
+   zooms and casts the same shadow as every other card.
+
+   An earlier version suppressed all three, so that a card could not promise a
+   destination it did not have. Reported on 2026-08-20: a six-card grid where
+   three cards answer the mouse and three ignore it reads as a broken page, and
+   it is read that way long before anyone tries to click. The motion is now the
+   same for all six.
+
+   The CURSOR is what separates them, and it is enough: a linked card is an <a>
+   and gets the pointer, a static card is a <div> and keeps the arrow. */
 .card-media.is-static { cursor: default; }
-.card-media.is-static:hover .card-media-img,
-.card-media.is-static:hover .card-media-body { transform: none; }
-.card-media.is-static:hover .card-media-img img { transform: none; }
 
 /* --------------------------------------------------------------------------
    Projects — one grid, narrowed by a research-area chip.
@@ -2036,3 +2270,239 @@ body.loaded .person-hd .pi-rule {
 /* Bootstrap's .col-* sets `display: block`, which beats the UA sheet's rule for
    [hidden]. Without !important a filtered-out card stays on screen. */
 .pg-item[hidden] { display: none !important; }
+
+/* --------------------------------------------------------------------------
+   Heat path
+
+   NOT ON ANY PAGE YET. Nothing calls {{heat_path}}, so every rule below is
+   inert. It is kept because switching it on is one markup block, written out in
+   _internal-docs/preview/how-to-switch-it-on.md, and because the preview file
+   beside that one loads THIS stylesheet live rather than a copy.
+
+   Generated by hfun_heat_path (utils.jl). Read the banner comment there first:
+   it explains why the picture and the words are two separate elements, why the
+   SVG carries no text and no icons, and why the labels cannot be a Bootstrap
+   row.
+   -------------------------------------------------------------------------- */
+
+.hp { margin: 0; }
+
+.hp-figure {
+  display: block;
+  width: 100%;
+  height: auto; /* the viewBox supplies the 10:1 intrinsic ratio */
+}
+
+/* The pipe, drawn in section: a neutral line, so the pipe reads as DRAWN and
+   only the fluid reads as COLOURED.
+
+   NOT --bs-border-color, which is what a 1px rule between blocks uses. Measured
+   on --lab-surface-2 it is 1.21 in light and 1.15 in dark, and the first build
+   came out with the dots apparently floating in space because the pipe was not
+   there. --lab-border-strong is 2.95 and 2.94, near enough identical in both
+   themes, which is why the same value serves both. It is under 3.0 on purpose:
+   this is a decorative graphic, not a user-interface component, the whole SVG
+   is aria-hidden, and a pipe that competes with the fluid is the wrong picture.
+   --lab-muted was the other candidate and is far too heavy at 4.7 and 5.58. */
+.hp-wall {
+  fill: none;
+  stroke: var(--lab-border-strong);
+  stroke-width: 2;
+}
+
+/* Inlet boundary and outlet arrow. Without them the pipe has no direction, and
+   a heat path with no direction is a decoration. */
+.hp-inlet { fill: none; stroke-width: 3; stroke-linecap: round; }
+.hp-tip { stroke: none; }
+
+/*
+  THE FLUID, AND WHY IT IS A DASHED STROKE
+
+  The travelling dots are a dash pattern on ONE path. There is no circle per dot
+  and no per-dot animation-delay, because a dash pattern is ALREADY evenly
+  distributed at every possible offset.
+
+  That is the whole reason this mechanism was chosen over offset-path and over
+  SMIL animateMotion. motion.js applies `html.motion-off` at DOMContentLoaded,
+  which is LONG after the stylesheet started this animation, so pausing does NOT
+  freeze it at 0%: it freezes it at an arbitrary time that virtual time in
+  scripts/shoot.py makes unpredictable. Here that does not matter, because every
+  frame of this animation is a valid still. All sixteen audit screenshots are
+  taken paused, and all sixteen show a correct diagram.
+
+  SMIL was rejected outright: animation-play-state does not touch the SMIL
+  timeline, so pausing it would need JavaScript. That breaks the no-script
+  design AND WCAG 2.2.2, because nothing on the page could stop it.
+
+  1.4s per 56-unit period is 40 units/s, about 43 px/s at the 1440 shot. The
+  partners marquee runs at 26 px/s because it must not compete with reading; a
+  flow arrow has to read AS FLOW, and 26 px/s does not. Dash period 56 against a
+  240-unit station pitch is deliberately not a whole ratio (240/56 = 4.29), so a
+  dot can never park on every station at once.
+*/
+.hp-flow {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round; /* a 1-unit dash plus two round caps IS a dot */
+  stroke-dasharray: 1 55;
+  stroke-dashoffset: 56;
+  animation: hp-flow 1.4s linear infinite;
+}
+
+/* DECREASING the offset moves the pattern along the path, hot end to cold end.
+   Increasing it would run the heat backwards into the chip. Exactly one period,
+   so the loop is seamless. */
+@keyframes hp-flow {
+  from { stroke-dashoffset: 56; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* WCAG 2.2.2 "Pause, Stop, Hide". `paused`, not `animation: none` as at
+   .typed-caret: none snaps the dots back to the start both when the visitor
+   pauses AND when they resume. Paused freezes them where they are. */
+.motion-off .hp-flow { animation-play-state: paused; }
+
+/* The stations. The ring is filled with the band it sits on, so the walls, the
+   fluid and the dots pass BEHIND it: a dot vanishing into a station and coming
+   out the far side is fluid entering a component, which is what is happening.
+   SVG has no z-index, so the paint order in hfun_heat_path is what makes that
+   work - walls, inlet, flow, tip, then rings.
+
+   COUPLED TO .section-alt. If this block ever moves to a plain .section this
+   becomes --bs-body-bg, or the ring punches a hole of the wrong colour. */
+.hp-ring { fill: var(--lab-surface-2); stroke-width: 3; }
+.hp-core { stroke: none; }
+
+/*
+  The only two SVG paint rules allowed in this file. stop-color cannot be a
+  presentation attribute here, because a presentation attribute does not accept
+  var() and a token could never reach it. Every url(#hpGrad) goes the other way,
+  into the MARKUP, because a url() in an external stylesheet resolves its
+  fragment against the STYLESHEET's own URL in some engines, and
+  /css/style.css?v=...#hpGrad does not exist.
+
+  NO ALPHA ANYWHERE IN THIS BLOCK, on purpose: scripts/check-contrast.py
+  understands hex only, so an alpha channel is unauditable. Measured on
+  --lab-surface-2 the ramp is 4.59 -> 6.43 in light and 7.32 -> 5.38 in dark.
+  The minimum is always an ENDPOINT, and both endpoints are already asserted at
+  4.5 by the two "on the alt band" pairs in that script, so it needs no edit.
+  The raw brand pair was rejected by the same measurement: --lab-orange on this
+  band is 2.36, which fails even the 3.0 non-text threshold.
+*/
+.hp-hot { stop-color: var(--lab-accent); }
+.hp-cool { stop-color: var(--lab-accent-2); }
+
+/*
+  THE LABELS
+
+  n equal columns with NO gutter between them. The gutter is padding INSIDE each
+  cell, so the centre of cell i is exactly W(2i-1)/2n of the row - the same
+  number hfun_heat_path put the station at.
+
+  A Bootstrap `row g-4` has negative outer margins that make it 1.5rem wider
+  than the container, which would slide the first and last labels about 10px off
+  their own nodes at every width. A CSS grid with `gap` misses by 0.4 x gap for
+  the same reason. flex:1 1 0 also keeps the stop count out of this file
+  entirely, so a sixth [[stop]] row needs nothing here.
+*/
+.hp-stops {
+  display: flex;
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.hp-stop {
+  flex: 1 1 0;
+  /* REQUIRED, NOT TIDYING. A flex item defaults to min-width:auto, which
+     resolves to min-content, so ONE unbreakable word wider than the column
+     ("Dehumidification" is about 168px against a 163px column at 992) widens
+     the track, widens the row, widens the page, and fails the whole
+     `python scripts/shoot.py --measure` run on scrollWidth - clientWidth. */
+  min-width: 0;
+  overflow-wrap: break-word;
+  padding: 0 0.75rem;
+  text-align: center;
+}
+
+/* .card-scope is in the justified list further up this file. Justifying a 163px
+   column opens rivers straight down it. Centred here, left when the diagram
+   turns ninety degrees below. */
+.hp-stop .card-scope { text-align: center; }
+
+.hp-link { display: block; color: inherit; }
+.hp-link:hover { text-decoration: none; }
+.hp-link:hover .card-title { color: var(--lab-accent); }
+/* The same three declarations as .card-area:hover .card-icon, on purpose: a
+   tile that fills on hover should fill the same way everywhere on the site. */
+.hp-link:hover .card-icon {
+  background: var(--lab-orange);
+  color: var(--lab-on-brand);
+  box-shadow: none;
+}
+
+/*
+  BELOW 992 THE DIAGRAM TURNS NINETY DEGREES.
+
+  Five columns need about 160px each before an English title starts breaking
+  badly. Measured against Bootstrap's own container ladder, with 0.75rem of
+  padding inside each of five cells, the usable text width per column is:
+
+      layout width   container   per column
+        1416           1320        235px
+        1200           1140        199px
+         992            960        163px   <- the floor
+         744            540         79px   <- unusable
+         468            468         65px   <- unusable
+
+  Note the cliff is at 768, not 576: at a 744px layout width the container is
+  still the `sm` 540. So 992 is the line, and below it each stop becomes a row
+  on a vertical rail.
+
+  NOT two columns. A heat path is a SEQUENCE, and five items in two columns
+  destroys the reading order to buy density nobody asked for.
+
+  The horizontal SVG is switched OFF rather than redrawn vertically, so there is
+  exactly one piece of geometry to maintain. The rail is drawn in
+  --lab-border-strong and not in the gradient, for the same reason .hp-wall is:
+  on the wide form the gradient is the FLUID and the neutral line is the PIPE,
+  and what a stacked list can show is the pipe. There is no flow animation in
+  this form either - an animated 9px
+  node on a phone is noise, and it means the two narrow shots of / in the audit
+  matrix are fully static and fully legible.
+*/
+@media (max-width: 991.98px) {
+  .hp-figure { display: none; }
+  .hp-stops { display: block; }
+  .hp-stop {
+    position: relative;
+    padding: 0 0 1.75rem 0;
+    text-align: left;
+  }
+  .hp-stop:last-child { padding-bottom: 0; }
+  .hp-stop .card-scope { text-align: left; }
+  /* One segment per gap, from this icon's bottom edge to the next icon's top
+     edge. Per segment rather than one rail down the whole list, so nothing
+     overshoots past the last station and nothing has to pass behind a tile. */
+  .hp-stop:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: calc(1.3rem - 1px);
+    top: 2.6rem;
+    bottom: 0;
+    width: 2px;
+    background: var(--lab-border-strong);
+  }
+  /* The grid lives on the link, not on the li, so the whole row stays one click
+     target. `display: contents` would have removed the link's own box. */
+  .hp-link,
+  .hp-body {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    column-gap: 1rem;
+  }
+  .hp-stop .card-icon {
+    grid-row: 1 / span 2;
+    margin-bottom: 0;
+  }
+}
