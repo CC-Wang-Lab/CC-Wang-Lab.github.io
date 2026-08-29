@@ -95,6 +95,16 @@ end
 
 first_or_empty(v) = isempty(v) ? "" : String(v[1])
 
+"""A data row is public unless it is explicitly marked as a placeholder."""
+is_public(row::AbstractDict) = !Bool(get(row, "placeholder", false))
+
+"""Return only records approved for public rendering, preserving source order."""
+public_rows(rows) = filter(is_public, rows)
+
+"""A localized, semantic empty state for a public collection page."""
+empty_state(kind::AbstractString) =
+    """<p class="empty-state" data-empty-state="$(esc(kind))">$(esc(ui("empty", kind)))</p>"""
+
 # ---------------------------------------------------------------------------
 #  Small helpers
 # ---------------------------------------------------------------------------
@@ -228,6 +238,42 @@ function rpath()
     p === nothing ? "index.md" : replace(String(p), '\\' => '/')
 end
 
+"""Whether a data-backed navigation destination currently has public content."""
+function section_has_public_records(key::AbstractString)
+    key == "news"       && return !isempty(public_rows(data("news")["item"]))
+    key == "facilities" && return !isempty(public_rows(data("facilities")["item"]))
+    key == "people"     && return any(p -> get(p, "status", "current") == "current",
+                                       public_rows(data("team")["person"]))
+    key == "projects"   && return !isempty(public_rows(data("projects")["project"]))
+    return true
+end
+
+visible_nav() = filter(item -> section_has_public_records(first(item)), NAV)
+
+public_alumni_records() = filter(p -> get(p, "status", "") == "alumni",
+                                  public_rows(data("team")["person"]))
+
+function page_noindex()
+    explicit = try
+        locvar(:noindex)
+    catch
+        nothing
+    end
+    explicit === true && return true
+    explicit !== nothing && lowercase(string(explicit)) == "true" && return true
+
+    page = replace(rpath(), r"^zh/" => "")
+    page == "news.md"          && return !section_has_public_records("news")
+    page == "facilities.md"    && return !section_has_public_records("facilities")
+    page == "projects.md"      && return !section_has_public_records("projects")
+    page == "people.md"        && return !section_has_public_records("people")
+    page == "people/alumni.md" && return isempty(public_alumni_records())
+    return false
+end
+
+hfun_page_robots() = page_noindex() ?
+    """<meta name="robots" content="noindex,follow">""" : ""
+
 """
 The mirror of the current page in the other language.
 
@@ -251,7 +297,7 @@ function hfun_navbar()
     here = here == "/index/" ? "/" : here
 
     items = String[]
-    for (key, href) in NAV
+    for (key, href) in visible_nav()
         target = pre * href
         active = here == href ? " active" : ""
         aria   = here == href ? """ aria-current="page\"""" : ""
@@ -284,7 +330,7 @@ function hfun_navbar()
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
               data-bs-target="#navMain" aria-controls="navMain"
-              aria-expanded="false" aria-label="Toggle navigation">
+              aria-expanded="false" aria-label="$(esc(ui("nav", "menu")))">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -472,7 +518,7 @@ end
 function hfun_research_cards()
     pre = prefix()
     areas = data("research")["area"]
-    used  = Set(String(p["area"]) for p in data("projects")["project"])
+    used  = Set(String(p["area"]) for p in projects())
     cards = String[]
     for a in areas
         art  = card_media_art(get(a, "image", "/assets/img/projects/placeholder.svg"))
@@ -582,7 +628,7 @@ function hfun_heat_path()
             "heatpath.toml: stop '$(get(s, "id", "?"))' has area = " *
             "'$(get(s, "area", ""))', which is not an id in research.toml")
     end
-    used = Set(String(p["area"]) for p in data("projects")["project"])
+    used = Set(String(p["area"]) for p in projects())
 
     # --- geometry, all in viewBox units --------------------------------------
     W, H = 1200, 120     # 120, not 200: at 1296px wide a 6:1 box would be 216px
@@ -730,7 +776,7 @@ function hfun_partner_strip()
     rowa = [o for (i, o) in enumerate(orgs) if isodd(i)]
     rowb = [o for (i, o) in enumerate(orgs) if iseven(i)]
 
-    function band(items, speed, n)
+    function band(items, speed)
         row = join([partner_item(o) for o in items], "
           ")
         # The list is duplicated and the loop subtracts exactly one copy when the
@@ -738,7 +784,7 @@ function hfun_partner_strip()
         # assistive technology so each name is announced once.
         return """
     <div class="pt-band" data-speed="$(speed)">
-      <button class="pt-arrow pt-prev" type="button" aria-label="Scroll row $(n) left">$(icon("chevron-left"))</button>
+      <button class="pt-arrow pt-prev" type="button" aria-label="$(esc(ui("partners", "previous")))">$(icon("chevron-left"))</button>
       <div class="pt-viewport">
         <div class="pt-track">
           <ul class="pt-row">
@@ -751,7 +797,7 @@ function hfun_partner_strip()
       </div>
       <div class="pt-fade pt-fade-l"></div>
       <div class="pt-fade pt-fade-r"></div>
-      <button class="pt-arrow pt-next" type="button" aria-label="Scroll row $(n) right">$(icon("chevron-right"))</button>
+      <button class="pt-arrow pt-next" type="button" aria-label="$(esc(ui("partners", "next")))">$(icon("chevron-right"))</button>
     </div>"""
     end
 
@@ -762,8 +808,8 @@ function hfun_partner_strip()
   </div>
 
   <div class="pt-bands">
-$(band(rowa,  26, 1))
-$(band(rowb, -26, 2))
+$(band(rowa,  26))
+$(band(rowb, -26))
   </div>
 
   <div class="container">
@@ -806,8 +852,10 @@ for free and a typo stops the build. `image` is optional too and falls back to
 the shared placeholder, which is what every other card on this site does.
 """
 function hfun_facilities()
+    facilities = facility_items()
+    isempty(facilities) && return empty_state("facilities")
     cards = String[]
-    for f in data("facilities")["item"]
+    for f in facilities
         badge = haskey(f, "area") ? """
             <span class="card-badge">$(esc(pick(area_by_id(String(f["area"]), "facilities.toml"), "title")))</span>""" : ""
         img = esc(get(f, "image", "/assets/img/projects/placeholder.svg"))
@@ -827,6 +875,8 @@ function hfun_facilities()
     return """<div class="row g-4">\n$(join(cards, "\n"))\n</div>"""
 end
 
+facility_items() = public_rows(data("facilities")["item"])
+
 # ---------------------------------------------------------------------------
 #  Team
 #
@@ -838,7 +888,7 @@ end
 const STALE_AFTER = Day(365)
 
 function people()
-    ps = data("team")["person"]
+    ps = public_rows(data("team")["person"])
     today = Dates.today()
     for p in ps
         get(p, "status", "current") == "current" || continue
@@ -852,7 +902,10 @@ function people()
     return ps
 end
 
-pi_person() = first(filter(p -> get(p, "tier", "") == "pi", people()))
+function pi_person()
+    ps = filter(p -> get(p, "tier", "") == "pi", people())
+    return isempty(ps) ? nothing : first(ps)
+end
 
 """Find one person by id, or throw. Used to resolve a project's `student` field."""
 function person_by_id(id::AbstractString)
@@ -878,7 +931,7 @@ end
 
 """Projects sorted by `weight`, lowest first."""
 function projects()
-    ps = copy(data("projects")["project"])
+    ps = copy(public_rows(data("projects")["project"]))
     sort!(ps; by = p -> get(p, "weight", 999))
     return ps
 end
@@ -897,6 +950,8 @@ function project_card(p)
     person = person_by_id(p["student"])
     area   = area_by_id(p["area"])
     href   = prefix() * "/projects/" * p["id"] * "/"
+    byline = is_public(person) ?
+        """<span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>""" : ""
     return """
       <div class="col-md-6 col-lg-4 pg-item" data-area="$(esc(p["area"]))">
         <a class="card-media" href="$(esc(href))" target="_blank" rel="noopener">
@@ -907,7 +962,7 @@ function project_card(p)
             <span class="card-badge">$(esc(pick(area, "title")))</span>
             <span class="card-title">$(esc(pick(p, "title")))</span>
             <span class="card-scope">$(esc(pick(p, "lead")))</span>
-            <span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>
+            $(byline)
           </span>
         </a>
       </div>"""
@@ -932,6 +987,7 @@ test the home-page cards use to decide whether to be links at all.
 """
 function hfun_project_grid()
     ps = projects()
+    isempty(ps) && return empty_state("projects")
     areas = filter(a -> any(p -> String(p["area"]) == a["id"], ps), data("research")["area"])
 
     # Order the cards by research area, then by weight inside it. The grid is no
@@ -979,6 +1035,14 @@ function hfun_project_header()
     p = first(hit)
     person = person_by_id(p["student"])
     area   = area_by_id(p["area"])
+    byline = is_public(person) ? """
+    <p class="project-by">
+      <img class="project-by-photo" src="$(esc(get(person, "photo", "/assets/img/team/placeholder.svg")))" alt="">
+      <span>
+        <strong>$(esc(pick(person, "name")))</strong><br>
+        <span class="muted">$(esc(pick(person, "role")))</span>
+      </span>
+    </p>""" : ""
     return """
 <header class="page-hd project-hd">
   <div class="container">
@@ -988,13 +1052,7 @@ function hfun_project_header()
     <span class="card-badge">$(esc(pick(area, "title")))</span>
     <h1>$(esc(pick(p, "title")))</h1>
     <p>$(esc(pick(p, "lead")))</p>
-    <p class="project-by">
-      <img class="project-by-photo" src="$(esc(get(person, "photo", "/assets/img/team/placeholder.svg")))" alt="">
-      <span>
-        <strong>$(esc(pick(person, "name")))</strong><br>
-        <span class="muted">$(esc(pick(person, "role")))</span>
-      </span>
-    </p>
+$(byline)
   </div>
 </header>
 <div class="container">
@@ -1007,11 +1065,12 @@ end
 
 function hfun_people_pi()
     p = pi_person()
+    p === nothing && return empty_state("people")
     hon = get(p, "honors_" * lang(), get(p, "honors_en", String[]))
     links = String[]
     haskey(p, "email")   && !isempty(p["email"])   && push!(links, """<a href="mailto:$(esc(p["email"]))">$(icon("envelope")) $(esc(p["email"]))</a>""")
-    haskey(p, "scholar") && !isempty(p["scholar"]) && push!(links, """<a href="$(esc(p["scholar"]))" rel="noopener">$(icon("mortarboard")) Google Scholar</a>""")
-    haskey(p, "nycu")    && !isempty(p["nycu"])    && push!(links, """<a href="$(esc(p["nycu"]))" rel="noopener">$(icon("building")) NYCU Academic Hub</a>""")
+    haskey(p, "scholar") && !isempty(p["scholar"]) && push!(links, """<a href="$(esc(p["scholar"]))" rel="noopener">$(icon("mortarboard")) $(esc(ui("people", "scholar")))</a>""")
+    haskey(p, "nycu")    && !isempty(p["nycu"])    && push!(links, """<a href="$(esc(p["nycu"]))" rel="noopener">$(icon("building")) $(esc(ui("people", "nycu_hub")))</a>""")
     return """
 <div class="pi-block">
   <div class="pi-photo">
@@ -1077,10 +1136,22 @@ $(join([person_row(p) for p in ps], "
 "))
 </ul>""")
 
-hfun_people_leads()    = cards_of("lead")
-hfun_people_postdocs() = cards_of("postdoc")
-hfun_people_phd()      = cards_of("phd")
-hfun_people_msc()      = cards_of("msc")
+function people_section(tier, label)
+    body = cards_of(tier)
+    isempty(body) && return ""
+    return """
+<section class="people-tier">
+  <div class="section-head mt-5">
+    <h2>$(esc(ui("people", label)))</h2>
+  </div>
+$(body)
+</section>"""
+end
+
+hfun_people_leads()    = people_section("lead", "lead_head")
+hfun_people_postdocs() = people_section("postdoc", "postdoc_head")
+hfun_people_phd()      = people_section("phd", "phd_head")
+hfun_people_msc()      = people_section("msc", "msc_head")
 
 """
 `{{people_table}}` — every current member of the lab in one table.
@@ -1109,9 +1180,16 @@ $(rows)
 </ul>"""
 end
 
+public_alumni() = public_alumni_records()
+
+function hfun_people_alumni_link()
+    isempty(public_alumni()) && return ""
+    return """<p class="mt-5"><a class="link-arrow" href="$(prefix())/people/alumni/">$(esc(ui("people", "alumni_link"))) <span class="link-arrow-mark">&rarr;</span></a></p>"""
+end
+
 function hfun_people_alumni()
-    as = filter(p -> get(p, "status", "") == "alumni", people())
-    isempty(as) && return """<p class="muted">No alumni recorded yet.</p>"""
+    as = public_alumni()
+    isempty(as) && return empty_state("alumni")
     byyear = Dict{Int,Vector{Any}}()
     for p in as
         y = Int(get(p, "left_year", 0))
@@ -1199,8 +1277,8 @@ function hfun_contact_form()
 
     hidden = String[]
     isempty(key) || push!(hidden, """<input type="hidden" name="access_key" value="$(esc(key))">""")
-    push!(hidden, """<input type="hidden" name="$(subj_name)" value="Project inquiry &mdash; CC Wang Lab website">""")
-    w3 && push!(hidden, """<input type="hidden" name="from_name" value="CC Wang Lab website">""")
+    push!(hidden, """<input type="hidden" name="$(subj_name)" value="$(esc(ui("form", "subject")))">""")
+    w3 && push!(hidden, """<input type="hidden" name="from_name" value="$(esc(ui("form", "sender")))">""")
 
     # The honeypot. A bot fills every field it finds; a person never sees this
     # one. `tabindex="-1"` keeps it out of the keyboard path too. Web3Forms
@@ -1263,9 +1341,9 @@ function person_links(p)
     # A raw URL as link text reads badly. Only the email shows its own value,
     # because an address is worth seeing before it is clicked.
     for (k, ico, label) in (("email", "envelope", ""),
-                            ("scholar", "mortarboard", "Google Scholar"),
+                            ("scholar", "mortarboard", ui("people", "scholar")),
                             ("website", "globe", ui("people", "website")),
-                            ("nycu", "building", "NYCU Academic Hub"))
+                            ("nycu", "building", ui("people", "nycu_hub")))
         v = String(get(p, k, ""))
         isempty(v) && continue
         href = k == "email" ? "mailto:" * v : v
@@ -1417,7 +1495,7 @@ function hfun_publications()
         items = join(["""
       <li class="pub">
         <span class="pub-title">$(esc(p["title"]))</span>
-        <span class="pub-meta">$(esc(p["venue"])), $(p["year"])$(haskey(p, "citations") ? " &middot; " * string(p["citations"]) * " citations" : "")</span>
+        <span class="pub-meta">$(esc(p["venue"])), $(p["year"])$(haskey(p, "citations") ? " &middot; " * string(p["citations"]) * " " * esc(ui("page", "citations")) : "")</span>
       </li>""" for p in ps], "\n")
         push!(out, """
 <section class="pub-theme" id="$(esc(t["id"]))">
@@ -1435,14 +1513,25 @@ end
 # ---------------------------------------------------------------------------
 
 function news_items()
-    its = copy(data("news")["item"])
+    its = copy(public_rows(data("news")["item"]))
     sort!(its; by = i -> i["date"], rev = true)
     return its
+end
+
+format_news_date(d) = lang() == "zh" ?
+    "$(year(d)) 年 $(month(d)) 月 $(day(d)) 日" : Dates.format(d, "d u yyyy")
+
+function news_tag_label(item)
+    tag = String(get(item, "tag", ""))
+    isempty(tag) && return ""
+    section = data("ui")["news"]
+    return haskey(section, tag * "_en") || haskey(section, tag * "_zh") ? ui("news", tag) : tag
 end
 
 """`{{news}}` for all of them, `{{news 3}}` for the newest three."""
 function hfun_news(params::Vector{String} = String[])
     its = news_items()
+    isempty(its) && return empty_state("news")
     if !isempty(params)
         n = parse(Int, params[1])
         its = its[1:min(n, length(its))]
@@ -1450,7 +1539,7 @@ function hfun_news(params::Vector{String} = String[])
     cards = join(["""
       <div class="col-md-4">
         <article class="news-card">
-          <p class="news-date">$(Dates.format(i["date"], "d u yyyy"))<span class="news-tag">$(esc(get(i, "tag", "")))</span></p>
+          <p class="news-date">$(format_news_date(i["date"]))<span class="news-tag">$(esc(news_tag_label(i)))</span></p>
           <h3 class="news-title">$(esc(pick(i, "title")))</h3>
           <p class="news-body">$(esc(pick(i, "body")))</p>
         </article>
@@ -1478,7 +1567,7 @@ function hfun_news_slider()
 
     slides = join(["""
         <article class="ns-slide$(k == 1 ? " is-active" : "")" data-index="$(k-1)">
-          <p class="ns-date">$(Dates.format(i["date"], "d u yyyy"))<span class="news-tag">$(esc(get(i, "tag", "")))</span></p>
+          <p class="ns-date">$(format_news_date(i["date"]))<span class="news-tag">$(esc(news_tag_label(i)))</span></p>
           <h3 class="ns-title">$(esc(pick(i, "title")))</h3>
           <p class="ns-body">$(esc(pick(i, "body")))</p>
         </article>""" for (k, i) in enumerate(its)], "\n")
@@ -1492,14 +1581,14 @@ function hfun_news_slider()
 
     return """
 <section class="news-slider" id="newsSlider" aria-roledescription="carousel"
-         aria-label="$(esc(ui("home", "news_head")))">
+         aria-label="$(esc(ui("news", "carousel")))">
   <div class="container">
     <p class="ns-head">$(esc(ui("home", "news_head")))</p>
 
     <div class="ns-stage">
-      <button class="ns-arrow ns-prev" type="button" aria-label="Previous">$(icon("chevron-left"))</button>
+      <button class="ns-arrow ns-prev" type="button" aria-label="$(esc(ui("news", "previous")))">$(icon("chevron-left"))</button>
 $(slides)
-      <button class="ns-arrow ns-next" type="button" aria-label="Next">$(icon("chevron-right"))</button>
+      <button class="ns-arrow ns-next" type="button" aria-label="$(esc(ui("news", "next")))">$(icon("chevron-right"))</button>
     </div>
 
     <div class="ns-nav">
@@ -1518,8 +1607,10 @@ end
 
 function hfun_footer()
     pre = prefix()
-    navlinks = join(["""<a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV], "
+    navlinks = join(["""<a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in visible_nav()], "
           ")
+    alumni = isempty(public_alumni()) ? "" :
+        """<a href="$(pre)/people/alumni/">$(esc(ui("people", "alumni_link")))</a>"""
     return """
 <footer class="lab-foot">
   <div class="container">
@@ -1535,7 +1626,7 @@ function hfun_footer()
         <p class="foot-head">$(esc(ui("foot", "nav")))</p>
         <nav class="foot-nav foot-nav-2col">
           $(navlinks)
-          <a href="$(pre)/people/alumni/">$(esc(ui("people", "alumni_link")))</a>
+          $(alumni)
 $(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV_FOOT], "\n"))
         </nav>
       </div>

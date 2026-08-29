@@ -8,6 +8,7 @@
 # this monthly, remove News from the navigation instead.
 
 [[item]]
+placeholder = true
 date = 2026-08-01
 tag  = "facility"
 title_en = "PLACEHOLDER — New pool-boiling visualization rig commissioned"
@@ -16,6 +17,7 @@ body_en  = "Replace this with a real item. One or two sentences. Say what change
 body_zh  = "請以真實內容取代。一至兩句話，說明有何進展、以及為何值得關注。"
 
 [[item]]
+placeholder = true
 date = 2026-07-15
 tag  = "paper"
 title_en = "PLACEHOLDER — Paper accepted on immersion cooling of high-power packages"
@@ -24,6 +26,7 @@ body_en  = "Replace this with a real item. Link the DOI when the paper is online
 body_zh  = "請以真實內容取代。論文上線後請附上 DOI 連結。"
 
 [[item]]
+placeholder = true
 date = 2026-06-20
 tag  = "award"
 title_en = "PLACEHOLDER — Lab member receives conference best-paper award"

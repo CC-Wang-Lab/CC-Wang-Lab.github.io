@@ -1,6 +1,6 @@
 +++
 title = "Projects"
-descr = "What the lab is measuring and building right now, written up by the researchers doing the work."
+descr = "Current projects in experimental and computational thermal engineering."
 lang = "en"
 +++
 

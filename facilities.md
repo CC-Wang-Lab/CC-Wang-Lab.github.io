@@ -1,6 +1,6 @@
 +++
 title = "Facilities"
-descr = "The rigs, chambers and instruments the CC Wang Lab measures with: boiling visualization, a heat exchanger wind tunnel, a psychrometric chamber, cold plate testing and computation."
+descr = "Experimental rigs, environmental chambers, instruments and computational resources used in the laboratory's thermal-engineering research."
 lang = "en"
 +++
 

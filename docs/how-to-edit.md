@@ -75,8 +75,8 @@ Leave `photo` out and a grey silhouette appears instead — that is fine.
 
 ### Give a person their own page
 
-Copy `people/placeholder-phd-1.md` to `people/<your-id>.md` and
-`zh/people/placeholder-phd-1.md` to `zh/people/<your-id>.md`. Change
+Copy `docs/templates/person.en.md` to `people/<your-id>.md` and
+`docs/templates/person.zh.md` to `zh/people/<your-id>.md`. Change
 `person = "..."` in both to your id from `team.toml`, then write.
 
 Everything in the page header — photo, name, role, topic, email, Scholar link —
@@ -149,10 +149,10 @@ lead_en  = "One or two sentences. What is measured or built, and what question i
 lead_zh  = "一至兩句話，說明量測或建置什麼、以及回答什麼問題。"
 ```
 
-**Step 2 — write the page.** Copy `projects/placeholder-project.md` to
-`projects/cold-plate-high-flux.md`, and copy the Chinese one to
-`zh/projects/cold-plate-high-flux.md`. Change `project = "..."` in both to your new id, then
-write. It is ordinary Markdown: headings, paragraphs, lists, images.
+**Step 2 — write the page.** Copy `docs/templates/project.en.md` to
+`projects/cold-plate-high-flux.md`, and copy `docs/templates/project.zh.md` to
+`zh/projects/cold-plate-high-flux.md`. Change `project = "..."` in both to your new id,
+then write. It is ordinary Markdown: headings, paragraphs, lists, images.
 
 **Images.** Put them in `_assets/img/projects/<your-id>/` and use them like this:
 

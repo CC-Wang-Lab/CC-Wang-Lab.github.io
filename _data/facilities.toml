@@ -16,6 +16,7 @@
 
 [[item]]
 id       = "placeholder-facility-1"
+placeholder = true
 area     = "two-phase"
 image    = "/assets/img/projects/placeholder.svg"
 title_en = "Lorem ipsum dolor sit amet consectetur"
@@ -25,6 +26,7 @@ lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為�
 
 [[item]]
 id       = "placeholder-facility-2"
+placeholder = true
 area     = "heat-exchangers"
 image    = "/assets/img/projects/placeholder.svg"
 title_en = "Lorem ipsum dolor sit amet consectetur"
@@ -34,6 +36,7 @@ lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為�
 
 [[item]]
 id       = "placeholder-facility-3"
+placeholder = true
 area     = "hvacr"
 image    = "/assets/img/projects/placeholder.svg"
 title_en = "Lorem ipsum dolor sit amet consectetur"
@@ -43,6 +46,7 @@ lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為�
 
 [[item]]
 id       = "placeholder-facility-4"
+placeholder = true
 area     = "electronics-cooling"
 image    = "/assets/img/projects/placeholder.svg"
 title_en = "Lorem ipsum dolor sit amet consectetur"
@@ -52,6 +56,7 @@ lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為�
 
 [[item]]
 id       = "placeholder-facility-5"
+placeholder = true
 area     = "data-center"
 image    = "/assets/img/projects/placeholder.svg"
 title_en = "Lorem ipsum dolor sit amet consectetur"
@@ -61,6 +66,7 @@ lead_zh  = "一至兩句話，說明這台設備量測什麼、量測範圍為�
 
 [[item]]
 id       = "placeholder-facility-6"
+placeholder = true
 area     = "ai-thermal"
 image    = "/assets/img/projects/placeholder.svg"
 title_en = "Lorem ipsum dolor sit amet consectetur"

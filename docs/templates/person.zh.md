@@ -1,6 +1,6 @@
 +++
-title = "範例 - 成員姓名"
-person = "placeholder-phd-1"
+title = "成員姓名"
+person = "your-id"
 lang = "zh"
 +++
 

@@ -1,6 +1,6 @@
 +++
-title = "PLACEHOLDER - Member Name"
-person = "placeholder-phd-1"
+title = "Member Name"
+person = "your-id"
 lang = "en"
 +++
 
@@ -19,7 +19,7 @@ lang = "en"
 
 ## PLACEHOLDER
 
-**Copy this file** to `people/<your-id>.md`, change `person = "..."` in the front matter to your id
+**Copy this file** to `people/<your-id>.md`, change `person = "..."` in the front matter to the public id
 from `_data/team.toml`, and write. Then do the same for `zh/people/<your-id>.md`.
 
 Everything in the header above comes from your row in `team.toml`, so do not repeat your name, role

@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {{scripts theme-init}}
     {{insert style.html}}
-    <title>Tag: {{fill fd_tag}} &middot; CC Wang Lab</title>
+    <title>{{ui page tag}} {{fill fd_tag}} &middot; CC Wang Lab</title>
   </head>
   <body>
     {{navbar}}
     <main id="main">
-      <header class="page-hd"><div class="container"><h1>Tag: {{fill fd_tag}}</h1></div></header>
+      <header class="page-hd"><div class="container"><h1>{{ui page tag}} {{fill fd_tag}}</h1></div></header>
       <div class="page-body"><div class="container">{{taglist}}</div></div>
     </main>
     {{footer}}

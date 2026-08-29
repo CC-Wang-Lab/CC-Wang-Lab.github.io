@@ -1,6 +1,6 @@
 +++
-title = "PLACEHOLDER — Project title"
-project = "placeholder-project"
+title = "Project title"
+project = "your-project-id"
 lang = "en"
 +++
 
@@ -22,7 +22,7 @@ approach does not settle it. Write for an engineer who has never met this lab.
 What was built or simulated. What is measured, and with what instrument. Add photographs:
 
 ```markdown
-![](/assets/img/projects/placeholder-project/rig.jpg)
+![](/assets/img/projects/your-project-id/rig.jpg)
 ```
 
 Put the image files in `_assets/img/projects/<this-project-id>/`.
