@@ -8,14 +8,18 @@ lang = "zh"
 {{person_header}}
 ~~~
 
-@@page-body
+@@page-body,profile-page
 @@container
-@@row,g-5
-@@col-lg-4
+~~~
+{{profile_switcher}}
+~~~
+@@profile-layout
+@@profile-identity
 ~~~
 {{person_portrait}}
 ~~~
-@@pi-bio
+@@
+@@profile-narrative,prose
 
 ## 研究方法
 
@@ -37,8 +41,7 @@ lang = "zh"
 
 [代表性研究成果](/zh/publications/)依研究主題整理。完整紀錄請見上方連結的 Google Scholar 與陽明交大學術成果網。
 @@
-@@
-@@col-lg-8
+@@profile-record
 ~~~
 {{person_facts}}
 ~~~

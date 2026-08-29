@@ -59,6 +59,7 @@ import time
 import sys
 import threading
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
@@ -200,6 +201,7 @@ window.addEventListener("load", function () {
       ".btn-cta", ".btn-ghost", ".btn-icon", ".navbar-toggler",
       ".lab-nav .nav-link", ".motion-toggle", ".ns-arrow",
       ".ns-nav-item", ".pt-arrow", ".pg-chip", ".pi-chip",
+      ".profile-layout-choice", ".profile-design-link",
       ".foot-nav a", "#backToTop", ".ff input", ".ff textarea", ".ff select"
     ].join(",");
     var targets = document.querySelectorAll(targetSelector);
@@ -236,7 +238,7 @@ window.addEventListener("load", function () {
     /* These blocks carry long-form reading text. Their media and parent grids
        stay full-width, but the text block itself must declare a readable cap. */
     var readingSelector = [
-      ".pi-body", ".pub-theme", ".project-body > h2",
+      ".pi-body", ".profile-narrative", ".pub-theme", ".project-body > h2",
       ".project-body > h3", ".project-body > h4",
       ".project-body > p:not(:has(img, picture, video))",
       ".project-body > ul", ".project-body > ol",
@@ -325,6 +327,109 @@ window.addEventListener("load", function () {
         stuck.push(sel(c) + " top=" + Math.round(c.getBoundingClientRect().top));
       }
     }
+    var profileAudit = null;
+    var profileShell = document.querySelector(".profile-layout");
+    if (profileShell) {
+      var profileAllowed = ["editorial", "dossier", "narrative"];
+      var profileRequested = new URLSearchParams(location.search).get("profile-layout");
+      var profileValid = profileAllowed.indexOf(profileRequested) !== -1;
+      var profileExpected = profileValid ? profileRequested : "editorial";
+      var profileRoot = document.documentElement;
+      var profileName = document.querySelector(".person-hd .pi-heading");
+      var profileIdentity = profileShell.querySelector(".profile-identity");
+      var profileNarrative = profileShell.querySelector(".profile-narrative");
+      var profileRecord = profileShell.querySelector(".profile-record");
+      var profileRole = profileShell.querySelector(".profile-role");
+      var profileSectionHead = profileShell.querySelector(".profile-narrative h2");
+      var profileFactLabel = profileShell.querySelector(".pf-label");
+      var profileFactValue = profileShell.querySelector(".pf-values");
+      var profileSwitcher = document.querySelector("[data-profile-switcher]");
+      var profileChoices = profileSwitcher ?
+        profileSwitcher.querySelectorAll("[data-profile-layout-choice]") : [];
+      var profileRects = [profileIdentity, profileNarrative, profileRecord]
+        .filter(Boolean).map(function (node) { return node.getBoundingClientRect(); });
+      function rectanglesOverlap(a, b) {
+        return Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+               Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
+      }
+      var profileOverlap = false;
+      if (window.innerWidth > 991.98) {
+        for (var pa = 0; pa < profileRects.length; pa++) {
+          for (var pb = pa + 1; pb < profileRects.length; pb++) {
+            if (rectanglesOverlap(profileRects[pa], profileRects[pb])) profileOverlap = true;
+          }
+        }
+      }
+      var profileMobileOrder = true;
+      if (window.innerWidth <= 991.98 && profileName && profileIdentity &&
+          profileNarrative && profileRecord) {
+        var nameRect = profileName.getBoundingClientRect();
+        var identityRect = profileIdentity.getBoundingClientRect();
+        var narrativeRect = profileNarrative.getBoundingClientRect();
+        var recordRect = profileRecord.getBoundingClientRect();
+        profileMobileOrder = nameRect.bottom <= identityRect.top + 1 &&
+          identityRect.bottom <= narrativeRect.top + 1 &&
+          narrativeRect.bottom <= recordRect.top + 1;
+      }
+      var expectedNameToken = profileExpected === "dossier" ? "--fs-2xl" :
+        (profileExpected === "narrative" ? "--fs-4xl" : "--fs-3xl");
+      var interaction = { tested: false, passed: true };
+      if (profileValid && profileChoices.length === 3) {
+        var alternative = Array.prototype.find.call(profileChoices, function (choice) {
+          return choice.getAttribute("data-profile-layout-choice") !== profileExpected;
+        });
+        var original = Array.prototype.find.call(profileChoices, function (choice) {
+          return choice.getAttribute("data-profile-layout-choice") === profileExpected;
+        });
+        if (alternative && original) {
+          interaction.tested = true;
+          var alternativeValue = alternative.getAttribute("data-profile-layout-choice");
+          alternative.click();
+          interaction.passed = profileRoot.getAttribute("data-profile-layout") === alternativeValue &&
+            new URLSearchParams(location.search).get("profile-layout") === alternativeValue;
+          original.click();
+          interaction.passed = interaction.passed &&
+            profileRoot.getAttribute("data-profile-layout") === profileExpected &&
+            new URLSearchParams(location.search).get("profile-layout") === profileExpected;
+        }
+      }
+      profileAudit = {
+        requested: profileRequested || "",
+        expected: profileExpected,
+        applied: profileRoot.getAttribute("data-profile-layout"),
+        compareFlag: profileRoot.getAttribute("data-profile-layout-compare"),
+        switcherVisible: !!profileSwitcher && !profileSwitcher.hidden,
+        choiceCount: profileChoices.length,
+        activeChoiceCount: profileSwitcher ?
+          profileSwitcher.querySelectorAll('[aria-pressed="true"]').length : 0,
+        regionCounts: {
+          identity: profileShell.querySelectorAll(".profile-identity").length,
+          narrative: profileShell.querySelectorAll(".profile-narrative").length,
+          record: profileShell.querySelectorAll(".profile-record").length
+        },
+        nameFont: profileName ? parseFloat(getComputedStyle(profileName).fontSize) : 0,
+        expectedNameFont: tokenSize(expectedNameToken),
+        roleFont: profileRole ? parseFloat(getComputedStyle(profileRole).fontSize) : 0,
+        expectedRoleFont: tokenSize("--fs-lg"),
+        narrativeFont: profileNarrative ?
+          parseFloat(getComputedStyle(profileNarrative).fontSize) : 0,
+        expectedNarrativeFont: tokenSize("--fs-md"),
+        sectionHeadFont: profileSectionHead ?
+          parseFloat(getComputedStyle(profileSectionHead).fontSize) : 0,
+        expectedSectionHeadFont: tokenSize("--fs-xl"),
+        factLabelFont: profileFactLabel ?
+          parseFloat(getComputedStyle(profileFactLabel).fontSize) : 0,
+        expectedFactLabelFont: tokenSize("--fs-xs"),
+        factValueFont: profileFactValue ?
+          parseFloat(getComputedStyle(profileFactValue).fontSize) : 0,
+        expectedFactValueFont: tokenSize("--fs-sm"),
+        languageHref: document.querySelector(".lang-switch") ?
+          document.querySelector(".lang-switch").getAttribute("href") : "",
+        mobileOrder: profileMobileOrder,
+        overlaps: profileOverlap,
+        interaction: interaction
+      };
+    }
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
       motion: document.documentElement.classList.contains("motion-off") ? "off" : "on",
@@ -341,7 +446,7 @@ window.addEventListener("load", function () {
       undersizedFunctional: undersizedFunctional.slice(0, 16),
       unboundedReading: unboundedReading.slice(0, 12),
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
-      overflowing: wide.slice(0, 14)
+      overflowing: wide.slice(0, 14), profile: profileAudit
     })});
   }
 });
@@ -349,7 +454,7 @@ window.addEventListener("load", function () {
 
 REPORTS = []
 MOTION = ["off"]    # set from --motion; a list so shoot() can read it
-SCROLLTO = [""]     # set from --scrollto
+SCROLLTO = [None]   # set from --scrollto
 REALTIME = [False]  # set from --realtime
 
 # page, width, theme, why this shot exists
@@ -382,6 +487,37 @@ MATRIX = [
     ("/zh/people/cc-wang/", 1440, "light", "Chinese professor page in light"),
     ("/zh/people/cc-wang/", 1440, "dark", "biggest type, CJK and dark at once"),
 ]
+
+# Every real profile, language, layout and theme shares one content DOM. The
+# full cross-product is intentional: a selector that accidentally scopes to an
+# English route or one theme can otherwise look correct in every spot-check.
+for language, prefix in (("English", "/"), ("Chinese", "/zh/")):
+    for person in ("cc-wang", "maysam-gholampour"):
+        for layout in ("editorial", "dossier", "narrative"):
+            for theme in ("light", "dark"):
+                MATRIX.append((
+                    f"{prefix}people/{person}/?profile-layout={layout}",
+                    1440,
+                    theme,
+                    f"{language} {person} {layout} profile variant",
+                ))
+
+for layout in ("editorial", "dossier", "narrative"):
+    MATRIX.append((
+        f"/people/cc-wang/?profile-layout={layout}",
+        492,
+        "light",
+        f"shared mobile order for the {layout} profile variant",
+    ))
+
+MATRIX.extend([
+    ("/people/cc-wang/", 492, "light", "normal profile visit hides comparison controls"),
+    ("/people/cc-wang/?profile-layout=invalid", 492, "light", "invalid profile query falls back safely"),
+    ("/profile-designs/", 492, "light", "English profile comparison hub on mobile"),
+    ("/profile-designs/", 1440, "light", "English profile comparison hub on desktop"),
+    ("/zh/profile-designs/", 492, "light", "Chinese profile comparison hub on mobile"),
+    ("/zh/profile-designs/", 1440, "light", "Chinese profile comparison hub on desktop"),
+])
 
 
 def insert_head(html, snippet):
@@ -470,6 +606,17 @@ GUTTER = 24
 NARROWEST = 492
 
 
+def request_target(url, theme):
+    """Merge harness parameters into a route that may already have a query."""
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query, keep_blank_values=True))
+    query["__theme"] = theme
+    query["__motion"] = MOTION[0]
+    if SCROLLTO[0] is not None:
+        query["__scrollto"] = "%g" % SCROLLTO[0]
+    return urlunsplit(("", "", parts.path or "/", urlencode(query), parts.fragment))
+
+
 def shoot(edge, url, width, theme, out_png, profile, height=4000, budget=9000):
     dsf = 1
     win = max(width, NARROWEST) + GUTTER
@@ -487,8 +634,7 @@ def shoot(edge, url, width, theme, out_png, profile, height=4000, budget=9000):
         # rAF never fires and a scroll-linked effect cannot be measured.
     ] + ([] if REALTIME[0] else ["--virtual-time-budget=%d" % budget]) + [
         "--screenshot=" + str(out_png),
-        "http://127.0.0.1:%d%s?__theme=%s&__motion=%s%s"
-        % (PORT, url, theme, MOTION[0], SCROLLTO[0]),
+        "http://127.0.0.1:%d%s" % (PORT, request_target(url, theme)),
     ]
     if out_png.exists():
         out_png.unlink()
@@ -540,7 +686,7 @@ def main():
     Injector.measure = args.measure
     MOTION[0] = args.motion
     REALTIME[0] = args.realtime
-    SCROLLTO[0] = ("&__scrollto=%g" % args.scrollto) if args.scrollto else ""
+    SCROLLTO[0] = args.scrollto
     edge = find_edge()
     OUT.mkdir(parents=True, exist_ok=True)
 
@@ -567,7 +713,11 @@ def main():
     made, failed = [], []
     try:
         for i, (url, width, theme, why) in enumerate(shots):
-            slug = (url.strip("/").replace("/", "-") or "home")
+            url_parts = urlsplit(url)
+            slug = (url_parts.path.strip("/").replace("/", "-") or "home")
+            layout = dict(parse_qsl(url_parts.query)).get("profile-layout")
+            if layout:
+                slug += "-" + re.sub(r"[^a-z0-9-]+", "-", layout.lower()).strip("-")
             # NARROWEST, not `width`: below it Edge renders wider than asked,
             # and a file called _375_ that is really 492 is a lie.
             real = max(width, NARROWEST)
@@ -627,6 +777,54 @@ def main():
             if r.get("narrowProjectMedia"):
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
+            profile = r.get("profile")
+            if profile:
+                valid_profile_query = profile.get("requested") in (
+                    "editorial", "dossier", "narrative"
+                )
+                if profile.get("applied") != profile.get("expected"):
+                    flags.append("profile applied %s instead of %s"
+                                 % (profile.get("applied"), profile.get("expected")))
+                if profile.get("compareFlag") != ("true" if valid_profile_query else "false"):
+                    flags.append("profile comparison flag disagrees with query validity")
+                if bool(profile.get("switcherVisible")) != valid_profile_query:
+                    flags.append("profile switcher visibility disagrees with query validity")
+                if profile.get("choiceCount") != 3:
+                    flags.append("profile switcher does not have exactly three choices")
+                expected_active = 1 if valid_profile_query else 0
+                if profile.get("activeChoiceCount") != expected_active:
+                    flags.append("profile switcher has %s active choices, expected %s"
+                                 % (profile.get("activeChoiceCount"), expected_active))
+                counts = profile.get("regionCounts", {})
+                if any(counts.get(region) != 1 for region in ("identity", "narrative", "record")):
+                    flags.append("profile does not contain one identity/narrative/record region")
+                for label, actual_key, expected_key in (
+                    ("name", "nameFont", "expectedNameFont"),
+                    ("role", "roleFont", "expectedRoleFont"),
+                    ("narrative", "narrativeFont", "expectedNarrativeFont"),
+                    ("section heading", "sectionHeadFont", "expectedSectionHeadFont"),
+                    ("fact label", "factLabelFont", "expectedFactLabelFont"),
+                    ("fact value", "factValueFont", "expectedFactValueFont"),
+                ):
+                    if abs(profile.get(actual_key, 0) - profile.get(expected_key, 0)) > 0.05:
+                        flags.append("profile %s type %.2fpx differs from %.2fpx token"
+                                     % (label, profile.get(actual_key, 0),
+                                        profile.get(expected_key, 0)))
+                if not profile.get("mobileOrder", True):
+                    flags.append("profile mobile order is not name/identity/narrative/facts")
+                if profile.get("overlaps"):
+                    flags.append("profile regions overlap")
+                language_href = profile.get("languageHref", "")
+                expected_query = "profile-layout=" + profile.get("expected", "")
+                if valid_profile_query and expected_query not in language_href:
+                    flags.append("language switch drops the active profile layout")
+                if not valid_profile_query and "profile-layout=" in language_href:
+                    flags.append("language switch invents a profile layout on a normal visit")
+                interaction = profile.get("interaction", {})
+                if valid_profile_query and not interaction.get("tested"):
+                    flags.append("profile switcher interaction was not exercised")
+                if interaction.get("tested") and not interaction.get("passed"):
+                    flags.append("profile switcher did not update and restore the query/layout")
             if over > 1:
                 flags.append("page %dpx wider than the viewport" % over)
             if not r["etbook"]:
@@ -659,6 +857,11 @@ def main():
                 print("        measure " + x)
             for x in r.get("narrowProjectMedia", []):
                 print("        media  " + x)
+            if profile:
+                print("        profile requested=%s applied=%s switcher=%s interaction=%s"
+                      % (profile.get("requested") or "(none)", profile.get("applied"),
+                         "shown" if profile.get("switcherVisible") else "hidden",
+                         "pass" if profile.get("interaction", {}).get("passed") else "fail"))
             for x in r["overflowing"]:
                 print("        wide   " + x)
             if r.get("midBar") or r.get("midHero"):

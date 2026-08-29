@@ -1042,12 +1042,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 /* --------------------------------------------------------------------------
-   A page per person
+   Profile pages
 
-   The arrangement asked for on 2026-08-20: the photograph and the narrative in
-   a narrow left column, the name and the checkable record in a wide right one.
-   There is no full-width header band - the name sits at the top of the right
-   column, where the facts under it read as its continuation.
+   Every design uses one document order: name, identity, narrative, record.
+   The query-selected desktop layouts only move those semantic regions in CSS;
+   copy, facts and accessibility order never change.
    -------------------------------------------------------------------------- */
 
 /* The photograph, framed like a card so it belongs to the same site. */
@@ -1095,46 +1094,47 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   text-decoration: none;
 }
 
-/* The bio under the photograph. Smaller than page prose, because it is a
-   sidebar to the record beside it, not the main reading. */
-.pi-bio {
-  margin-top: 1.9rem;
+.profile-role-block { margin-top: 1.25rem; }
+.profile-role {
+  margin: 0;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  color: var(--bs-body-color);
+}
+.profile-topic {
+  margin: 0.45rem 0 0;
   font-size: var(--fs-sm);
-  line-height: 1.6;
+  line-height: var(--lh-normal);
+  color: var(--lab-muted);
+}
+
+.profile-narrative {
+  max-width: var(--measure);
+  min-width: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
   text-align: justify;
 }
-.pi-bio h2 {
-  font-size: var(--fs-md);
-  font-style: italic;
-  margin: 1.8rem 0 0.5rem;
+.profile-narrative h2 {
+  font-size: var(--fs-xl);
+  margin: 2.35rem 0 0.65rem;
   text-align: left;
 }
-.pi-bio h2:first-child { margin-top: 0; }
-.pi-bio p { margin-bottom: 0.9rem; }
-
-.pi-eyebrow { margin-bottom: 0.45rem; }
+.profile-narrative h2:first-child { margin-top: 0; }
+.profile-narrative p { margin-bottom: 1rem; }
 
 /* The name block sits in the standard .page-hd band now, so it clears the
    navbar and reads like every other page header on the site. Only the pieces
    .page-hd does not already handle are set here. */
 .person-hd .project-crumb { margin-bottom: 1.1rem; }
 .person-hd .pi-heading { margin-bottom: 0.5rem; }
-.person-hd .pi-titles { margin-bottom: 1.1rem; max-width: none; }
 .person-hd .pi-rule { margin-bottom: 0; }
 .pi-heading {
   color: var(--lab-accent);
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-3xl);
   line-height: 1.15;
   margin: 0 0 0.7rem;
 }
-.pi-titles {
-  font-size: var(--fs-md);
-  line-height: 1.6;
-  color: var(--bs-body-color);
-  margin-bottom: 1.2rem;
-  text-align: left;
-}
-.pi-topic { color: var(--lab-muted); }
 /* The short accent rule under the titles, which is what separates the name
    block from the table without a full-width line. */
 .pi-rule {
@@ -1161,10 +1161,173 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-row-name a { color: inherit; }
 .person-row-name a:hover { color: var(--lab-accent); }
 
+.profile-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 2.25rem;
+  padding: 0.75rem;
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--lab-surface-2);
+}
+.profile-switcher[hidden] { display: none; }
+.profile-switcher-label {
+  padding-inline: 0.35rem;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--lab-muted);
+}
+.profile-switcher-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+.profile-layout-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 0;
+  min-height: var(--control-min);
+  padding: 0.45rem 0.8rem;
+  border: var(--rule);
+  border-radius: 999px;
+  background: var(--lab-surface);
+  color: var(--bs-body-color);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-ui);
+}
+.profile-layout-choice > span:last-child { overflow-wrap: anywhere; }
+.profile-layout-choice:hover,
+.profile-layout-choice[aria-pressed="true"] {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+}
+.profile-layout-letter {
+  color: var(--lab-muted);
+  font-size: var(--fs-xs);
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.78fr) minmax(0, 1.42fr);
+  grid-template-areas:
+    "identity record"
+    "narrative record";
+  align-items: start;
+  gap: clamp(2rem, 1.648rem + 1.502vw, 3rem);
+}
+.profile-identity { grid-area: identity; min-width: 0; }
+.profile-narrative { grid-area: narrative; }
+.profile-record { grid-area: record; min-width: 0; }
+
+[data-profile-layout="editorial"] .pi-heading { font-size: var(--fs-3xl); }
+
+[data-profile-layout="dossier"] .pi-heading { font-size: var(--fs-2xl); }
+[data-profile-layout="dossier"] .profile-layout {
+  grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
+  grid-template-areas:
+    "identity record"
+    "identity narrative";
+}
+
+[data-profile-layout="narrative"] .pi-heading { font-size: var(--fs-4xl); }
+[data-profile-layout="narrative"] .profile-layout {
+  grid-template-columns: minmax(0, var(--measure)) minmax(15rem, 19rem);
+  grid-template-areas:
+    "narrative identity"
+    "narrative record";
+  justify-content: space-between;
+}
+[data-profile-layout="narrative"] .pf-row {
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  padding: 1.15rem 1.1rem;
+}
+
+.profile-layout:not(:has(.person-facts)) {
+  grid-template-columns: minmax(15rem, 18rem) minmax(0, var(--measure));
+  grid-template-areas: "identity narrative";
+}
+.profile-layout:not(:has(.person-facts)) .profile-record { display: none; }
+
+.profile-design-grid { display: grid; gap: 2rem; }
+.profile-design-card {
+  padding: clamp(1.25rem, 0.986rem + 1.127vw, 2rem);
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--lab-surface);
+  box-shadow: var(--lab-shadow);
+}
+.profile-design-card h2 {
+  margin: 0 0 1.25rem;
+  font-size: var(--fs-2xl);
+}
+.profile-design-role {
+  margin: 0 0 0.35rem;
+  color: var(--lab-muted);
+  font-size: var(--fs-sm);
+}
+.profile-design-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.profile-design-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  min-height: var(--control-min);
+  padding: 1rem;
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  color: inherit;
+}
+.profile-design-link:hover {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+  text-decoration: none;
+}
+.profile-design-letter {
+  flex: 0 0 auto;
+  color: var(--lab-muted);
+  font-size: var(--fs-xs);
+}
+.profile-design-copy { display: grid; gap: 0.3rem; }
+.profile-design-copy strong { font-size: var(--fs-lg); }
+.profile-design-copy > span {
+  color: var(--lab-muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+}
+
 @media (max-width: 991.98px) {
+  .profile-layout,
+  [data-profile-layout="dossier"] .profile-layout,
+  [data-profile-layout="narrative"] .profile-layout,
+  .profile-layout:not(:has(.person-facts)) {
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+  }
+  .profile-identity,
+  .profile-narrative,
+  .profile-record { width: 100%; }
   .pi-portrait-frame { max-width: 220px; }
   .pi-chips { max-width: none; }
-  .pi-heading { font-size: var(--fs-xl); }
+}
+
+@media (max-width: 767.98px) {
+  .profile-switcher { align-items: stretch; flex-direction: column; }
+  .profile-switcher-label { padding-block: 0.3rem; }
+  .profile-switcher-options { width: 100%; }
+  .profile-layout-choice { padding-inline: 0.45rem; }
+  .profile-design-links { grid-template-columns: 1fr; }
+  .profile-narrative { text-align: left; }
 }
 
 /* --------------------------------------------------------------------------

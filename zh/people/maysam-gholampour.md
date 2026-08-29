@@ -8,14 +8,18 @@ lang = "zh"
 {{person_header}}
 ~~~
 
-@@page-body
+@@page-body,profile-page
 @@container
-@@row,g-5
-@@col-lg-4
+~~~
+{{profile_switcher}}
+~~~
+@@profile-layout
+@@profile-identity
 ~~~
 {{person_portrait}}
 ~~~
-@@pi-bio
+@@
+@@profile-narrative,prose
 
 ## 個人簡介
 
@@ -31,8 +35,7 @@ Maysam Gholampour 為博士後研究員，研究內容涵蓋熱系統建模、�
 
 其他資訊請見上方連結的個人網站。
 @@
-@@
-@@col-lg-8
+@@profile-record
 ~~~
 {{person_facts}}
 ~~~

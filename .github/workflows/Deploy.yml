@@ -70,6 +70,9 @@ jobs:
       - name: Check public content policy
         run: python scripts/check-public-site.py
 
+      - name: Check profile layout variants
+        run: python scripts/check-profile-layouts.py
+
       - name: Report site size
         run: du -sh __site && du -sh __site/assets/video
 

@@ -8,14 +8,18 @@ lang = "en"
 {{person_header}}
 ~~~
 
-@@page-body
+@@page-body,profile-page
 @@container
-@@row,g-5
-@@col-lg-4
+~~~
+{{profile_switcher}}
+~~~
+@@profile-layout
+@@profile-identity
 ~~~
 {{person_portrait}}
 ~~~
-@@pi-bio
+@@
+@@profile-narrative,prose
 
 ## Biography
 
@@ -31,8 +35,7 @@ His background is in mechanical engineering, with a focus on thermal and energy 
 
 Additional information is available through his personal website, linked above.
 @@
-@@
-@@col-lg-8
+@@profile-record
 ~~~
 {{person_facts}}
 ~~~

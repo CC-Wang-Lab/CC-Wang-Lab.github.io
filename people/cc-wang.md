@@ -8,14 +8,18 @@ lang = "en"
 {{person_header}}
 ~~~
 
-@@page-body
+@@page-body,profile-page
 @@container
-@@row,g-5
-@@col-lg-4
+~~~
+{{profile_switcher}}
+~~~
+@@profile-layout
+@@profile-identity
 ~~~
 {{person_portrait}}
 ~~~
-@@pi-bio
+@@
+@@profile-narrative,prose
 
 ## Research approach
 
@@ -37,8 +41,7 @@ Industrial collaborations often begin with a measurement challenge or a thermal 
 
 [Selected publications](/publications/) are organized by research theme. The complete record is available through Google Scholar and the NYCU Academic Hub, linked above.
 @@
-@@
-@@col-lg-8
+@@profile-record
 ~~~
 {{person_facts}}
 ~~~

@@ -274,6 +274,20 @@ end
 hfun_page_robots() = page_noindex() ?
     """<meta name="robots" content="noindex,follow">""" : ""
 
+"""Point every query-selected profile variant at its clean public route."""
+function hfun_page_canonical()
+    is_person_page() || return ""
+    id = String(locvar(:person))
+    base = try
+        string(globvar(:website_url))
+    catch
+        ""
+    end
+    isempty(base) && return ""
+    href = replace(base, r"/+$" => "") * person_href(id)
+    return """<link rel="canonical" href="$(esc(href))">"""
+end
+
 """
 The mirror of the current page in the other language.
 
@@ -1360,58 +1374,151 @@ function this_person()
 end
 
 """
-`{{person_portrait}}` — the LEFT column: the photograph, then the contact links.
+`{{person_portrait}}` — the identity block shared by every profile layout.
 
-The prose written in the Markdown file follows underneath it in the same column.
-That order is the whole point of the layout: a reader meets the face, then the
-story, and the checkable record sits alongside in the other column.
+The DOM order is deliberately photograph, role, topic, links. CSS may place this
+block in a rail on wide screens, but phones always encounter it immediately
+after the person's name and before the narrative.
 """
 function hfun_person_portrait()
     p = this_person()
     links = person_links(p)
+    topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
     return """
 <figure class="pi-portrait-frame">
   <img class="pi-portrait" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
 </figure>
+<div class="profile-role-block">
+  <p class="profile-role">$(esc(pick(p, "role")))</p>
+$(isempty(topic) ? "" : """  <p class="profile-topic">$(esc(topic))</p>""")
+</div>
 $(isempty(links) ? "" : """<div class="pi-chips">""" * join(links, "") * "</div>")
 """
 end
 
 """
-`{{person_header}}` — the page header band: crumb, eyebrow, name, titles, rule.
+`{{person_header}}` — the page header band: breadcrumb, name and rule.
 
-The `PI:` prefix is driven by `tier` in team.toml, so it appears on the head of
-the laboratory and on nobody else without anyone having to remember.
+The role belongs to the identity block below the name. Repeating a tier eyebrow
+here put role-like text before the name on phones and broke the shared reading
+order.
 """
-const TIER_LABEL = Dict(
-    "pi"      => "pi_head",
-    "lead"    => "lead_head",
-    "postdoc" => "postdoc_head",
-    "phd"     => "phd_head",
-    "msc"     => "msc_head",
-)
-
 function hfun_person_header()
     p = this_person()
-    tier = String(get(p, "tier", ""))
-    # The eyebrow reuses the SAME strings as the section headings on the People
-    # page, so a person is described by one word everywhere on the site.
-    eyebrow = tier == "pi" ? ui("home", "pi_head") :
-              haskey(TIER_LABEL, tier) ? ui("people", TIER_LABEL[tier]) : ""
-    topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
     return """
 <header class="page-hd person-hd">
   <div class="container">
     <p class="project-crumb">
       <a class="link-arrow" href="$(prefix())/people/"><span class="link-arrow-mark">&larr;</span> $(esc(ui("people", "back")))</a>
     </p>
-$(isempty(eyebrow) ? "" : """    <p class="card-badge pi-eyebrow">""" * esc(eyebrow) * "</p>")
     <h1 class="pi-heading">$(esc(pick(p, "name")))</h1>
-    <p class="pi-titles">$(esc(pick(p, "role")))$(isempty(topic) ? "" : "<br><span class=\"pi-topic\">" * esc(topic) * "</span>")</p>
     <div class="pi-rule"></div>
   </div>
 </header>
 """
+end
+
+const PROFILE_LAYOUTS = ("editorial", "dossier", "narrative")
+const PROFILE_LAYOUT_LETTERS = Dict(
+    "editorial" => "A",
+    "dossier"   => "B",
+    "narrative" => "C",
+)
+const PROFILE_COMPARISON_IDS = Set(("cc-wang", "maysam-gholampour"))
+
+"""Whether the current Markdown page is backed by one team record."""
+function is_person_page()
+    id = try
+        locvar(:person)
+    catch
+        nothing
+    end
+    return id !== nothing && !isempty(String(id))
+end
+
+"""
+Set the allowlisted profile layout before the stylesheet paints.
+
+An absent or invalid query value resolves to Editorial and does not expose the
+temporary switcher. The source is emitted only on profile pages.
+"""
+function hfun_profile_layout_init()
+    is_person_page() || return ""
+    return """
+<script>
+(function () {
+  var allowed = ["editorial", "dossier", "narrative"];
+  var value = new URLSearchParams(window.location.search).get("profile-layout");
+  var valid = allowed.indexOf(value) !== -1;
+  var root = document.documentElement;
+  root.setAttribute("data-profile-layout", valid ? value : "editorial");
+  root.setAttribute("data-profile-layout-compare", valid ? "true" : "false");
+})();
+</script>
+"""
+end
+
+"""The temporary A/B/C control, hidden unless the URL contains a valid value."""
+function hfun_profile_switcher()
+    is_person_page() || return ""
+    choices = String[]
+    for layout in PROFILE_LAYOUTS
+        letter = PROFILE_LAYOUT_LETTERS[layout]
+        name = ui("profile_layout", layout)
+        push!(choices, """
+    <button class="profile-layout-choice" type="button"
+            data-profile-layout-choice="$(layout)" aria-pressed="false"
+            aria-label="$(esc(letter * " — " * name))">
+      <span class="profile-layout-letter" aria-hidden="true">$(letter)</span>
+      <span>$(esc(name))</span>
+    </button>""")
+    end
+    return """
+<div class="profile-switcher" data-profile-switcher hidden role="group"
+     aria-label="$(esc(ui("profile_layout", "switcher")))">
+  <span class="profile-switcher-label">$(esc(ui("profile_layout", "switcher")))</span>
+  <div class="profile-switcher-options">
+$(join(choices, "\n"))
+  </div>
+</div>
+"""
+end
+
+"""Cards linking the two approved profiles to the three shareable layouts."""
+function hfun_profile_designs()
+    cards = String[]
+    for p in people()
+        id = String(get(p, "id", ""))
+        id in PROFILE_COMPARISON_IDS || continue
+        person_page(id) || continue
+        links = String[]
+        for layout in PROFILE_LAYOUTS
+            letter = PROFILE_LAYOUT_LETTERS[layout]
+            name = ui("profile_layout", layout)
+            note = ui("profile_layout", layout * "_note")
+            push!(links, """
+      <a class="profile-design-link" href="$(esc(person_href(id)))?profile-layout=$(layout)">
+        <span class="profile-design-letter" aria-hidden="true">$(letter)</span>
+        <span class="profile-design-copy">
+          <strong>$(esc(name))</strong>
+          <span>$(esc(note))</span>
+        </span>
+      </a>""")
+        end
+        option_label = ui("profile_layout", "person_options")
+        accessible = lang() == "zh" ? option_label * pick(p, "name") : option_label * " " * pick(p, "name")
+        push!(cards, """
+  <section class="profile-design-card">
+    <p class="profile-design-role">$(esc(pick(p, "role")))</p>
+    <h2>$(esc(pick(p, "name")))</h2>
+    <nav class="profile-design-links" aria-label="$(esc(accessible))">
+$(join(links, "\n"))
+    </nav>
+  </section>""")
+    end
+    return """<div class="profile-design-grid">
+$(join(cards, "\n"))
+</div>"""
 end
 
 """

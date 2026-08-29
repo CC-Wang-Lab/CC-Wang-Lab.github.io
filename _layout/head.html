@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Theme must be set BEFORE the first paint, or the page flashes white. -->
     {{scripts theme-init}}
+    {{profile_layout_init}}
     {{insert style.html}}
     {{isdef title}}<title>{{fill title}} &middot; CC Wang Lab</title>{{end}}
     {{isdef descr}}<meta name="description" content="{{fill descr}}" />{{end}}
     {{page_robots}}
+    {{page_canonical}}
   </head>
   <body>
     {{navbar}}

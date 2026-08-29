@@ -129,9 +129,9 @@ rather than as hierarchy. They are now nine tokens.
 
 | token | 375 px | 1440 px | used for |
 |---|---|---|---|
-| `--fs-4xl` | 35.2 | **57.6** | the hero title |
-| `--fs-3xl` | 35.2 | **48.8** | h1 |
-| `--fs-2xl` | 25.6 | **37.6** | h2, the PI name |
+| `--fs-4xl` | 35.2 | **57.6** | the hero title, Narrative profile name |
+| `--fs-3xl` | 35.2 | **48.8** | h1, Editorial profile name |
+| `--fs-2xl` | 25.6 | **37.6** | h2, Dossier profile name |
 | `--fs-xl` | 20.8 | **28.0** | h3, card-level h2 |
 | `--fs-lg` | 19.2 | **22.4** | h4, card titles, leads |
 | `--fs-md` | 17.6 | **19.2** | body |
@@ -165,6 +165,31 @@ in a Chinese serif and never reached Segoe UI. The site is now one family on pur
 **ET Book ships exactly two weights**, 400 and 700, plus a 400 italic. There is no 500 and no 600,
 so `font-weight: 500` rendered as 400 and `600` rendered as 700. The navbar asked for 500, which
 did nothing at all. Only 400 and 700 are written now.
+
+---
+
+## Why the three profile designs share one document, added 2026-08-29
+
+Editorial, Dossier and Narrative-first are temporary design choices, not three versions of a
+person's record. Each profile therefore has one semantic order — name, portrait/role/contact,
+narrative, then facts — and CSS Grid rearranges those regions only on wide screens. At 991.98 px
+and below, all three return to that source order. A wording or factual correction is consequently
+made once and is identical in every option, both in English and Traditional Chinese.
+
+The allowlisted query parameter is `profile-layout=editorial|dossier|narrative`. Missing, empty or
+invalid values resolve to Editorial before first paint. The temporary A/B/C switcher appears only
+when a valid value is already in the URL, updates that URL with `history.replaceState`, and writes
+nothing to local or session storage. Ordinary profile visits remain free of comparison controls.
+
+The three layouts use the existing typography ladder rather than new sizes: Editorial names use
+`--fs-3xl`, Dossier names `--fs-2xl`, Narrative-first names `--fs-4xl`, roles `--fs-lg`, narrative
+copy `--fs-md`, narrative headings `--fs-xl`, fact values `--fs-sm`, and fact labels `--fs-xs`.
+ET Book and Noto Serif TC, the 74ch reading measure, the color system and the 44px control minimum
+remain unchanged.
+
+The unlinked `/profile-designs/` and `/zh/profile-designs/` pages are marked `noindex` and exist
+only for selection. After one design is approved, those pages, the switcher and the two unused CSS
+states can be removed without migrating or reconciling profile content.
 
 ---
 
