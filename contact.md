@@ -1,6 +1,6 @@
 +++
 title = "Contact us"
-descr = "How to reach the laboratory, and the form for starting an industrial project."
+descr = "Contact details, visitor information and an inquiry form for research and industrial collaboration."
 lang = "en"
 +++
 
@@ -8,7 +8,7 @@ lang = "en"
 <header class="page-hd">
   <div class="container">
     <h1>{{ui nav cta}}</h1>
-    <p>{{ui home final_lead}}</p>
+    <p>{{ui contact page_lead}}</p>
   </div>
 </header>
 ~~~
@@ -28,17 +28,17 @@ lang = "en"
 @@col-lg-5
 @@contact-card
 
-## Visiting the lab
+## Visit the laboratory
 
 **Prof. Chi-Chuan Wang**, Chair Professor  \
 Department of Mechanical Engineering  \
 National Yang Ming Chiao Tung University  \
 1001 University Road, Hsinchu 300093, Taiwan
 
-## Who to write to
+## Primary contact
 
 **Julia Hsieh 謝孟娟**  \
-Assistant, CC Wang Lab  \
+Laboratory assistant, CC Wang Lab  \
 Department of Mechanical Engineering  \
 National Yang Ming Chiao Tung University
 

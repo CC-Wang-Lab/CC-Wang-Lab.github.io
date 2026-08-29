@@ -1,6 +1,6 @@
 +++
 title = "Publications"
-descr = "Selected publications grouped by theme, plus the full profile on Google Scholar."
+descr = "Selected publications organized by research theme, with links to Professor Chi-Chuan Wang's complete publication records."
 lang = "en"
 +++
 

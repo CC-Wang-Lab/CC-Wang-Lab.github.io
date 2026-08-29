@@ -1,7 +1,7 @@
 # The team.
 #
-# ONLY Prof. Wang's entry is real. Everything below him is a PLACEHOLDER showing
-# the shape of the data — replace name, topic, photo and email, or delete the row.
+# Prof. Wang and Maysam Gholampour are public records. Rows marked
+# `placeholder = true` are private starter data and never render publicly.
 #
 # REQUIRED on every row:
 #   status        = "current" | "alumni"
@@ -13,12 +13,10 @@
 #   "pi"      -> the large block at the top of the People page (one person)
 #   "lead"    -> photo cards, Research leads
 #   "postdoc" -> photo cards, Postdoctoral researchers
-#   "phd"     -> table rows, PhD students
-#   "msc"     -> table rows, MSc students
+#   "phd"     -> photo cards, PhD students
+#   "msc"     -> photo cards, MSc students
 #
-# Staff get photo cards, students get rows. Forty student cards make a very long
-# page and need forty photographs before it looks finished; forty rows stay
-# readable and need only a name and a topic.
+# Every visible tier uses cards, followed by a compact directory for quick lookup.
 #
 # Anything with status = "alumni" is rendered on /people/alumni/ instead,
 # whatever its tier.
@@ -101,14 +99,14 @@ honors_zh = [
 # University, 2010-". A later promotion the Hub has not picked up is the likely
 # explanation, so the higher title is kept. Confirm it with his office.
 bio_en = """
-Prof. Wang leads thermal engineering research at NYCU, spanning electronics and data-center cooling, boiling and two-phase heat transfer, heat exchangers, HVAC&R, and AI-assisted thermal control.
+Professor Chi-Chuan Wang leads thermal-engineering research at National Yang Ming Chiao Tung University. His work spans electronics and data-center cooling, boiling and two-phase heat transfer, heat exchangers, HVAC&R, and AI-assisted thermal control.
 
-He spent twenty-one years in industrial R&D at the Industrial Technology Research Institute (ITRI) from 1989 to 2010 before returning to the university, and was a Visiting Industrial Fellow at UC Berkeley in 2003. He took his doctorate in Mechanical Engineering at National Chiao Tung University.
+Before joining National Chiao Tung University as a professor in 2010, he spent twenty-one years in industrial R&D at the Industrial Technology Research Institute (ITRI), from 1989 to 2010. He was a Visiting Industrial Fellow at the University of California, Berkeley, in 2003 and earned his PhD in Mechanical Engineering from National Chiao Tung University.
 """
 bio_zh = """
-王啟川教授於陽明交通大學主持熱工程研究，領域涵蓋電子與資料中心散熱、沸騰與兩相熱傳、熱交換器、空調冷凍，以及 AI 輔助熱控制。
+王啟川教授於國立陽明交通大學主持熱工程研究，領域涵蓋電子與資料中心散熱、沸騰與兩相熱傳、熱交換器、空調冷凍，以及 AI 輔助熱控制。
 
-投入學界前，他於 1989 至 2010 年間在工業技術研究院（ITRI）從事二十一年產業研發工作，並於 2003 年赴美國加州大學柏克萊分校擔任訪問產業學者。博士學位取得自國立交通大學機械工程學系。
+王教授於 2010 年進入國立交通大學任教前，曾於 1989 至 2010 年間在工業技術研究院（ITRI）從事二十一年產業研發工作，並於 2003 年赴美國加州大學柏克萊分校擔任訪問產業學者。他取得國立交通大學機械工程博士學位。
 """
 
 # ---------------------------------------------------------------------------

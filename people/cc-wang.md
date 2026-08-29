@@ -17,39 +17,25 @@ lang = "en"
 ~~~
 @@pi-bio
 
-## The work
+## Research approach
 
-The thread running through everything in this laboratory is the same: measure what the equipment
-actually does, then build a model that holds outside the conditions it was fitted to. A correlation
-that only works on the rig it came from is not a result.
+Professor Wang's research combines controlled experimentation with validated modeling. The laboratory develops purpose-built rigs and computational tools to measure thermal performance, explain observed behavior and evaluate whether models remain reliable beyond the conditions used for calibration.
 
-That is why the laboratory keeps its own rigs and its own solvers in the same building. A number
-that has never been measured and a measurement that has never been explained are each half a
-finding.
+Experimental and computational work are conducted within the same group so that measurements inform model development and models are tested against data.
 
-## Twenty-one years before the university
+## Industrial R&D experience
 
-The line in the record that matters most to a company is not the citation count. It is the
-twenty-one years at the Industrial Technology Research Institute, from 1989 to 2010, before
-returning to the university.
+Before joining National Chiao Tung University as a professor in 2010, Professor Wang spent twenty-one years at the Industrial Technology Research Institute. He served as Researcher from 1989 to 1997, Senior Researcher from 1998 to 2005, and Senior Lead Researcher from 2005 to 2010. He was a Visiting Industrial Fellow at the University of California, Berkeley, in 2003.
 
-The questions a production line asks are not the questions a journal asks. A journal asks whether
-the mechanism is understood. A production line asks whether it still works at the third shift, in
-August, with the tolerances the supplier actually delivered. Both kinds of question have been
-answered here, and knowing which one is being asked is most of the job.
+## Collaboration with the laboratory
 
-## Working with the laboratory
+Industrial collaborations often begin with a measurement challenge or a thermal design that has not met its target. The laboratory first assesses whether its experimental and modeling capabilities are appropriate, then defines the scope, deliverables, schedule and confidentiality terms in writing.
 
-Industrial projects usually start with a measurement somebody cannot make, or a design that will
-not close. The reply says honestly whether this laboratory can help, and if it cannot, it says so.
+[Contact the laboratory](/contact/) with a description of the system, heat load, temperature limit and current technical constraint.
 
-[Contact us](/contact/) with what you are cooling and what is stopping you.
+## Publication record
 
-## The full record
-
-The publication list is long enough that this page would be the wrong place for it.
-[Selected publications](/publications/) are grouped by theme; the complete record sits on Google
-Scholar and the NYCU Academic Hub, both linked above.
+[Selected publications](/publications/) are organized by research theme. The complete record is available through Google Scholar and the NYCU Academic Hub, linked above.
 @@
 @@
 @@col-lg-8

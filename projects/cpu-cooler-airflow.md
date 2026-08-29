@@ -14,21 +14,11 @@ lang = "en"
 
 ## The question
 
-A tower cooler is judged by one number, its thermal resistance. That number hides where the air
-actually goes. Some of it never reaches the fin stack at all: it spills around the shroud, or
-recirculates behind the fan hub, or leaves through the top of the tower without touching a fin.
-
-**Seeing the spill is what tells you which part of the geometry to change.**
+Thermal resistance summarizes a cooler's overall performance but does not reveal the airflow paths that determine it. Air may bypass the fin stack, recirculate behind the fan hub, or leave through the top of the tower without contacting the fins. Visualizing these bypass paths identifies the parts of the geometry most likely to benefit from revision.
 
 ## The method
 
-Steady-state CFD of an ATX board with a tower cooler, solved at several fan speeds. The velocity
-field is then read back into a real-time renderer, where massless particles are released at the
-inlet, at the sides and at the outlet, and traced through the flow.
-
-The result is not a still contour plot. Fan speed can be changed while the particles keep moving,
-so the difference between operating points is visible directly instead of being compared across two
-figures.
+Steady-state CFD was performed for an ATX board fitted with a tower cooler at several fan speeds. The resulting velocity fields were imported into a real-time renderer, where massless particles were released at the inlet, sides and outlet and traced through the flow. Fan speed can be changed while the particles remain in motion, allowing operating points to be compared directly.
 
 ~~~
 <figure class="project-figure">
@@ -42,12 +32,11 @@ figures.
 
 ## What it shows
 
-The dark plume behind the fin stack is air that has already picked up heat. Where that plume bends
-back toward the board is where the next revision of the shroud should close.
+The dark plume downstream of the fin stack represents air that has absorbed heat. Its return path toward the board identifies the region where the next shroud revision should limit recirculation.
 
 ## Notes and publications
 
-*Add links here as they appear.*
+No related publications or laboratory notes are currently listed.
 @@
 @@
 @@
