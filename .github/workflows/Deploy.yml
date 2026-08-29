@@ -73,6 +73,9 @@ jobs:
       - name: Check profile layout variants
         run: python scripts/check-profile-layouts.py
 
+      - name: Check partner strip
+        run: python scripts/check-partner-strip.py
+
       - name: Report site size
         run: du -sh __site && du -sh __site/assets/video
 

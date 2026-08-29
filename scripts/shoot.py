@@ -200,7 +200,7 @@ window.addEventListener("load", function () {
     var targetSelector = [
       ".btn-cta", ".btn-ghost", ".btn-icon", ".navbar-toggler",
       ".lab-nav .nav-link", ".motion-toggle", ".ns-arrow",
-      ".ns-nav-item", ".pt-arrow", ".pg-chip", ".pi-chip",
+      ".ns-nav-item", ".pt-viewport", ".pg-chip", ".pi-chip",
       ".profile-layout-choice", ".profile-design-link",
       ".foot-nav a", "#backToTop", ".ff input", ".ff textarea", ".ff select"
     ].join(",");
@@ -430,6 +430,150 @@ window.addEventListener("load", function () {
         interaction: interaction
       };
     }
+    var partnerAudit = null;
+    var partnerRoot = document.getElementById("partners");
+    if (partnerRoot) {
+      var partnerViewports = partnerRoot.querySelectorAll(".pt-viewport");
+      var partnerBands = partnerRoot.querySelectorAll(".pt-band");
+      var partnerRows = partnerRoot.querySelectorAll(".pt-row");
+      var partnerLogos = partnerRoot.querySelectorAll(".pt-logo");
+      var partnerLabels = [];
+      var namedControls = true, describedControls = true;
+      var shortcutControls = true, tabbableControls = true, groupedControls = true;
+      for (var pv = 0; pv < partnerViewports.length; pv++) {
+        var partnerViewport = partnerViewports[pv];
+        var partnerLabel = partnerViewport.getAttribute("aria-label") || "";
+        var partnerDescription = partnerViewport.getAttribute("aria-describedby") || "";
+        partnerLabels.push(partnerLabel);
+        namedControls = namedControls && !!partnerLabel;
+        describedControls = describedControls && !!partnerDescription &&
+          !!document.getElementById(partnerDescription);
+        shortcutControls = shortcutControls &&
+          partnerViewport.getAttribute("aria-keyshortcuts") === "ArrowLeft ArrowRight";
+        tabbableControls = tabbableControls && partnerViewport.tabIndex === 0;
+        groupedControls = groupedControls && partnerViewport.getAttribute("role") === "group";
+      }
+      var duplicateRowsHidden = partnerRows.length === partnerBands.length * 2;
+      var rowWidthsMatch = true;
+      for (var pb = 0; pb < partnerBands.length; pb++) {
+        var bandRows = partnerBands[pb].querySelectorAll(".pt-row");
+        duplicateRowsHidden = duplicateRowsHidden && bandRows.length === 2 &&
+          !bandRows[0].hasAttribute("aria-hidden") &&
+          bandRows[1].getAttribute("aria-hidden") === "true";
+        if (bandRows.length === 2) {
+          rowWidthsMatch = rowWidthsMatch &&
+            Math.abs(bandRows[0].getBoundingClientRect().width -
+                     bandRows[1].getBoundingClientRect().width) <= 1;
+        }
+      }
+      var frameProbe = document.createElement("span");
+      frameProbe.style.cssText = "position:fixed;visibility:hidden;background:var(--sponsor-frame-bg)";
+      document.body.appendChild(frameProbe);
+      var expectedFrameBackground = getComputedStyle(frameProbe).backgroundColor;
+      frameProbe.remove();
+      var frameChannels = expectedFrameBackground.match(/[0-9.]+/g) || [];
+      var frameAlpha = frameChannels.length > 3 ? parseFloat(frameChannels[3]) : 1;
+      function linearChannel(channel) {
+        channel = channel / 255;
+        return channel <= 0.04045 ? channel / 12.92 :
+          Math.pow((channel + 0.055) / 1.055, 2.4);
+      }
+      var frameLuminance = frameChannels.length >= 3 ?
+        0.2126 * linearChannel(parseFloat(frameChannels[0])) +
+        0.7152 * linearChannel(parseFloat(frameChannels[1])) +
+        0.0722 * linearChannel(parseFloat(frameChannels[2])) : 0;
+      var frameOpaqueLight = frameAlpha >= 0.99 && frameLuminance >= 0.75;
+      var logosFramed = true, logosLoaded = true, filtersNone = true;
+      var logosFit = true, frameBackgroundsMatch = true;
+      for (var pl = 0; pl < partnerLogos.length; pl++) {
+        var logo = partnerLogos[pl];
+        var logoFrame = logo.closest(".pt-logo-frame");
+        logosFramed = logosFramed && !!logoFrame;
+        logosLoaded = logosLoaded && logo.complete && logo.naturalWidth > 0;
+        filtersNone = filtersNone && getComputedStyle(logo).filter === "none";
+        if (logoFrame) {
+          var logoRect = logo.getBoundingClientRect();
+          var frameRect = logoFrame.getBoundingClientRect();
+          logosFit = logosFit && logoRect.width <= frameRect.width + 0.5 &&
+            logoRect.height <= frameRect.height + 0.5;
+          frameBackgroundsMatch = frameBackgroundsMatch &&
+            getComputedStyle(logoFrame).backgroundColor === expectedFrameBackground;
+        }
+      }
+      var partnerKeyboard = { tested: false, passed: false, motionPaused: false };
+      if (window.__partners && window.__partners.bands &&
+          window.__partners.bands.length === 2 && partnerViewports.length === 2) {
+        partnerKeyboard.tested = true;
+        partnerKeyboard.motionPaused = !!window.LabMotion &&
+          typeof window.LabMotion.isRunning === "function" &&
+          !window.LabMotion.isRunning();
+        var firstBand = window.__partners.bands[0];
+        var secondBand = window.__partners.bands[1];
+        var firstState = {
+          nudge: firstBand.nudge, pos: firstBand.pos, base: firstBand.base,
+          baseTime: firstBand.baseTime, transform: firstBand.track.style.transform
+        };
+        var secondState = {
+          nudge: secondBand.nudge, pos: secondBand.pos, base: secondBand.base,
+          baseTime: secondBand.baseTime, transform: secondBand.track.style.transform
+        };
+        partnerViewports[0].focus({ preventScroll: true });
+        var rightKey = new KeyboardEvent("keydown", {
+          key: "ArrowRight", bubbles: true, cancelable: true
+        });
+        document.activeElement.dispatchEvent(rightKey);
+        var firstAfterRight = firstBand.nudge;
+        var firstTransformAfterRight = firstBand.track.style.transform;
+        var secondAfterRight = secondBand.nudge;
+        var secondTransformAfterRight = secondBand.track.style.transform;
+        var firstFocused = document.activeElement === partnerViewports[0];
+        partnerViewports[1].focus({ preventScroll: true });
+        var leftKey = new KeyboardEvent("keydown", {
+          key: "ArrowLeft", bubbles: true, cancelable: true
+        });
+        document.activeElement.dispatchEvent(leftKey);
+        partnerKeyboard.passed = rightKey.defaultPrevented && leftKey.defaultPrevented &&
+          firstFocused && document.activeElement === partnerViewports[1] &&
+          firstAfterRight > firstState.nudge && secondAfterRight === secondState.nudge &&
+          firstTransformAfterRight !== firstState.transform &&
+          secondTransformAfterRight === secondState.transform &&
+          firstBand.nudge === firstAfterRight && secondBand.nudge < secondState.nudge &&
+          firstBand.track.style.transform === firstTransformAfterRight &&
+          secondBand.track.style.transform !== secondState.transform;
+        [firstBand, secondBand].forEach(function (band, index) {
+          var state = index === 0 ? firstState : secondState;
+          band.nudge = state.nudge;
+          band.pos = state.pos;
+          band.base = state.base;
+          band.baseTime = state.baseTime;
+          band.track.style.transform = state.transform;
+        });
+        partnerViewports[1].blur();
+      }
+      partnerAudit = {
+        arrowCount: partnerRoot.querySelectorAll(".pt-arrow,.pt-prev,.pt-next").length,
+        viewportCount: partnerViewports.length,
+        namedControls: namedControls,
+        uniqueLabels: new Set(partnerLabels).size === partnerViewports.length,
+        describedControls: describedControls,
+        shortcutControls: shortcutControls,
+        tabbableControls: tabbableControls,
+        groupedControls: groupedControls,
+        bandCount: partnerBands.length,
+        rowCount: partnerRows.length,
+        duplicateRowsHidden: duplicateRowsHidden,
+        rowWidthsMatch: rowWidthsMatch,
+        logoCount: partnerLogos.length,
+        logosFramed: logosFramed,
+        logosLoaded: logosLoaded,
+        filtersNone: filtersNone,
+        logosFit: logosFit,
+        frameBackground: expectedFrameBackground,
+        frameOpaqueLight: frameOpaqueLight,
+        frameBackgroundsMatch: frameBackgroundsMatch,
+        keyboard: partnerKeyboard
+      };
+    }
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
       motion: document.documentElement.classList.contains("motion-off") ? "off" : "on",
@@ -446,7 +590,7 @@ window.addEventListener("load", function () {
       undersizedFunctional: undersizedFunctional.slice(0, 16),
       unboundedReading: unboundedReading.slice(0, 12),
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
-      overflowing: wide.slice(0, 14), profile: profileAudit
+      overflowing: wide.slice(0, 14), profile: profileAudit, partners: partnerAudit
     })});
   }
 });
@@ -748,6 +892,10 @@ def main():
                   % (len(made), len(REPORTS)))
             return 1
         bad = 0
+        partner_frame_backgrounds = {
+            report.get("partners", {}).get("frameBackground")
+            for report in REPORTS if report.get("partners")
+        }
         for r in REPORTS:
             over = r["scrollWidth"] - r["clientWidth"]
             flags = []
@@ -825,6 +973,50 @@ def main():
                     flags.append("profile switcher interaction was not exercised")
                 if interaction.get("tested") and not interaction.get("passed"):
                     flags.append("profile switcher did not update and restore the query/layout")
+            partners = r.get("partners")
+            if r.get("url") in ("/", "/zh/") and not partners:
+                flags.append("partner computed audit is missing from a home page")
+            elif partners:
+                if partners.get("arrowCount") != 0:
+                    flags.append("partner arrow elements remain")
+                if partners.get("viewportCount") != 2 or partners.get("bandCount") != 2:
+                    flags.append("partner strip does not expose exactly two row controls")
+                for label, key in (
+                    ("named", "namedControls"),
+                    ("uniquely named", "uniqueLabels"),
+                    ("described", "describedControls"),
+                    ("shortcut-labelled", "shortcutControls"),
+                    ("tabbable", "tabbableControls"),
+                    ("grouped", "groupedControls"),
+                ):
+                    if not partners.get(key):
+                        flags.append("partner rows are not all %s controls" % label)
+                if partners.get("rowCount") != 4 or not partners.get("duplicateRowsHidden"):
+                    flags.append("partner duplicate rows have incorrect accessibility state")
+                if not partners.get("rowWidthsMatch"):
+                    flags.append("partner duplicate-row widths do not match")
+                if partners.get("logoCount", 0) <= 0:
+                    flags.append("partner SVG logos are missing")
+                for label, key in (
+                    ("inside neutral frames", "logosFramed"),
+                    ("loaded", "logosLoaded"),
+                    ("unfiltered", "filtersNone"),
+                    ("contained by their frames", "logosFit"),
+                    ("using the sponsor-frame token", "frameBackgroundsMatch"),
+                ):
+                    if not partners.get(key):
+                        flags.append("partner logos are not all %s" % label)
+                if not partners.get("frameOpaqueLight"):
+                    flags.append("partner logo canvas is not opaque and light-neutral")
+                if len(partner_frame_backgrounds) != 1:
+                    flags.append("partner logo canvas changes between language/theme runs")
+                partner_keyboard = partners.get("keyboard", {})
+                if not partner_keyboard.get("tested"):
+                    flags.append("partner keyboard interaction was not exercised")
+                elif not partner_keyboard.get("passed"):
+                    flags.append("partner Left/Right keys did not visibly move only the focused row")
+                if r.get("motion") == "off" and not partner_keyboard.get("motionPaused"):
+                    flags.append("partner keyboard test did not run with motion paused")
             if over > 1:
                 flags.append("page %dpx wider than the viewport" % over)
             if not r["etbook"]:
@@ -862,6 +1054,11 @@ def main():
                       % (profile.get("requested") or "(none)", profile.get("applied"),
                          "shown" if profile.get("switcherVisible") else "hidden",
                          "pass" if profile.get("interaction", {}).get("passed") else "fail"))
+            if partners:
+                print("        partners rows=%s logos=%s keyboard=%s filters=%s"
+                      % (partners.get("viewportCount"), partners.get("logoCount"),
+                         "pass" if partners.get("keyboard", {}).get("passed") else "fail",
+                         "none" if partners.get("filtersNone") else "present"))
             for x in r["overflowing"]:
                 print("        wide   " + x)
             if r.get("midBar") or r.get("midHero"):
