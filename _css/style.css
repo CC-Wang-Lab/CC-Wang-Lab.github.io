@@ -128,6 +128,14 @@
   --space-news-y: clamp(2.5rem, 1.972rem + 2.253vw, 4rem);
   --pad-partners-top: clamp(3rem, 2.648rem + 1.502vw, 4rem);
   --map-height: clamp(16rem, 55vw, 21.25rem);
+  --sponsor-frame-bg: #f5f2ec;
+  --sponsor-frame-border: #d8d2c7;
+  --sponsor-frame-height: 3.5rem;
+  --sponsor-frame-pad-y: 0.5rem;
+  --sponsor-frame-pad-x: 1rem;
+  --sponsor-frame-radius: 0.55rem;
+  --sponsor-logo-max-height: 2.25rem;
+  --sponsor-logo-max-width: 10rem;
 
   /* ONE prose measure for the whole site.
      Three different widths were in play before this: .page-hd p at 54ch,
@@ -2339,19 +2347,43 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 /* Two INDEPENDENT bands, drifting in opposite directions, with a real gap
-   between them. The first version shared one control and one pair of arrows,
-   and the two rows crept along together 8px apart at 30 and 24 px/s. The eye
-   reads a small difference between neighbours as a shake. 26 px/s each way is
-   a difference of 52 px/s, which reads as two separate things. */
+   between them. Each clipped row is its own drag/keyboard control. */
 .pt-bands { display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0; }
-.pt-band { position: relative; }
+.pt-band { position: relative; border-radius: var(--radius-md); }
+.pt-band::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset: 0.15rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 3px transparent;
+  pointer-events: none;
+}
+.pt-band:has(.pt-viewport:focus-visible)::after {
+  box-shadow: 0 0 0 3px var(--lab-accent);
+}
 
 /* The viewport clips; the track inside it is what moves, under a transform.
    Not overflow-x:auto - a scroll offset is painted at whole device pixels, and
    at 0.43px per frame that is a visible step. See partners.js. */
-.pt-viewport { overflow: hidden; touch-action: pan-y; cursor: grab; }
+.pt-viewport {
+  overflow: hidden;
+  min-height: var(--sponsor-frame-height);
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.pt-viewport:focus-visible {
+  outline: 3px solid var(--lab-accent);
+  outline-offset: -3px;
+}
 .pt-viewport.is-dragging { cursor: grabbing; }
-.pt-track { display: flex; will-change: transform; }
+.pt-track { display: flex; will-change: transform; user-select: none; }
+
+@media (forced-colors: active) {
+  .pt-band:has(.pt-viewport:focus-visible)::after { box-shadow: none; }
+  .pt-viewport:focus-visible { outline-color: Highlight; }
+}
 
 .pt-row {
   display: flex;
@@ -2366,7 +2398,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 3rem;
+  min-height: var(--sponsor-frame-height);
   flex: 0 0 auto;
 }
 .pt-name {
@@ -2375,61 +2407,41 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   font-weight: 700;
   white-space: nowrap;
   color: var(--lab-muted);
-  transition: color 0.2s ease-out;
 }
-.pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
-/* Greyscale until hover. Uses less of each mark, and it is also what makes
-   sixty logos of wildly different quality look like one set. */
-.pt-logo {
-  max-height: 2.6rem;
-  max-width: 11rem;
-  width: auto;
-  object-fit: contain;
-  filter: grayscale(1);
-  opacity: 0.62;
-  transition: filter 0.25s ease-out, opacity 0.25s ease-out;
-}
-.pt-item:hover .pt-logo { filter: grayscale(0); opacity: 1; }
-[data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }
-[data-bs-theme="dark"] .pt-item:hover .pt-logo { filter: grayscale(0) invert(0); }
-
-.pt-arrow {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  transform: translateY(-50%);
-  width: var(--control-min);
-  height: var(--control-min);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 50%;
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
-  font-size: var(--icon-md);
-  line-height: 1;
+.pt-logo-frame {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.18s ease-out, border-color 0.18s ease-out, color 0.18s ease-out;
+  box-sizing: border-box;
+  width: calc(var(--sponsor-logo-max-width) + 2 * var(--sponsor-frame-pad-x));
+  height: var(--sponsor-frame-height);
+  padding: var(--sponsor-frame-pad-y) var(--sponsor-frame-pad-x);
+  border: 1px solid var(--sponsor-frame-border);
+  border-radius: var(--sponsor-frame-radius);
+  background: var(--sponsor-frame-bg);
 }
-.pt-arrow:hover { border-color: var(--lab-accent-hover); color: var(--lab-accent-hover); }
-.pt-prev { left: 0.5rem; }
-.pt-next { right: 0.5rem; }
-.pt-prev:hover { transform: translate(-0.2rem, -50%); }
-.pt-next:hover { transform: translate(0.2rem, -50%); }
+.pt-logo {
+  display: block;
+  max-height: var(--sponsor-logo-max-height);
+  max-width: var(--sponsor-logo-max-width);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
 
-/* The edges fade so names do not appear chopped off. Opaque for the first 55%,
-   which is what keeps a half-word from showing beside the arrow; the old 30%
-   left "...chnology Council" legible under the button. */
+/* A short edge fade softens clipping without hiding a logo behind a control. */
 .pt-fade {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 7.5rem;
+  width: 4rem;
   pointer-events: none;
   z-index: 2;
 }
-.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 55%, transparent 100%); }
-.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 55%, transparent 100%); }
+.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 12%, transparent 100%); }
+.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 12%, transparent 100%); }
 
 .pt-note {
   font-family: var(--font-ui);
@@ -2443,7 +2455,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 @media (max-width: 767.98px) {
   .pt-row { gap: 2rem; padding: 0 1rem; }
-  .pt-fade { width: 3rem; }
+  .pt-fade { width: 2rem; }
     .hero { padding-bottom: 5rem; }
   .typed-line { margin-bottom: 1.1rem; }
 }

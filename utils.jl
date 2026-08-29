@@ -761,7 +761,7 @@ function partner_item(o)
     name = esc(pick(o, "name"))
     body = isempty(logo) ?
         """<span class="pt-name">$(name)</span>""" :
-        """<img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy">"""
+        """<span class="pt-logo-frame"><img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy" draggable="false"></span>"""
     return """<li class="pt-item">$(body)</li>"""
 end
 
@@ -772,9 +772,9 @@ WHY TWO BANDS AND NOT ONE MARQUEE WITH TWO ROWS
 The first version put both rows inside one control, drifting the same way at 30
 and 24 px/s, eight pixels apart. Two nearly-equal speeds side by side read as a
 shake, not as movement: the eye tracks the difference between the rows, not the
-rows. Each row is now a self-contained band with its own arrows, a real gap
-between them, and they drift in OPPOSITE directions. A difference of 52 px/s
-reads as two separate things, which is what it is.
+rows. Each row is now a self-contained, named control with a real gap between
+them, and they drift in OPPOSITE directions. A difference of 52 px/s reads as
+two separate things, which is what it is.
 
 A negative `data-speed` is the whole of "the other way"; partners.js needs no
 second code path for it.
@@ -790,16 +790,18 @@ function hfun_partner_strip()
     rowa = [o for (i, o) in enumerate(orgs) if isodd(i)]
     rowb = [o for (i, o) in enumerate(orgs) if iseven(i)]
 
-    function band(items, speed)
+    function band(items, speed, row_number)
         row = join([partner_item(o) for o in items], "
           ")
+        label = ui("partners", row_number == 1 ? "row_one" : "row_two")
         # The list is duplicated and the loop subtracts exactly one copy when the
         # offset passes it, so the wrap is invisible. The copy is hidden from
         # assistive technology so each name is announced once.
         return """
-    <div class="pt-band" data-speed="$(speed)">
-      <button class="pt-arrow pt-prev" type="button" aria-label="$(esc(ui("partners", "previous")))">$(icon("chevron-left"))</button>
-      <div class="pt-viewport">
+    <div class="pt-band" data-speed="$(speed)" data-partner-row="$(row_number)">
+      <div class="pt-viewport" tabindex="0" role="group"
+           aria-label="$(esc(label))" aria-describedby="partners-instructions"
+           aria-keyshortcuts="ArrowLeft ArrowRight">
         <div class="pt-track">
           <ul class="pt-row">
           $(row)
@@ -809,9 +811,8 @@ function hfun_partner_strip()
           </ul>
         </div>
       </div>
-      <div class="pt-fade pt-fade-l"></div>
-      <div class="pt-fade pt-fade-r"></div>
-      <button class="pt-arrow pt-next" type="button" aria-label="$(esc(ui("partners", "next")))">$(icon("chevron-right"))</button>
+      <div class="pt-fade pt-fade-l" aria-hidden="true"></div>
+      <div class="pt-fade pt-fade-r" aria-hidden="true"></div>
     </div>"""
     end
 
@@ -819,11 +820,12 @@ function hfun_partner_strip()
 <section class="section partners" id="partners">
   <div class="container">
     <p class="pt-head">$(esc(ui("partners", "head")))</p>
+    <p class="visually-hidden" id="partners-instructions">$(esc(ui("partners", "instructions")))</p>
   </div>
 
   <div class="pt-bands">
-$(band(rowa,  26))
-$(band(rowb, -26))
+$(band(rowa,  26, 1))
+$(band(rowb, -26, 2))
   </div>
 
   <div class="container">
