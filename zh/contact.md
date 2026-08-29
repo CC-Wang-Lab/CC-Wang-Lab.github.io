@@ -15,7 +15,7 @@ lang = "zh"
 
 @@page-body
 @@container
-@@row,g-5
+@@row,gx-4,gy-5,g-lg-5
 @@col-lg-7
 ~~~
 <div class="form-col">
