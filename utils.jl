@@ -354,10 +354,12 @@ function hfun_hero()
   </div>
   <!-- Icon AND label swap together. An earlier version swapped only the icon,
        so a paused page showed a play triangle next to the word "Pause". -->
-  <button class="motion-toggle" data-motion-toggle type="button" aria-pressed="false">
-    <span class="motion-when-running">$(icon("pause-fill")) $(esc(ui("hero", "motion_pause")))</span>
-    <span class="motion-when-paused">$(icon("play-fill")) $(esc(ui("hero", "motion_play")))</span>
-  </button>
+  <div class="hero-motion-row container">
+    <button class="motion-toggle" data-motion-toggle type="button" aria-pressed="false">
+      <span class="motion-when-running">$(icon("pause-fill")) $(esc(ui("hero", "motion_pause")))</span>
+      <span class="motion-when-paused">$(icon("play-fill")) $(esc(ui("hero", "motion_play")))</span>
+    </button>
+  </div>
   <p class="hero-caption">$(esc(ui("hero", "caption")))</p>
 </section>
 """
@@ -1482,7 +1484,8 @@ function hfun_news_slider()
         </article>""" for (k, i) in enumerate(its)], "\n")
 
     navitems = join(["""
-        <button class="ns-nav-item$(k == 1 ? " is-active" : "")" type="button" data-goto="$(k-1)">
+        <button class="ns-nav-item$(k == 1 ? " is-active" : "")" type="button" data-goto="$(k-1)"
+                aria-label="$(esc(pick(i, "title")))">
           <span class="ns-nav-line"><span class="ns-nav-fill"></span></span>
           <span class="ns-nav-title">$(esc(pick(i, "title")))</span>
         </button>""" for (k, i) in enumerate(its)], "\n")
@@ -1528,7 +1531,7 @@ function hfun_footer()
         <p class="foot-addr">$(esc(ui("foot", "address")))</p>
       </div>
 
-      <div class="col-6 col-lg-3">
+      <div class="col-12 col-sm-6 col-lg-3">
         <p class="foot-head">$(esc(ui("foot", "nav")))</p>
         <nav class="foot-nav foot-nav-2col">
           $(navlinks)
@@ -1537,7 +1540,7 @@ $(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k,
         </nav>
       </div>
 
-      <div class="col-6 col-lg-4">
+      <div class="col-12 col-sm-6 col-lg-4">
         <p class="foot-head">$(esc(ui("foot", "contact")))</p>
         <nav class="foot-nav">
           <a href="mailto:$(esc(ui("foot", "email")))">$(icon("envelope")) $(esc(ui("foot", "email")))</a>

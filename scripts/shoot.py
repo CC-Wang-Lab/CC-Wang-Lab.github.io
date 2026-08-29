@@ -5,7 +5,7 @@ Screenshots the BUILT site in both themes, at several widths, with motion off.
 Build first:
     julia --project=. -e 'using Franklin; optimize(minify=false, prerender=false)'
 Then:
-    python scripts/shoot.py                 # the standard 16-shot matrix
+    python scripts/shoot.py                 # the full regression matrix
     python scripts/shoot.py --url / --width 1440 --theme dark
     python scripts/shoot.py --keep-server   # leave it running to poke by hand
 
@@ -158,7 +158,8 @@ window.addEventListener("load", function () {
       }
       return false;
     }
-    var floor = 12.8, small = [], wide = [], seen = {};
+    var floor = 12.8, targetFloor = 44;
+    var small = [], wide = [], undersizedTargets = [], unboundedReading = [], seen = {};
     var docW = document.documentElement.clientWidth;
     var all = document.querySelectorAll("*");
     for (var i = 0; i < all.length; i++) {
@@ -192,6 +193,128 @@ window.addEventListener("load", function () {
         if (!seen[k]) { seen[k] = 1; small.push(sel(el) + " = " + fs.toFixed(2) + "px"); }
       }
     }
+    /* Controls that behave like buttons use one shared 44px comfort target.
+       Ordinary inline links are deliberately absent: WCAG's target-spacing
+       exception applies to text flowing inside a sentence. */
+    var targetSelector = [
+      ".btn-cta", ".btn-ghost", ".btn-icon", ".navbar-toggler",
+      ".lab-nav .nav-link", ".motion-toggle", ".ns-arrow",
+      ".ns-nav-item", ".pt-arrow", ".pg-chip", ".pi-chip",
+      ".foot-nav a", "#backToTop", ".ff input", ".ff textarea", ".ff select"
+    ].join(",");
+    var targets = document.querySelectorAll(targetSelector);
+    var targetSeen = {};
+    function shownRect(target) {
+      /* The mobile navbar, hidden carousel arrows and back-to-top control are
+         still real controls. Reveal only display:none ancestors for the few
+         microseconds needed to measure, then restore every inline style. */
+      var changed = [];
+      for (var node = target; node && node !== document.documentElement; node = node.parentElement) {
+        if (getComputedStyle(node).display === "none") {
+          changed.push([node, node.getAttribute("style")]);
+          node.style.setProperty("display", node === target ? "inline-flex" : "block", "important");
+        }
+      }
+      var rect = target.getBoundingClientRect();
+      for (var c = changed.length - 1; c >= 0; c--) {
+        if (changed[c][1] === null) changed[c][0].removeAttribute("style");
+        else changed[c][0].setAttribute("style", changed[c][1]);
+      }
+      return rect;
+    }
+    for (var t = 0; t < targets.length; t++) {
+      var target = targets[t], targetRect = shownRect(target);
+      if (targetRect.width < targetFloor - 0.5 || targetRect.height < targetFloor - 0.5) {
+        var targetKey = sel(target) + "@" + Math.round(targetRect.width) + "x" + Math.round(targetRect.height);
+        if (!targetSeen[targetKey]) {
+          targetSeen[targetKey] = 1;
+          undersizedTargets.push(sel(target) + " = " +
+            targetRect.width.toFixed(1) + "x" + targetRect.height.toFixed(1) + "px");
+        }
+      }
+    }
+    /* These blocks carry long-form reading text. Their media and parent grids
+       stay full-width, but the text block itself must declare a readable cap. */
+    var readingSelector = [
+      ".pi-body", ".pub-theme", ".project-body > h2",
+      ".project-body > h3", ".project-body > h4",
+      ".project-body > p:not(:has(img, picture, video))",
+      ".project-body > ul", ".project-body > ol",
+      ".project-body > blockquote"
+    ].join(",");
+    var reading = document.querySelectorAll(readingSelector);
+    var readingSeen = {};
+    function readingLimit(readingStyle) {
+      var probe = document.createElement("span");
+      probe.style.cssText = "position:fixed;visibility:hidden;display:block;" +
+                            "width:var(--measure);pointer-events:none";
+      probe.style.fontFamily = readingStyle.fontFamily;
+      probe.style.fontSize = readingStyle.fontSize;
+      probe.style.fontStyle = readingStyle.fontStyle;
+      probe.style.fontWeight = readingStyle.fontWeight;
+      document.body.appendChild(probe);
+      var width = probe.getBoundingClientRect().width;
+      probe.remove();
+      return width;
+    }
+    for (var u = 0; u < reading.length; u++) {
+      var readingStyle = getComputedStyle(reading[u]);
+      if (readingStyle.display === "none" || readingStyle.visibility === "hidden") continue;
+      var maxWidth = parseFloat(readingStyle.maxWidth);
+      var limit = readingLimit(readingStyle);
+      if (!isFinite(maxWidth) || maxWidth > limit + 1) {
+        var readingKey = sel(reading[u]);
+        if (!readingSeen[readingKey]) {
+          readingSeen[readingKey] = 1;
+          unboundedReading.push(readingKey + " max " + readingStyle.maxWidth +
+            " exceeds " + limit.toFixed(1) + "px measure");
+        }
+      }
+    }
+    var narrowProjectMedia = [];
+    var projectMedia = document.querySelectorAll([
+      ".project-body > .project-figure",
+      ".project-body > p:has(img, picture, video)"
+    ].join(","));
+    for (var m = 0; m < projectMedia.length; m++) {
+      var mediaBlock = projectMedia[m];
+      var mediaBody = mediaBlock.closest(".project-body");
+      var mediaRect = mediaBlock.getBoundingClientRect();
+      var bodyRect = mediaBody.getBoundingClientRect();
+      var mediaNode = mediaBlock.querySelector("img,picture,video");
+      var mediaNodeRect = mediaNode ? mediaNode.getBoundingClientRect() : mediaRect;
+      if (mediaRect.width < bodyRect.width - 1 || mediaNodeRect.width < mediaRect.width - 1) {
+        narrowProjectMedia.push(sel(mediaBlock) + " block/media/body = " +
+          mediaRect.width.toFixed(1) + "/" + mediaNodeRect.width.toFixed(1) +
+          "/" + bodyRect.width.toFixed(1) + "px");
+      }
+    }
+    function tokenSize(token) {
+      var probe = document.createElement("span");
+      probe.style.cssText = "position:fixed;visibility:hidden;font-size:var(" + token + ")";
+      document.body.appendChild(probe);
+      var size = parseFloat(getComputedStyle(probe).fontSize);
+      probe.remove();
+      return size;
+    }
+    var smToken = tokenSize("--fs-sm"), xsToken = tokenSize("--fs-xs");
+    var undersizedFunctional = [];
+    var functional = document.querySelectorAll([
+      ".hero-caption", ".project-figure figcaption", ".stat-label",
+      ".person-table .person-row-head", ".pf-label", ".foot-head",
+      ".ff-req", ".ns-head", ".pt-head", ".pt-note", ".pg-chip", ".pi-chip"
+    ].join(","));
+    for (var f = 0; f < functional.length; f++) {
+      var functionalStyle = getComputedStyle(functional[f]);
+      if (functionalStyle.display === "none" || functionalStyle.visibility === "hidden") continue;
+      var functionalSize = parseFloat(functionalStyle.fontSize);
+      var functionalFloor = functional[f].matches(".pg-chip,.pi-chip") ? smToken : xsToken;
+      if (functionalSize < functionalFloor - 0.01) {
+        undersizedFunctional.push(sel(functional[f]) + " = " +
+          functionalSize.toFixed(2) + "px, expected at least " +
+          functionalFloor.toFixed(2) + "px");
+      }
+    }
     /* The failure this whole check exists for: a block the reveal hid and
        never un-hid. After a full sweep, every one of them must be .is-in. */
     var claimed = document.querySelectorAll("[data-reveal]");
@@ -212,7 +335,13 @@ window.addEventListener("load", function () {
       scrollWidth: document.documentElement.scrollWidth, clientWidth: docW,
       etbook: document.fonts.check("1em et-book"),
       loaded: document.body.classList.contains("loaded"),
-      belowFloor: small, overflowing: wide.slice(0, 14)
+      bodyFont: parseFloat(getComputedStyle(document.body).fontSize),
+      smFont: smToken, xsFont: xsToken,
+      belowFloor: small, undersizedTargets: undersizedTargets.slice(0, 24),
+      undersizedFunctional: undersizedFunctional.slice(0, 16),
+      unboundedReading: unboundedReading.slice(0, 12),
+      narrowProjectMedia: narrowProjectMedia.slice(0, 8),
+      overflowing: wide.slice(0, 14)
     })});
   }
 });
@@ -231,15 +360,26 @@ MATRIX = [
     ("/", 1920, "light", "top of the ramp: hero at the clamp maximum, measure holding at 74ch"),
     ("/", 492, "dark", "dark tokens at the narrow end"),
     ("/", 1440, "dark", "dark parity: diff against the 1440 light shot, only colour should move"),
+    ("/projects/", 492, "light", "filter chips and project cards at the narrow end"),
+    ("/projects/", 1440, "light", "project list and filters at the reference width"),
+    ("/projects/", 1440, "dark", "project list theme parity"),
+    ("/projects/cpu-cooler-airflow/", 492, "light", "project prose and full-width media on mobile"),
+    ("/projects/cpu-cooler-airflow/", 1440, "light", "project prose measure beside full-width media"),
+    ("/projects/cpu-cooler-airflow/", 1440, "dark", "project detail theme parity"),
+    ("/people/", 492, "light", "stacked people index and narrow footer"),
     ("/publications/", 492, "light", "smallest type at the narrowest width Edge allows"),
     ("/publications/", 1440, "light", "densest small type, the longest run of --fs-xs"),
+    ("/publications/", 1440, "dark", "publication measure and theme parity"),
     ("/people/", 1440, "light", "five card sections plus the person table"),
     ("/people/", 1440, "dark", "the same in dark"),
+    ("/contact/", 492, "light", "map sizing and stacked footer below 576px"),
     ("/contact/", 600, "light", "closes the 576-767.98 hole nothing else lands in"),
     ("/contact/", 1440, "light", "form labels, input borders, the required chip"),
     ("/contact/", 1440, "dark", "input borders in dark, where the 3:1 rule is judged by eye"),
+    ("/zh/", 492, "light", "CJK headline, controls and footer at the narrow end"),
     ("/zh/", 1440, "light", "CJK at the new sizes, the reason the font stack matters"),
     ("/zh/", 1440, "dark", "the fourth corner of theme times language"),
+    ("/zh/people/cc-wang/", 1440, "light", "Chinese professor page in light"),
     ("/zh/people/cc-wang/", 1440, "dark", "biggest type, CJK and dark at once"),
 ]
 
@@ -386,8 +526,8 @@ def main():
                          "freezes the marquee and the slider so shots are "
                          "diffable. Use on to test the scroll effects.")
     ap.add_argument("--measure", action="store_true",
-                    help="report computed font sizes below the 12.8px "
-                         "floor and anything wider than the viewport")
+                    help="audit computed type ramps, the 12.8px floor, 44px "
+                         "controls, reading measures and viewport overflow")
     args = ap.parse_args()
 
     if args.measure and args.realtime:
@@ -463,6 +603,30 @@ def main():
             flags = []
             if r["belowFloor"]:
                 flags.append("%d below the 12.8px floor" % len(r["belowFloor"]))
+            if r.get("undersizedTargets"):
+                flags.append("%d control(s) below the 44px target"
+                             % len(r["undersizedTargets"]))
+            if r.get("undersizedFunctional"):
+                flags.append("%d functional label(s) below their target"
+                             % len(r["undersizedFunctional"]))
+            expected_body = max(17.6, min(19.2, 17.04 + r["w"] * 0.0015))
+            if abs(r.get("bodyFont", 0) - expected_body) > 0.05:
+                flags.append("body %.2fpx differs from %.2fpx target"
+                             % (r.get("bodyFont", 0), expected_body))
+            expected_sm = max(16.0, min(17.6, 15.44 + r["w"] * 0.0015))
+            if abs(r.get("smFont", 0) - expected_sm) > 0.05:
+                flags.append("sm %.2fpx differs from %.2fpx target"
+                             % (r.get("smFont", 0), expected_sm))
+            expected_xs = max(14.4, min(15.2, 14.112 + r["w"] * 0.00075))
+            if abs(r.get("xsFont", 0) - expected_xs) > 0.05:
+                flags.append("xs %.2fpx differs from %.2fpx target"
+                             % (r.get("xsFont", 0), expected_xs))
+            if r.get("unboundedReading"):
+                flags.append("%d reading block(s) exceed the measure"
+                             % len(r["unboundedReading"]))
+            if r.get("narrowProjectMedia"):
+                flags.append("%d project media block(s) are not full-width"
+                             % len(r["narrowProjectMedia"]))
             if over > 1:
                 flags.append("page %dpx wider than the viewport" % over)
             if not r["etbook"]:
@@ -487,6 +651,14 @@ def main():
                      r.get("revealTotal", "?"), "; ".join(flags) or "clean"))
             for x in r["belowFloor"]:
                 print("        floor  " + x)
+            for x in r.get("undersizedTargets", []):
+                print("        target " + x)
+            for x in r.get("undersizedFunctional", []):
+                print("        label  " + x)
+            for x in r.get("unboundedReading", []):
+                print("        measure " + x)
+            for x in r.get("narrowProjectMedia", []):
+                print("        media  " + x)
             for x in r["overflowing"]:
                 print("        wide   " + x)
             if r.get("midBar") or r.get("midHero"):
@@ -502,6 +674,8 @@ def main():
                   " point 4 in the docstring.")
             print("        The reveal effect IS covered above.")
         print("\n" + ("AUDIT CLEAN" if not bad else "%d finding(s)" % bad))
+        if bad:
+            return 1
 
     print("\n%d shot(s) in %s" % (len(made), OUT))
     if failed:

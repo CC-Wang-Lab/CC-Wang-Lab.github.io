@@ -54,7 +54,7 @@ National Yang Ming Chiao Tung University
 
 ~~~
 <div class="container mb-5">
-  <iframe title="Map of NYCU, Hsinchu" width="100%" height="340" style="border:1px solid var(--bs-border-color);border-radius:.75rem"
+  <iframe class="contact-map" title="Map of NYCU, Hsinchu"
     loading="lazy" referrerpolicy="no-referrer-when-downgrade"
     src="https://www.openstreetmap.org/export/embed.html?bbox=120.98835468292238%2C24.781377185766083%2C121.00627183914186%2C24.78979300163636&amp;layer=mapnik&amp;marker=24.785585165051508%2C120.9973132610321"></iframe>
 </div>

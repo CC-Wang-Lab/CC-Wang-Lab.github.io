@@ -121,7 +121,7 @@ style. And Chinese needs `Noto Serif TC` in the stack, because **ET Book has no 
 Without it every Chinese page is a grid of empty boxes, and it looks perfect to anyone testing in
 English.
 
-### The ladder, added 2026-08-19
+### The ladder, added 2026-08-19 and refined 2026-08-29
 
 The first version had **74 `font-size` declarations across 33 different values**, the smallest at
 0.62rem = 9.9 px. Fourteen of those values sat inside a 4.5 px band, which the eye reads as noise
@@ -134,19 +134,21 @@ rather than as hierarchy. They are now nine tokens.
 | `--fs-2xl` | 25.6 | **37.6** | h2, the PI name |
 | `--fs-xl` | 20.8 | **28.0** | h3, card-level h2 |
 | `--fs-lg` | 19.2 | **22.4** | h4, card titles, leads |
-| `--fs-md` | 16.8 | **18.4** | body |
-| `--fs-sm` | 16.0 | 16.0 | secondary prose, controls, form fields |
-| `--fs-xs` | 14.4 | 14.4 | labels, dates, captions |
-| `--fs-2xs` | 12.8 | 12.8 | uppercase eyebrows. **A hard floor.** |
+| `--fs-md` | 17.6 | **19.2** | body |
+| `--fs-sm` | 16.0 | **17.6** | secondary prose, controls, form fields, profile/project chips |
+| `--fs-xs` | 14.4 | **15.2** | functional labels, dates, captions, table/footer headings |
+| `--fs-2xs` | 12.8 | 12.8 | decorative metadata and eyebrows. **A hard floor.** |
 
-*Why every minimum equals the old phone value: nothing on a small screen got smaller, so the change
-is additive at the desktop end only. Every `clamp()` is solved to hit its minimum at 375 px and its
-maximum at 1440 px, and there is now **no `font-size` inside any media query** except the icon-only
-collapse below 576 px.*
+*Why the lower ladder changed: ET Book's body and supporting text were visually slight beside the
+unchanged headings, particularly on wide screens. Body now grows from 17.6 to 19.2 px; supporting
+text grows from 16 to 17.6 px; and functional labels grow from 14.4 to 15.2 px. The 12.8 px token is
+reserved for decorative metadata. Every `clamp()` is solved to hit its minimum at 375 px and its
+maximum at 1440 px, while the established `--fs-lg` through `--fs-4xl` endpoints stay untouched.*
 
 *Why the ladder grows at the top and not at the bottom: the heading-to-body ratio used to run the
 wrong way. `body` dropped to 1.05rem below 768 px while `h1`–`h5` never changed, so a phone got the
-most dramatic headings and a monitor the least. It is now 2.10 at 375 px and 2.65 at 1440 px.*
+most dramatic headings and a monitor the least. With the revised reading scale it is now 2.00 at
+375 px and 2.54 at 1440 px.*
 
 **`--fs-sm` is 16 px and must not go lower.** Below 16 px, iOS Safari zooms the page when a form
 field takes focus.

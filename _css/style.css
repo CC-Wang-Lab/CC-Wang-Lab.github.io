@@ -66,9 +66,10 @@
   /*
     TYPE LADDER - 9 steps replacing 33 ad-hoc values.
 
-    Every MINIMUM is the value the page already used at 375px, so nothing on a
-    phone got smaller. Every MAXIMUM is the larger desktop heading. Each clamp
-    is solved to hit its minimum at 375px and its maximum at 1440px.
+    The heading steps keep their established values. The three reading/UI steps
+    grow modestly so ET Book remains comfortable on wide screens without making
+    the phone layout feel oversized. Each clamp is solved to hit its minimum at
+    375px and its maximum at 1440px.
 
     Rendered px            375    768   1024   1440+
       --fs-4xl  hero      35.2   43.5   48.9   57.6
@@ -76,9 +77,11 @@
       --fs-2xl  h2        25.6   30.0   32.9   37.6
       --fs-xl   h3        20.8   23.5   25.2   28.0
       --fs-lg   h4        19.2   20.4   21.2   22.4
-      --fs-md   body      16.8   17.4   17.8   18.4
+      --fs-md   body      17.6   18.2   18.6   19.2
+      --fs-sm   support   16.0   16.6   17.0   17.6
+      --fs-xs   labels    14.4   14.7   14.9   15.2
 
-    The heading-to-body ratio now GROWS with the screen, 2.10 to 2.65. Before
+    The h1-to-body ratio still grows with the screen, 2.00 to 2.54. Before
     this, body dropped to 1.05rem below 768px while h1-h5 never changed, so a
     phone got the most dramatic headings and a monitor the least.
   */
@@ -87,9 +90,9 @@
   --fs-2xl: clamp(1.60rem, 1.34rem + 1.13vw, 2.35rem);
   --fs-xl:  clamp(1.30rem, 1.14rem + 0.68vw, 1.75rem);
   --fs-lg:  clamp(1.20rem, 1.13rem + 0.30vw, 1.40rem);
-  --fs-md:  clamp(1.05rem, 1.01rem + 0.15vw, 1.15rem);
-  --fs-sm:  1rem;      /* 16px. Also the iOS floor for a form field. */
-  --fs-xs:  0.9rem;    /* 14.4px */
+  --fs-md:  clamp(1.10rem, 1.065rem + 0.15vw, 1.20rem);
+  --fs-sm:  clamp(1rem, 0.965rem + 0.15vw, 1.10rem);
+  --fs-xs:  clamp(0.90rem, 0.882rem + 0.075vw, 0.95rem);
   --fs-2xs: 0.8rem;    /* 12.8px - the hard floor. Nothing goes below this. */
 
   /* Icons size a glyph, not text. Off the text ladder on purpose. */
@@ -116,7 +119,15 @@
   --tracking-tight: 0.02em;
 
   --rule: 1px solid var(--bs-border-color);
-  --pad-section: 5rem;
+  --control-min: 2.75rem;
+  --radius-md: 0.75rem;
+  --space-control-flow: 1rem;
+  --pad-section: clamp(3.25rem, 2.634rem + 2.63vw, 5rem);
+  --pad-page-top: clamp(6.5rem, 5.972rem + 2.253vw, 8rem);
+  --pad-page-bottom: clamp(2rem, 1.824rem + 0.751vw, 2.5rem);
+  --space-news-y: clamp(2.5rem, 1.972rem + 2.253vw, 4rem);
+  --pad-partners-top: clamp(3rem, 2.648rem + 1.502vw, 4rem);
+  --map-height: clamp(16rem, 55vw, 21.25rem);
 
   /* ONE prose measure for the whole site.
      Three different widths were in play before this: .page-hd p at 54ch,
@@ -340,6 +351,10 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
 
 .btn-cta,
 .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min);
   font-family: var(--font-ui);
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -374,6 +389,11 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
 .btn-lg { padding: 0.7rem 1.9rem; font-size: var(--fs-md); }
 
 .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--control-min);
+  min-height: var(--control-min);
   border: 0;
   background: transparent;
   color: var(--bs-body-color);
@@ -410,6 +430,9 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
   color: var(--lab-muted);
 }
 .lab-nav .nav-link {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-min);
   font-family: var(--font-ui);
   font-size: var(--fs-sm);
   font-weight: 400;
@@ -423,6 +446,8 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
   box-shadow: inset 0 -2px 0 var(--lab-accent);
 }
 .lang-switch {
+  min-width: var(--control-min);
+  justify-content: center;
   font-size: var(--fs-xs) !important;
   /* --lab-border-strong, to match the form fields. --bs-border-color is the
      decorative hairline at 1.35:1, which is not the edge of a control. */
@@ -430,7 +455,11 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
   border-radius: 1rem;
   padding: 0.1rem 0.7rem !important;
 }
-.navbar-toggler { border-color: var(--bs-border-color); }
+.navbar-toggler {
+  min-width: var(--control-min);
+  min-height: var(--control-min);
+  border-color: var(--bs-border-color);
+}
 .navbar-toggler:focus { box-shadow: 0 0 0 0.2rem rgba(216, 144, 48, 0.3); }
 [data-bs-theme="dark"] .navbar-toggler-icon {
   filter: invert(1) grayscale(100%) brightness(200%);
@@ -515,7 +544,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   padding: 0 1.5rem;
   max-width: 1320px;
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   line-height: var(--lh-ui);
   color: var(--on-dark-3);
 }
@@ -632,7 +661,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .stat-label {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.66);
@@ -757,6 +786,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    -------------------------------------------------------------------------- */
 
 .pi-block { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; align-items: start; }
+.pi-body { max-width: var(--measure); }
 .pi-photo img {
   width: 100%;
   border-radius: 0.9rem;
@@ -820,7 +850,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    the three columns are named rather than guessed at. */
 .person-table .person-row-head {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--lab-muted);
@@ -833,7 +863,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    Publications
    -------------------------------------------------------------------------- */
 
-.pub-theme { margin-bottom: 3rem; }
+.pub-theme { max-width: var(--measure); margin-bottom: 3rem; }
 .pub-theme h2 { border-bottom: 2px solid var(--lab-orange); padding-bottom: 0.4rem; display: inline-block; }
 .pub-list { padding-left: 1.4rem; margin-top: 1.2rem; }
 .pub { margin-bottom: 1rem; }
@@ -900,7 +930,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .foot-addr { color: var(--lab-muted); font-size: var(--fs-xs); max-width: 34ch; }
 .foot-head {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--lab-muted);
@@ -912,8 +942,14 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   `columns` balances them by itself, so adding a page needs no change here.
 */
 .foot-nav-2col { display: block; columns: 2; column-gap: 1.5rem; }
-.foot-nav-2col a { display: block; margin-bottom: 0.35rem; break-inside: avoid; }
-.foot-nav a { color: var(--bs-body-color); }
+.foot-nav-2col a { margin-bottom: 0; break-inside: avoid; }
+.foot-nav a {
+  display: flex;
+  align-items: center;
+  min-width: var(--control-min);
+  min-height: var(--control-min);
+  color: var(--bs-body-color);
+}
 .foot-nav a:hover { color: var(--lab-accent-hover); }
 .foot-rule { margin: 2.5rem 0 1.2rem; border-color: var(--bs-border-color); opacity: 1; }
 .foot-fine { color: var(--lab-muted); font-size: var(--fs-xs); margin-bottom: 0; text-align: center; }
@@ -955,7 +991,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    -------------------------------------------------------------------------- */
 
 .page-hd {
-  padding: 8rem 0 2.5rem;
+  padding: var(--pad-page-top) 0 var(--pad-page-bottom);
   border-bottom: var(--rule);
   background: var(--lab-surface-2);
 }
@@ -989,13 +1025,21 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .page-body { padding: 3.5rem 0 5rem; }
 .page-narrow { max-width: var(--measure); }
 
-/* A project page runs its body at the FULL container width, matching the hero
-   photo above it. Asked for directly, 2026-08-19, after seeing the two side by
-   side: the hero ran to the container edge while the text stopped at 74
-   characters, and the mismatch was the thing that looked wrong.
-   The cost, said once: about 130 characters per line, which is long. The About
-   page keeps .page-narrow, so the two are now deliberately different. */
+/* Project media keeps the full container width. Direct textual children use
+   the shared reading measure, so the page can carry expansive photography and
+   video without making its paragraphs run to roughly 130 characters. */
 .project-body { max-width: 100%; }
+.project-body > :where(h2, h3, h4, p, ul, ol, blockquote) {
+  max-width: var(--measure);
+}
+.project-body > p:has(img, picture, video) { max-width: none; }
+.project-body > p:has(img, picture, video) img,
+.project-body > p:has(img, picture, video) picture,
+.project-body > p:has(img, picture, video) video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 
 /* --------------------------------------------------------------------------
    A page per person
@@ -1032,8 +1076,12 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   max-width: 280px;
 }
 .pi-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min);
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-sm);
   line-height: 1.2;
   padding: 0.38rem 0.8rem;
   border: 1px solid var(--bs-border-color);
@@ -1143,7 +1191,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .pf-label {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--lab-muted);
@@ -1164,8 +1212,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    values instead of squeezing beside them. */
 @media (max-width: 767.98px) {
   .pf-row { grid-template-columns: 1fr; gap: 0.55rem; padding: 1.15rem 1.1rem; }
-}
-
 }
 
 /* --------------------------------------------------------------------------
@@ -1258,6 +1304,14 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 /* Second heading in the card needs air above it, the first does not. */
 .contact-card p + h2 { margin-top: 2rem; }
 
+.contact-map {
+  display: block;
+  width: 100%;
+  height: var(--map-height);
+  border: var(--rule);
+  border-radius: var(--radius-md);
+}
+
 /* --------------------------------------------------------------------------
    The inquiry form
 
@@ -1286,7 +1340,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .ff-req {
   font-weight: 400;
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--lab-muted);
@@ -1343,12 +1397,10 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 @media (max-width: 991.98px) {
   .lab-nav .navbar-nav { padding-top: 0.75rem; }
-  .lang-switch { display: inline-block; width: fit-content; }
+  .lang-switch { display: inline-flex; width: fit-content; }
 }
 
 @media (max-width: 767.98px) {
-  :root { --pad-section: 3.25rem; }
-
   /*
     The hero is `display: flex` on desktop. On mobile the caption stops being
     absolutely positioned, which turns it into a SECOND FLEX ITEM sitting
@@ -1369,10 +1421,10 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     padding: 0 var(--bs-gutter-x, 0.75rem);
   }
 
-  .page-hd { padding: 6.5rem 0 2rem; }
   .pi-block { grid-template-columns: 1fr; gap: 1.5rem; }
   .pi-photo { max-width: 180px; }
   .person-row { grid-template-columns: 1fr; gap: 0.15rem; }
+  .person-table .person-row-head { display: none; }
   /* At 390px a justified line is about 32 characters, and the white rivers
      between words are unavoidable. Everything the justification block above
      turned on is turned back off here. */
@@ -1718,7 +1770,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .motion-off .card-art path[pathLength] {
   animation: none !important;
 }
-}
 
 .card-badge {
   display: inline-block;
@@ -1798,7 +1849,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   A narrow measure is a property of the text, not of the box around it.
 */
 .news-slider {
-  margin: 4rem 0;
+  margin: var(--space-news-y) 0;
   padding: 0;
   background: transparent;
 }
@@ -1821,7 +1872,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .ns-head {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--on-dark-3);
@@ -1870,7 +1921,12 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   color: var(--on-dark-3);
   font-size: var(--icon-lg);
   line-height: 1;
-  padding: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--control-min);
+  min-height: var(--control-min);
+  padding: 0;
   transition: transform 0.18s ease-out, color 0.18s ease-out;
 }
 .ns-arrow:hover { color: #fff; }
@@ -1881,6 +1937,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .ns-nav { display: flex; gap: 2.5rem; margin-top: 2.25rem; flex-wrap: wrap; }
 .ns-nav-item {
+  min-height: var(--control-min);
   border: 0;
   background: transparent;
   padding: 0;
@@ -1964,15 +2021,25 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 @media (max-width: 767.98px) {
   /* The container is full-bleed on phones, so the card would touch both edges
      and its rounded corners would be cut off. Give it a margin of its own. */
-  .news-slider { margin: 2.5rem 0; }
   .news-slider > .container {
     width: auto;
     margin: 0 0.9rem;
     padding: 1.75rem 1.4rem 1.5rem;
   }
   .ns-nav-title { display: none; }
-  .ns-nav-line { width: 3.5rem; }
-  .ns-nav { gap: 0.75rem; margin-top: 1.75rem; }
+  .ns-nav-line { width: 100%; }
+  .ns-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--control-min), 1fr));
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+  }
+  .ns-nav-item {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    max-width: none;
+  }
   .ns-arrow { display: none; }
   .project-hero img { max-height: 240px; }
 }
@@ -2031,6 +2098,8 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    Motion control — one button, everything on the page obeys it
    -------------------------------------------------------------------------- */
 
+.hero-motion-row { display: contents; }
+
 .motion-toggle {
   position: absolute;
   z-index: 3;
@@ -2038,6 +2107,8 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   bottom: 3.25rem;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-height: var(--control-min);
   gap: 0.45rem;
   padding: 0.35rem 0.95rem 0.35rem 0.7rem;
   /* 0.35 alpha was too faint to read as the edge of a control.
@@ -2059,9 +2130,23 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .motion-toggle .motion-when-paused { display: none; }
 .motion-toggle.is-paused .motion-when-paused { display: inline; }
 .motion-toggle.is-paused .motion-when-running { display: none; }
-/* Small screens keep the icon and drop the words. */
+/* On phones the control follows the actions in normal flow, so neither the
+   English nor the Chinese headline can ever sit underneath it. */
 @media (max-width: 575.98px) {
-  .motion-toggle { padding: 0.4rem 0.55rem; bottom: auto; top: 5.2rem; font-size: 0; }
+  .hero-motion-row {
+    display: flex;
+    position: relative;
+    z-index: 3;
+    justify-content: flex-end;
+    margin-top: var(--space-control-flow);
+  }
+  .motion-toggle {
+    position: static;
+    inline-size: var(--control-min);
+    min-inline-size: var(--control-min);
+    padding: 0;
+    font-size: 0;
+  }
   .motion-toggle .bi { font-size: var(--icon-sm); }
 }
 
@@ -2079,10 +2164,10 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    started and the reset is invisible. Any other distance shows a jump.
    -------------------------------------------------------------------------- */
 
-.partners { padding-top: 4rem; padding-bottom: 3.5rem; }
+.partners { padding-top: var(--pad-partners-top); padding-bottom: 3.5rem; }
 .pt-head {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--lab-muted);
@@ -2150,8 +2235,8 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   z-index: 3;
   top: 50%;
   transform: translateY(-50%);
-  width: 2.4rem;
-  height: 2.4rem;
+  width: var(--control-min);
+  height: var(--control-min);
   border: 1px solid var(--bs-border-color);
   border-radius: 50%;
   background: var(--bs-body-bg);
@@ -2185,7 +2270,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .pt-note {
   font-family: var(--font-ui);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   line-height: var(--lh-normal);
   color: var(--lab-muted);
   text-align: center;
@@ -2194,7 +2279,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 @media (max-width: 767.98px) {
-  .partners { padding-top: 3rem; }
   .pt-row { gap: 2rem; padding: 0 1rem; }
   .pt-fade { width: 3rem; }
     .hero { padding-bottom: 5rem; }
@@ -2232,8 +2316,12 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 .pg-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min);
   font-family: var(--font-ui);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   line-height: var(--lh-ui);
   padding: 0.45rem 1rem;
   border: 1px solid var(--bs-border-color);
