@@ -230,6 +230,197 @@ image      = "/assets/img/test-setups/heat-pipes-freezing-conditions/heat-pipe-a
 caption_en = ""
 caption_zh = ""
 
+[[project]]
+id       = "immersion-cooling-microchannel-lid"
+weight   = 7
+image    = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
+area     = "electronics-cooling"
+layout   = "b"
+source_slides = [19]
+title_en = "Immersion Cooling Microchannel Lid Cold Plate"
+title_zh = "Immersion Cooling Microchannel Lid Cold Plate"
+lead_en  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
+lead_zh  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
+body_en  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
+body_zh  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
+
+[[project.section]]
+heading_en = ""
+heading_zh = ""
+body_en    = "An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
+body_zh    = "An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
+items_en   = []
+items_zh   = []
+
+[[project.section]]
+heading_en = "➢ Cold Plate and Microchannel Lid Cold Plate (Axial thermal resistance analysis)"
+heading_zh = "➢ Cold Plate and Microchannel Lid Cold Plate (Axial thermal resistance analysis)"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
+[[project.figure]]
+id         = "annotated-apparatus"
+kind       = "annotated-photo"
+image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "cold-plate-axial-resistance"
+kind       = "diagram"
+image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/cold-plate-axial-resistance.png"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "microchannel-lid-axial-resistance"
+kind       = "diagram"
+image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/microchannel-lid-axial-resistance.png"
+caption_en = ""
+caption_zh = ""
+
+[[project]]
+id       = "oil-immersion-heat-transfer-enhancement"
+weight   = 8
+image    = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/immersion-tank.jpg"
+area     = "electronics-cooling"
+layout   = "c"
+source_slides = [20]
+title_en = "Active Heat Transfer Enhancement in Oil Immersion Cooling"
+title_zh = "Active Heat Transfer Enhancement in Oil Immersion Cooling"
+lead_en  = "➢ Air Bubbling Generator"
+lead_zh  = "➢ Air Bubbling Generator"
+body_en  = ""
+body_zh  = ""
+
+[[project.figure]]
+id         = "immersion-tank"
+kind       = "photo"
+image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/immersion-tank.jpg"
+caption_en = "➢ Real Immersion Tank"
+caption_zh = "➢ Real Immersion Tank"
+
+[[project.figure]]
+id         = "bubble-enhancement"
+kind       = "figure"
+image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/bubble-enhancement.jpg"
+caption_en = "➢ Air Bubbling Generator\n➢ Bubbling Heat Enhancement"
+caption_zh = "➢ Air Bubbling Generator\n➢ Bubbling Heat Enhancement"
+
+[[project.figure]]
+id         = "multi-needle-electrode"
+kind       = "diagram"
+image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/multi-needle-electrode.png"
+caption_en = "➢ Multi Needle electrode\n➢ EHD Heat Enhancement"
+caption_zh = "➢ Multi Needle electrode\n➢ EHD Heat Enhancement"
+
+[[project.figure]]
+id         = "air-bubbling-mechanism"
+kind       = "diagram"
+image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/air-bubbling-mechanism.png"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "ehd-heat-enhancement"
+kind       = "diagram"
+image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/ehd-heat-enhancement.png"
+caption_en = ""
+caption_zh = ""
+
+[[project]]
+id       = "multi-agent-server-cooling-control"
+weight   = 9
+image    = "/assets/img/test-setups/multi-agent-server-cooling-control/server-configuration.jpg"
+area     = "ai-thermal"
+layout   = "a"
+source_slides = [21, 22]
+title_en = "2U Server Experimental Platform and Multi-Agent Control"
+title_zh = "2U Server Experimental Platform and Multi-Agent Control"
+lead_en  = "2U Server Experimental Platform With Multi-Agent Control"
+lead_zh  = "2U Server Experimental Platform With Multi-Agent Control"
+body_en  = "Air flow"
+body_zh  = "Air flow"
+
+[[project.section]]
+heading_en = "➢ Experimental System Architecture"
+heading_zh = "➢ Experimental System Architecture"
+body_en    = ""
+body_zh    = ""
+items_en   = [
+  "Inlet",
+  "Thermal Spreader",
+  "Heat Sink",
+  "T",
+  "Heat Sink",
+  "Fan",
+  "Outlet",
+  "48V Power Supply",
+  "Ceramic Heat Source",
+  "MTD-8TC",
+  "PC",
+  "Arduino",
+]
+items_zh   = [
+  "Inlet",
+  "Thermal Spreader",
+  "Heat Sink",
+  "T",
+  "Heat Sink",
+  "Fan",
+  "Outlet",
+  "48V Power Supply",
+  "Ceramic Heat Source",
+  "MTD-8TC",
+  "PC",
+  "Arduino",
+]
+
+[[project.section]]
+heading_en = "2U Server Experimental Platform With Multi-Agent Control"
+heading_zh = "2U Server Experimental Platform With Multi-Agent Control"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
+[[project.figure]]
+id         = "server-configuration"
+kind       = "figure"
+image      = "/assets/img/test-setups/multi-agent-server-cooling-control/server-configuration.jpg"
+caption_en = "➢ Experimental Server Configuration Diagram"
+caption_zh = "➢ Experimental Server Configuration Diagram"
+
+[[project.figure]]
+id         = "load-profile"
+kind       = "chart"
+image      = "/assets/img/test-setups/multi-agent-server-cooling-control/load-profile.png"
+caption_en = "➢ Load Profile"
+caption_zh = "➢ Load Profile"
+
+[[project.figure]]
+id         = "transient-computational-workflow"
+kind       = "diagram"
+image      = "/assets/img/test-setups/multi-agent-server-cooling-control/transient-computational-workflow.png"
+caption_en = "➢ Transient Environment Computational Workflow"
+caption_zh = "➢ Transient Environment Computational Workflow"
+
+[[project.figure]]
+id         = "single-fan-observation-range"
+kind       = "diagram"
+image      = "/assets/img/test-setups/multi-agent-server-cooling-control/single-fan-observation-range.png"
+caption_en = "➢ Single-Fan Observation Range"
+caption_zh = "➢ Single-Fan Observation Range"
+
+[[project.figure]]
+id         = "energy-saving-equation"
+kind       = "diagram"
+image      = "/assets/img/test-setups/multi-agent-server-cooling-control/energy-saving-equation.png"
+caption_en = ""
+caption_zh = ""
+
 # --- PLACEHOLDER. Copy this block for each new project, then delete this one. ---
 [[project]]
 id       = "placeholder-project"

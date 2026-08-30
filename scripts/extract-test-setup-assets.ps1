@@ -89,6 +89,22 @@ Export-Crop -Slide 18 -Geometry '270x408+54+125' -RelativePath 'liquid-desiccant
 Export-Crop -Slide 18 -Geometry '811x426+469+64' -RelativePath 'liquid-desiccant-air-conditioning-system\perspective-system-diagram.png' -Erase 'rectangle 0,0 22,28'
 Export-Crop -Slide 18 -Geometry '258x169+60+360' -RelativePath 'liquid-desiccant-air-conditioning-system\process-flow-diagram.png'
 
+Export-Crop -Slide 19 -Geometry '401x594+0+109' -RelativePath 'immersion-cooling-microchannel-lid\annotated-apparatus.jpg'
+Export-Crop -Slide 19 -Geometry '391x238+507+86' -RelativePath 'immersion-cooling-microchannel-lid\cold-plate-axial-resistance.png' -Erase 'rectangle 0,0 70,15 rectangle 388,50 390,80'
+Export-Crop -Slide 19 -Geometry '399x220+831+104' -RelativePath 'immersion-cooling-microchannel-lid\microchannel-lid-axial-resistance.png' -Erase 'rectangle 0,0 52,55 rectangle 0,56 13,75'
+
+Export-Crop -Slide 20 -Geometry '353x487+39+142' -RelativePath 'oil-immersion-heat-transfer-enhancement\immersion-tank.jpg'
+Export-Crop -Slide 20 -Geometry '482x248+411+141' -RelativePath 'oil-immersion-heat-transfer-enhancement\bubble-enhancement.jpg'
+Export-Crop -Slide 20 -Geometry '345x230+474+442' -RelativePath 'oil-immersion-heat-transfer-enhancement\multi-needle-electrode.png'
+Export-Crop -Slide 20 -Geometry '296x313+895+72' -RelativePath 'oil-immersion-heat-transfer-enhancement\air-bubbling-mechanism.png'
+Export-Crop -Slide 20 -Geometry '290x318+899+394' -RelativePath 'oil-immersion-heat-transfer-enhancement\ehd-heat-enhancement.png'
+
+Export-Crop -Slide 21 -Geometry '345x570+34+98' -RelativePath 'multi-agent-server-cooling-control\server-configuration.jpg'
+Export-Crop -Slide 21 -Geometry '716x346+503+345' -RelativePath 'multi-agent-server-cooling-control\load-profile.png'
+Export-Crop -Slide 22 -Geometry '847x404+22+121' -RelativePath 'multi-agent-server-cooling-control\transient-computational-workflow.png'
+Export-Crop -Slide 22 -Geometry '386x520+894+100' -RelativePath 'multi-agent-server-cooling-control\single-fan-observation-range.png'
+Export-Crop -Slide 22 -Geometry '555x69+176+592' -RelativePath 'multi-agent-server-cooling-control\energy-saving-equation.png'
+
 Export-Crop -Slide 28 -Geometry '562x398+79+167' -RelativePath 'carvera-desktop-cnc\cnc-machine.jpg'
 
 Export-Crop -Slide 29 -Geometry '378x402+57+184' -RelativePath 'fabrication-and-microscopy-equipment\3d-printer.jpg'

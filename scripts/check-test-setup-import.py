@@ -37,14 +37,17 @@ EXPECTED = {
         "two-phase-closed-loop-thermosyphon": ([4], "b", "two-phase", 3),
         "chip-package-lid-thermal-spreading": ([5, 6], "c", "electronics-cooling", 7),
         "heat-pipes-freezing-conditions": ([14], "a", "two-phase", 2),
+        "immersion-cooling-microchannel-lid": ([19], "b", "electronics-cooling", 3),
+        "oil-immersion-heat-transfer-enhancement": ([20], "c", "electronics-cooling", 5),
+        "multi-agent-server-cooling-control": ([21, 22], "a", "ai-thermal", 5),
     },
 }
 
 PLURAL = {"facility": "facilities", "project": "projects"}
-EXPECTED_COUNTS = {"facility": 14, "project": 4}
+EXPECTED_COUNTS = {"facility": 14, "project": 7}
 EXPECTED_LAYOUTS = {
     "facility": {"a": 5, "b": 4, "c": 5},
-    "project": {"a": 2, "b": 1, "c": 1},
+    "project": {"a": 3, "b": 2, "c": 2},
 }
 
 
