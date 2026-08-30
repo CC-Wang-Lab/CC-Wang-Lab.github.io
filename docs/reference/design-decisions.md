@@ -168,28 +168,32 @@ did nothing at all. Only 400 and 700 are written now.
 
 ---
 
-## Why the three profile designs share one document, added 2026-08-29
+## Why the four profile designs share one record, added 2026-08-29, revised 2026-08-30
 
-Editorial, Dossier and Narrative-first are temporary design choices, not three versions of a
-person's record. Each profile therefore has one semantic order — name, portrait/role/contact,
-narrative, then facts — and CSS Grid rearranges those regions only on wide screens. At 991.98 px
-and below, all three return to that source order. A wording or factual correction is consequently
-made once and is identical in every option, both in English and Traditional Chinese.
+Editorial, Dossier, Narrative-first and Header profile are design choices, not four versions of a
+person's record. Every identity presentation is generated from the same team row. Modes A-C show
+the ordinary body identity; mode D hides that presentation and shows the same portrait, role,
+topic and links inside the page header. A wording or factual correction is consequently made once
+and remains identical in every option, both in English and Traditional Chinese.
 
-The allowlisted query parameter is `profile-layout=editorial|dossier|narrative`. Missing, empty or
-invalid values resolve to Editorial before first paint. The temporary A/B/C switcher appears only
-when a valid value is already in the URL, updates that URL with `history.replaceState`, and writes
-nothing to local or session storage. Ordinary profile visits remain free of comparison controls.
+The allowlisted query parameter is `profile-layout=editorial|dossier|narrative|header`. Missing,
+empty or invalid values resolve to Editorial before first paint. The A/B/C/D switcher appears on
+every real profile, updates the URL with `history.replaceState`, and writes nothing to local or
+session storage.
 
-The three layouts use the existing typography ladder rather than new sizes: Editorial names use
+The four layouts use the existing typography ladder rather than new sizes: Editorial names use
 `--fs-3xl`, Dossier names `--fs-2xl`, Narrative-first names `--fs-4xl`, roles `--fs-lg`, narrative
 copy `--fs-md`, narrative headings `--fs-xl`, fact values `--fs-sm`, and fact labels `--fs-xs`.
-ET Book and Noto Serif TC, the 74ch reading measure, the color system and the 44px control minimum
-remain unchanged.
+Header profile uses a `--fs-3xl` name and caps its portrait at 180px on wide screens. ET Book,
+Noto Serif TC, the color system and the 44px control minimum remain unchanged.
+
+Page-header notes, section introductions and prose notes now follow the full width available in
+their content container instead of a separate 74ch cap. They remain justified at every viewport,
+including phones; headings and functional labels stay left-aligned.
 
 The unlinked `/profile-designs/` and `/zh/profile-designs/` pages are marked `noindex` and exist
-only for selection. After one design is approved, those pages, the switcher and the two unused CSS
-states can be removed without migrating or reconciling profile content.
+only for selection. After one design is approved, those pages, the switcher and unused CSS states
+can be removed without migrating or reconciling profile content.
 
 ---
 

@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  var allowed = ["editorial", "dossier", "narrative"];
+  var allowed = ["editorial", "dossier", "narrative", "header"];
   var root = document.documentElement;
 
   function selectedFromUrl() {

@@ -160,7 +160,8 @@ window.addEventListener("load", function () {
       return false;
     }
     var floor = 12.8, targetFloor = 44;
-    var small = [], wide = [], undersizedTargets = [], unboundedReading = [], seen = {};
+    var small = [], wide = [], undersizedTargets = [], constrainedNotes = [];
+    var unjustifiedNotes = [], seen = {};
     var docW = document.documentElement.clientWidth;
     var all = document.querySelectorAll("*");
     for (var i = 0; i < all.length; i++) {
@@ -235,41 +236,44 @@ window.addEventListener("load", function () {
         }
       }
     }
-    /* These blocks carry long-form reading text. Their media and parent grids
-       stay full-width, but the text block itself must declare a readable cap. */
-    var readingSelector = [
-      ".pi-body", ".profile-narrative", ".pub-theme", ".project-body > h2",
-      ".project-body > h3", ".project-body > h4",
-      ".project-body > p:not(:has(img, picture, video))",
-      ".project-body > ul", ".project-body > ol",
-      ".project-body > blockquote"
+    /* Notes and prose now follow the full-width page-header lead. They may be
+       narrowed by an actual grid column, but not by a second max-width cap. */
+    var noteWidthSelector = [
+      ".section-head", ".page-narrow", ".pi-body", ".pub-theme",
+      ".profile-narrative", ".form-col", ".pg-scope",
+      ".project-body > h2", ".project-body > h3", ".project-body > h4",
+      ".project-body > p:not(:has(img, picture, video))", ".project-body > ul",
+      ".project-body > ol", ".project-body > blockquote"
     ].join(",");
-    var reading = document.querySelectorAll(readingSelector);
-    var readingSeen = {};
-    function readingLimit(readingStyle) {
-      var probe = document.createElement("span");
-      probe.style.cssText = "position:fixed;visibility:hidden;display:block;" +
-                            "width:var(--measure);pointer-events:none";
-      probe.style.fontFamily = readingStyle.fontFamily;
-      probe.style.fontSize = readingStyle.fontSize;
-      probe.style.fontStyle = readingStyle.fontStyle;
-      probe.style.fontWeight = readingStyle.fontWeight;
-      document.body.appendChild(probe);
-      var width = probe.getBoundingClientRect().width;
-      probe.remove();
-      return width;
+    var noteWidths = document.querySelectorAll(noteWidthSelector);
+    var noteWidthSeen = {};
+    for (var u = 0; u < noteWidths.length; u++) {
+      var noteWidthStyle = getComputedStyle(noteWidths[u]);
+      if (noteWidthStyle.display === "none" || noteWidthStyle.visibility === "hidden") continue;
+      if (noteWidthStyle.maxWidth !== "none") {
+        var noteWidthKey = sel(noteWidths[u]);
+        if (!noteWidthSeen[noteWidthKey]) {
+          noteWidthSeen[noteWidthKey] = 1;
+          constrainedNotes.push(noteWidthKey + " max " + noteWidthStyle.maxWidth);
+        }
+      }
     }
-    for (var u = 0; u < reading.length; u++) {
-      var readingStyle = getComputedStyle(reading[u]);
-      if (readingStyle.display === "none" || readingStyle.visibility === "hidden") continue;
-      var maxWidth = parseFloat(readingStyle.maxWidth);
-      var limit = readingLimit(readingStyle);
-      if (!isFinite(maxWidth) || maxWidth > limit + 1) {
-        var readingKey = sel(reading[u]);
-        if (!readingSeen[readingKey]) {
-          readingSeen[readingKey] = 1;
-          unboundedReading.push(readingKey + " max " + readingStyle.maxWidth +
-            " exceeds " + limit.toFixed(1) + "px measure");
+    var noteTextSelector = [
+      ".page-hd p", ".section-head p", ".page-narrow p", ".pi-body p",
+      ".pub-theme p", ".pub-theme li", ".profile-narrative p",
+      ".form-col > p", ".pg-scope", ".project-body > p:not(:has(img, picture, video))",
+      ".project-body > :is(ul, ol) > li", ".project-body > blockquote"
+    ].join(",");
+    var noteTexts = document.querySelectorAll(noteTextSelector);
+    var justifySeen = {};
+    for (var jn = 0; jn < noteTexts.length; jn++) {
+      var noteTextStyle = getComputedStyle(noteTexts[jn]);
+      if (noteTextStyle.display === "none" || noteTextStyle.visibility === "hidden") continue;
+      if (noteTextStyle.textAlign !== "justify") {
+        var justifyKey = sel(noteTexts[jn]);
+        if (!justifySeen[justifyKey]) {
+          justifySeen[justifyKey] = 1;
+          unjustifiedNotes.push(justifyKey + " = " + noteTextStyle.textAlign);
         }
       }
     }
@@ -330,13 +334,14 @@ window.addEventListener("load", function () {
     var profileAudit = null;
     var profileShell = document.querySelector(".profile-layout");
     if (profileShell) {
-      var profileAllowed = ["editorial", "dossier", "narrative"];
+      var profileAllowed = ["editorial", "dossier", "narrative", "header"];
       var profileRequested = new URLSearchParams(location.search).get("profile-layout");
       var profileValid = profileAllowed.indexOf(profileRequested) !== -1;
       var profileExpected = profileValid ? profileRequested : "editorial";
       var profileRoot = document.documentElement;
       var profileName = document.querySelector(".person-hd .pi-heading");
       var profileIdentity = profileShell.querySelector(".profile-identity");
+      var profileHeaderIdentity = document.querySelector(".profile-header-identity");
       var profileNarrative = profileShell.querySelector(".profile-narrative");
       var profileRecord = profileShell.querySelector(".profile-record");
       var profileRole = profileShell.querySelector(".profile-role");
@@ -349,7 +354,9 @@ window.addEventListener("load", function () {
       var profileLanguageHref = document.querySelector(".lang-switch") ?
         document.querySelector(".lang-switch").getAttribute("href") : "";
       var profileCompareFlag = profileRoot.getAttribute("data-profile-layout-compare");
-      var profileRects = [profileIdentity, profileNarrative, profileRecord]
+      var visibleProfileIdentity = profileExpected === "header" ?
+        profileHeaderIdentity : profileIdentity;
+      var profileRects = [visibleProfileIdentity, profileNarrative, profileRecord]
         .filter(Boolean).map(function (node) { return node.getBoundingClientRect(); });
       function rectanglesOverlap(a, b) {
         return Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
@@ -364,10 +371,10 @@ window.addEventListener("load", function () {
         }
       }
       var profileMobileOrder = true;
-      if (window.innerWidth <= 991.98 && profileName && profileIdentity &&
+      if (window.innerWidth <= 991.98 && profileName && visibleProfileIdentity &&
           profileNarrative && profileRecord) {
         var nameRect = profileName.getBoundingClientRect();
-        var identityRect = profileIdentity.getBoundingClientRect();
+        var identityRect = visibleProfileIdentity.getBoundingClientRect();
         var narrativeRect = profileNarrative.getBoundingClientRect();
         var recordRect = profileRecord.getBoundingClientRect();
         profileMobileOrder = nameRect.bottom <= identityRect.top + 1 &&
@@ -377,7 +384,7 @@ window.addEventListener("load", function () {
       var expectedNameToken = profileExpected === "dossier" ? "--fs-2xl" :
         (profileExpected === "narrative" ? "--fs-4xl" : "--fs-3xl");
       var interaction = { tested: false, passed: true };
-      if (profileChoices.length === 3) {
+      if (profileChoices.length === 4) {
         var alternative = Array.prototype.find.call(profileChoices, function (choice) {
           return choice.getAttribute("data-profile-layout-choice") !== profileExpected;
         });
@@ -407,9 +414,19 @@ window.addEventListener("load", function () {
           profileSwitcher.querySelectorAll('[aria-pressed="true"]').length : 0,
         regionCounts: {
           identity: profileShell.querySelectorAll(".profile-identity").length,
+          headerIdentity: document.querySelectorAll(".profile-header-identity").length,
           narrative: profileShell.querySelectorAll(".profile-narrative").length,
           record: profileShell.querySelectorAll(".profile-record").length
         },
+        identityLocationValid: profileExpected === "header" ?
+          !!profileHeaderIdentity && getComputedStyle(profileHeaderIdentity).display !== "none" &&
+          getComputedStyle(profileIdentity).display === "none" :
+          !!profileHeaderIdentity && getComputedStyle(profileHeaderIdentity).display === "none" &&
+          getComputedStyle(profileIdentity).display !== "none",
+        headerPortraitWidth: profileHeaderIdentity ?
+          profileHeaderIdentity.querySelector(".pi-portrait-frame").getBoundingClientRect().width : 0,
+        headerIdentityInsideHeader: profileExpected !== "header" ||
+          (!!profileHeaderIdentity && !!profileHeaderIdentity.closest(".person-hd")),
         nameFont: profileName ? parseFloat(getComputedStyle(profileName).fontSize) : 0,
         expectedNameFont: tokenSize(expectedNameToken),
         roleFont: profileRole ? parseFloat(getComputedStyle(profileRole).fontSize) : 0,
@@ -560,7 +577,8 @@ window.addEventListener("load", function () {
       smFont: smToken, xsFont: xsToken,
       belowFloor: small, undersizedTargets: undersizedTargets.slice(0, 24),
       undersizedFunctional: undersizedFunctional.slice(0, 16),
-      unboundedReading: unboundedReading.slice(0, 12),
+      constrainedNotes: constrainedNotes.slice(0, 12),
+      unjustifiedNotes: unjustifiedNotes.slice(0, 12),
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
       overflowing: wide.slice(0, 14), profile: profileAudit, partners: partnerAudit
     })});
@@ -578,7 +596,7 @@ MATRIX = [
     ("/", 492, "light", "bottom of the fluid ramp: hero at the clamp minimum, stacked buttons"),
     ("/", 768, "light", "the 991.98 block with the 767.98 block off, cards 2-up"),
     ("/", 1440, "light", "the reference shot"),
-    ("/", 1920, "light", "top of the ramp: hero at the clamp maximum, measure holding at 74ch"),
+    ("/", 1920, "light", "top of the ramp: hero at the clamp maximum, full-width notes holding"),
     ("/", 492, "dark", "dark tokens at the narrow end"),
     ("/", 1440, "dark", "dark parity: diff against the 1440 light shot, only colour should move"),
     ("/projects/", 492, "light", "filter chips and project cards at the narrow end"),
@@ -609,7 +627,7 @@ MATRIX = [
 # English route or one theme can otherwise look correct in every spot-check.
 for language, prefix in (("English", "/"), ("Chinese", "/zh/")):
     for person in ("cc-wang", "maysam-gholampour"):
-        for layout in ("editorial", "dossier", "narrative"):
+        for layout in ("editorial", "dossier", "narrative", "header"):
             for theme in ("light", "dark"):
                 MATRIX.append((
                     f"{prefix}people/{person}/?profile-layout={layout}",
@@ -618,7 +636,7 @@ for language, prefix in (("English", "/"), ("Chinese", "/zh/")):
                     f"{language} {person} {layout} profile variant",
                 ))
 
-for layout in ("editorial", "dossier", "narrative"):
+for layout in ("editorial", "dossier", "narrative", "header"):
     MATRIX.append((
         f"/people/cc-wang/?profile-layout={layout}",
         492,
@@ -627,7 +645,7 @@ for layout in ("editorial", "dossier", "narrative"):
     ))
 
 MATRIX.extend([
-    ("/people/cc-wang/", 492, "light", "normal profile visit shows all three layout controls"),
+    ("/people/cc-wang/", 492, "light", "normal profile visit shows all four layout controls"),
     ("/people/cc-wang/?profile-layout=invalid", 492, "light", "invalid profile query falls back safely"),
     ("/profile-designs/", 492, "light", "English profile comparison hub on mobile"),
     ("/profile-designs/", 1440, "light", "English profile comparison hub on desktop"),
@@ -887,16 +905,19 @@ def main():
             if abs(r.get("xsFont", 0) - expected_xs) > 0.05:
                 flags.append("xs %.2fpx differs from %.2fpx target"
                              % (r.get("xsFont", 0), expected_xs))
-            if r.get("unboundedReading"):
-                flags.append("%d reading block(s) exceed the measure"
-                             % len(r["unboundedReading"]))
+            if r.get("constrainedNotes"):
+                flags.append("%d note block(s) retain a max-width cap"
+                             % len(r["constrainedNotes"]))
+            if r.get("unjustifiedNotes"):
+                flags.append("%d note block(s) are not justified"
+                             % len(r["unjustifiedNotes"]))
             if r.get("narrowProjectMedia"):
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
             profile = r.get("profile")
             if profile:
                 valid_profile_query = profile.get("requested") in (
-                    "editorial", "dossier", "narrative"
+                    "editorial", "dossier", "narrative", "header"
                 )
                 if profile.get("applied") != profile.get("expected"):
                     flags.append("profile applied %s instead of %s"
@@ -905,8 +926,8 @@ def main():
                     flags.append("profile comparison flag disagrees with query validity")
                 if not profile.get("switcherVisible"):
                     flags.append("profile switcher is not visible")
-                if profile.get("choiceCount") != 3:
-                    flags.append("profile switcher does not have exactly three choices")
+                if profile.get("choiceCount") != 4:
+                    flags.append("profile switcher does not have exactly four choices")
                 expected_active = 1
                 if profile.get("activeChoiceCount") != expected_active:
                     flags.append("profile switcher has %s active choices, expected %s"
@@ -914,6 +935,15 @@ def main():
                 counts = profile.get("regionCounts", {})
                 if any(counts.get(region) != 1 for region in ("identity", "narrative", "record")):
                     flags.append("profile does not contain one identity/narrative/record region")
+                if counts.get("headerIdentity") != 1:
+                    flags.append("profile does not contain one mode-D header identity")
+                if not profile.get("identityLocationValid"):
+                    flags.append("profile identity is visible in the wrong region")
+                if profile.get("expected") == "header":
+                    if profile.get("headerPortraitWidth", 9999) > 180.5:
+                        flags.append("mode-D portrait exceeds the 180px target")
+                    if not profile.get("headerIdentityInsideHeader"):
+                        flags.append("mode-D identity is not inside the profile header")
                 for label, actual_key, expected_key in (
                     ("name", "nameFont", "expectedNameFont"),
                     ("role", "roleFont", "expectedRoleFont"),
@@ -1007,8 +1037,10 @@ def main():
                 print("        target " + x)
             for x in r.get("undersizedFunctional", []):
                 print("        label  " + x)
-            for x in r.get("unboundedReading", []):
-                print("        measure " + x)
+            for x in r.get("constrainedNotes", []):
+                print("        width  " + x)
+            for x in r.get("unjustifiedNotes", []):
+                print("        align  " + x)
             for x in r.get("narrowProjectMedia", []):
                 print("        media  " + x)
             if profile:

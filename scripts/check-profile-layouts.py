@@ -17,7 +17,7 @@ PROFILE_PATHS = (
     "zh/people/cc-wang/index.html",
     "zh/people/maysam-gholampour/index.html",
 )
-LAYOUTS = ("editorial", "dossier", "narrative")
+LAYOUTS = ("editorial", "dossier", "narrative", "header")
 
 
 class PageAudit(HTMLParser):
@@ -79,13 +79,14 @@ def main() -> int:
             "profile-narrative",
             "profile-record",
             "profile-switcher",
+            "profile-header-identity",
         ):
             require(
                 len(page.matching(class_name)) == 1,
                 f"{label}: expected one .{class_name}",
             )
         choices = page.matching("profile-layout-choice")
-        require(len(choices) == 3, f"{label}: expected three profile choices")
+        require(len(choices) == 4, f"{label}: expected four profile choices")
         require(
             {node[2].get("data-profile-layout-choice") for node in choices}
             == set(LAYOUTS),
@@ -94,7 +95,17 @@ def main() -> int:
         switchers = page.matching("profile-switcher")
         require(
             bool(switchers) and "hidden" not in switchers[0][2],
-            f"{label}: three-mode profile switcher must be visible by default",
+            f"{label}: four-mode profile switcher must be visible by default",
+        )
+        header_order = [
+            page.first_index("pi-heading"),
+            page.first_index("profile-header-identity"),
+            page.first_index("profile-switcher"),
+            page.first_index("profile-identity"),
+        ]
+        require(
+            min(header_order) >= 0 and header_order == sorted(header_order),
+            f"{label}: mode-D identity must live inside the header before the body profile",
         )
         order = [
             page.first_index("pi-heading"),
@@ -163,7 +174,7 @@ def main() -> int:
             for layout in LAYOUTS
         }
         found = {href for href in page.links if "profile-layout=" in href}
-        require(found == expected, f"{relative}: comparison links differ from the six expected URLs")
+        require(found == expected, f"{relative}: comparison links differ from the eight expected URLs")
 
     for path in SITE.rglob("*.html"):
         relative = path.relative_to(SITE).as_posix()
@@ -203,7 +214,7 @@ def main() -> int:
         require(".lang-switch" in source,
                 "profile controller does not preserve the layout on language links")
         require("switcher.hidden = false" in source,
-                "profile controller does not keep the three-mode selector visible")
+                "profile controller does not keep the four-mode selector visible")
         require("switcher.hidden = !value" not in source,
                 "profile controller still hides the selector without a query value")
         require("localStorage" not in source and "sessionStorage" not in source,
@@ -214,6 +225,7 @@ def main() -> int:
         '[data-profile-layout="editorial"]',
         '[data-profile-layout="dossier"]',
         '[data-profile-layout="narrative"]',
+        '[data-profile-layout="header"]',
     ):
         require(selector in css, f"missing CSS layout state {selector}")
     for declaration in (

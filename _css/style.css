@@ -129,24 +129,6 @@
   --pad-partners-top: clamp(3rem, 2.648rem + 1.502vw, 4rem);
   --map-height: clamp(16rem, 55vw, 21.25rem);
 
-  /* ONE prose measure for the whole site.
-     Three different widths were in play before this: .page-hd p at 54ch,
-     .section-head at 46rem and everything else at the full container. That is
-     why an intro paragraph wrapped early above cards that ran much wider.
-
-     `.page-hd p` was taken back OUT of this on 2026-08-20. Unifying the number
-     did not fix the symptom, because a page header sits above a body that runs
-     the full container, so 74ch still wrapped it 510px short. The reason is
-     written out at the `.page-hd p` rule itself.
-
-     Note that 74ch is not one pixel width. It scales with the element's font
-     size, so it is 810px at --fs-lg and 663px at --fs-md.
-
-     It is in `ch`, which scales with the font size. That is what lets --fs-md
-     be fluid without changing the characters per line, so the justified text
-     keeps the same word gaps at every width. */
-  --measure: 74ch;
-
   /* Text on an always-dark ground: hero, CTA band, news slider, motion toggle.
      Replaces 15 rgba(255,255,255,a) literals across 10 different alphas.
      Worst case measured over the hero ground #0b0b12: 7.25:1. */
@@ -342,7 +324,7 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
 
 .section { padding: var(--pad-section) 0; }
 .section-alt { background: var(--lab-surface-2); }
-.section-head { max-width: var(--measure); margin-bottom: 2.5rem; }
+.section-head { max-width: none; margin-bottom: 2.5rem; }
 .section-head p { color: var(--lab-muted); margin-bottom: 0; }
 
 /* --------------------------------------------------------------------------
@@ -786,7 +768,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    -------------------------------------------------------------------------- */
 
 .pi-block { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; align-items: start; }
-.pi-body { max-width: var(--measure); }
+.pi-body { max-width: none; }
 .pi-photo img {
   width: 100%;
   border-radius: 0.9rem;
@@ -863,7 +845,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    Publications
    -------------------------------------------------------------------------- */
 
-.pub-theme { max-width: var(--measure); margin-bottom: 3rem; }
+.pub-theme { max-width: none; margin-bottom: 3rem; }
 .pub-theme h2 { border-bottom: 2px solid var(--lab-orange); padding-bottom: 0.4rem; display: inline-block; }
 .pub-list { padding-left: 1.4rem; margin-top: 1.2rem; }
 .pub { margin-bottom: 1rem; }
@@ -1014,23 +996,20 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    its first line is 119 of about 120 characters, so justification barely
    stretches it.
 
-   /about/ is the exception and needs nothing: its body is `.page-narrow` at
-   663px, but its lead is 71 characters and ends at about 780px on its own, so
-   a cap at 810px would never have bound anyway. */
+   Full-width note and prose blocks keep this justification at every viewport. */
 .page-hd p {
   color: var(--lab-muted);
   font-size: var(--fs-lg);
   margin-bottom: 0;
 }
 .page-body { padding: 3.5rem 0 5rem; }
-.page-narrow { max-width: var(--measure); }
+.page-narrow { max-width: none; }
 
-/* Project media keeps the full container width. Direct textual children use
-   the shared reading measure, so the page can carry expansive photography and
-   video without making its paragraphs run to roughly 130 characters. */
+/* Project media and direct textual children follow the same full container
+   width used by the project header. */
 .project-body { max-width: 100%; }
 .project-body > :where(h2, h3, h4, p, ul, ol, blockquote) {
-  max-width: var(--measure);
+  max-width: none;
 }
 .project-body > p:has(img, picture, video) { max-width: none; }
 .project-body > p:has(img, picture, video) img,
@@ -1109,7 +1088,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 .profile-narrative {
-  max-width: var(--measure);
+  max-width: none;
   min-width: 0;
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
@@ -1129,6 +1108,8 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-hd .project-crumb { margin-bottom: 1.1rem; }
 .person-hd .pi-heading { margin-bottom: 0.5rem; }
 .person-hd .pi-rule { margin-bottom: 0; }
+.person-hd-copy { min-width: 0; }
+.profile-header-identity { display: none; }
 .pi-heading {
   color: var(--lab-accent);
   font-size: var(--fs-3xl);
@@ -1182,7 +1163,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .profile-switcher-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.4rem;
 }
 .profile-layout-choice {
@@ -1217,7 +1198,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   grid-template-columns: minmax(15rem, 0.78fr) minmax(0, 1.42fr);
   grid-template-areas:
     "identity record"
-    "narrative record";
+    "narrative narrative";
   align-items: start;
   gap: clamp(2rem, 1.648rem + 1.502vw, 3rem);
 }
@@ -1232,15 +1213,15 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
   grid-template-areas:
     "identity record"
-    "identity narrative";
+    "narrative narrative";
 }
 
 [data-profile-layout="narrative"] .pi-heading { font-size: var(--fs-4xl); }
 [data-profile-layout="narrative"] .profile-layout {
-  grid-template-columns: minmax(0, var(--measure)) minmax(15rem, 19rem);
+  grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
   grid-template-areas:
-    "narrative identity"
-    "narrative record";
+    "narrative narrative"
+    "identity record";
   justify-content: space-between;
 }
 [data-profile-layout="narrative"] .pf-row {
@@ -1250,10 +1231,47 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 .profile-layout:not(:has(.person-facts)) {
-  grid-template-columns: minmax(15rem, 18rem) minmax(0, var(--measure));
-  grid-template-areas: "identity narrative";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "identity"
+    "narrative";
 }
 .profile-layout:not(:has(.person-facts)) .profile-record { display: none; }
+
+/* D — a compact identity rail inside the page header. The body copy remains
+   one semantic source; its ordinary identity block is hidden only in D. */
+[data-profile-layout="header"] .person-hd .container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 18rem);
+  grid-template-areas: "copy identity";
+  align-items: start;
+  gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+}
+[data-profile-layout="header"] .person-hd-copy { grid-area: copy; }
+[data-profile-layout="header"] .profile-header-identity {
+  display: block;
+  grid-area: identity;
+  width: 100%;
+  justify-self: end;
+}
+[data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
+  max-width: 180px;
+  margin-left: auto;
+}
+[data-profile-layout="header"] .profile-header-identity .profile-role-block,
+[data-profile-layout="header"] .profile-header-identity .pi-chips {
+  max-width: 18rem;
+  margin-left: auto;
+}
+[data-profile-layout="header"] .profile-layout,
+[data-profile-layout="header"] .profile-layout:not(:has(.person-facts)) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "narrative"
+    "record";
+}
+[data-profile-layout="header"] .profile-identity { display: none; }
+[data-profile-layout="header"] .pi-heading { font-size: var(--fs-3xl); }
 
 .profile-design-grid { display: grid; gap: 2rem; }
 .profile-design-card {
@@ -1274,7 +1292,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .profile-design-links {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
 }
 .profile-design-link {
@@ -1309,6 +1327,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .profile-layout,
   [data-profile-layout="dossier"] .profile-layout,
   [data-profile-layout="narrative"] .profile-layout,
+  [data-profile-layout="header"] .profile-layout,
   .profile-layout:not(:has(.person-facts)) {
     display: flex;
     flex-direction: column;
@@ -1327,7 +1346,25 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .profile-switcher-options { width: 100%; }
   .profile-layout-choice { padding-inline: 0.45rem; }
   .profile-design-links { grid-template-columns: 1fr; }
-  .profile-narrative { text-align: left; }
+  [data-profile-layout="header"] .person-hd .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "identity";
+  }
+  [data-profile-layout="header"] .profile-header-identity {
+    justify-self: start;
+    max-width: 100%;
+  }
+  [data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
+    max-width: 150px;
+    margin-left: 0;
+  }
+  [data-profile-layout="header"] .profile-header-identity .profile-role-block,
+  [data-profile-layout="header"] .profile-header-identity .pi-chips {
+    max-width: none;
+    margin-left: 0;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1396,6 +1433,9 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .page-hd p,
 .section-head p,
 .pi-body p,
+.profile-topic,
+.pub-theme p,
+.pub-theme li,
 .card-scope,
 .person-row-topic,
 .news-body,
@@ -1478,15 +1518,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 /* --------------------------------------------------------------------------
    The inquiry form
 
-   THE WIDTH. The prose that used to sit here ran the full col-lg-7, about
-   745px, while every other page's prose runs at --measure, about 650px. That
-   was the last of the three widths this site used to have. The column keeps its
-   grid position; the content inside it stops at the same measure as everywhere
-   else, so the form and the page heading above it share one left edge and one
-   right edge.
+   The form follows the full width of its grid column, matching the full-width
+   lead and note policy used throughout the site.
    -------------------------------------------------------------------------- */
 
-.form-col { max-width: var(--measure); }
+.form-col { max-width: none; }
 /* --fs-2xl, the section-heading step. At --fs-xl it measured exactly the
    same as `.contact-card h2` in the sidebar beside it, so the page's main
    heading carried no more weight than a panel title. */
@@ -1594,19 +1630,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .pi-photo { max-width: 180px; }
   .person-row { grid-template-columns: 1fr; gap: 0.15rem; }
   .person-table .person-row-head { display: none; }
-  /* At 390px a justified line is about 32 characters, and the white rivers
-     between words are unavoidable. Everything the justification block above
-     turned on is turned back off here. */
-  .prose,
-  .page-hd p,
-  .section-head p,
-  .pi-body p,
-  .card-scope,
-  .person-row-topic,
-  .news-body,
-  .pg-scope,
-  .ff-lead { text-align: left; }
-
   /* Half a phone wide is not enough for two columns of "Publications". */
   .foot-nav-2col { columns: 1; }
 }
@@ -2153,8 +2176,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .project-hd .card-badge { margin-bottom: 0.6rem; }
 /* The lead runs the full container too, so the whole project page is one width:
-   heading, lead, hero photo and body all start and end on the same two lines.
-   Every OTHER page keeps its intro at --measure. */
+   heading, lead, hero photo and body all start and end on the same two lines. */
 .project-hd p { max-width: none; }
 .project-crumb { font-family: var(--font-ui); font-size: var(--fs-xs); margin-bottom: 1rem; }
 .project-by { display: flex; align-items: center; gap: 0.9rem; margin-top: 1.5rem; margin-bottom: 0; }
@@ -2520,7 +2542,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    shove the grid up and down the page. */
 .pg-scope {
   color: var(--lab-muted);
-  max-width: var(--measure);
+  max-width: none;
   min-height: 1.5em;
   margin-bottom: 2.25rem;
 }

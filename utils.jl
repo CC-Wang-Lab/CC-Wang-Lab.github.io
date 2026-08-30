@@ -1423,21 +1423,27 @@ function hfun_person_header()
     return """
 <header class="page-hd person-hd">
   <div class="container">
-    <p class="project-crumb">
-      <a class="link-arrow" href="$(prefix())/people/"><span class="link-arrow-mark">&larr;</span> $(esc(ui("people", "back")))</a>
-    </p>
-    <h1 class="pi-heading">$(esc(pick(p, "name")))</h1>
-    <div class="pi-rule"></div>
+    <div class="person-hd-copy">
+      <p class="project-crumb">
+        <a class="link-arrow" href="$(prefix())/people/"><span class="link-arrow-mark">&larr;</span> $(esc(ui("people", "back")))</a>
+      </p>
+      <h1 class="pi-heading">$(esc(pick(p, "name")))</h1>
+      <div class="pi-rule"></div>
+    </div>
+    <aside class="profile-header-identity" aria-label="$(esc(pick(p, "name")))">
+$(hfun_person_portrait())
+    </aside>
   </div>
 </header>
 """
 end
 
-const PROFILE_LAYOUTS = ("editorial", "dossier", "narrative")
+const PROFILE_LAYOUTS = ("editorial", "dossier", "narrative", "header")
 const PROFILE_LAYOUT_LETTERS = Dict(
     "editorial" => "A",
     "dossier"   => "B",
     "narrative" => "C",
+    "header"    => "D",
 )
 const PROFILE_COMPARISON_IDS = Set(("cc-wang", "maysam-gholampour"))
 
@@ -1462,7 +1468,7 @@ function hfun_profile_layout_init()
     return """
 <script>
 (function () {
-  var allowed = ["editorial", "dossier", "narrative"];
+  var allowed = ["editorial", "dossier", "narrative", "header"];
   var value = new URLSearchParams(window.location.search).get("profile-layout");
   var valid = allowed.indexOf(value) !== -1;
   var root = document.documentElement;
@@ -1473,7 +1479,7 @@ function hfun_profile_layout_init()
 """
 end
 
-"""The A/B/C profile-layout control shown on every real profile."""
+"""The A/B/C/D profile-layout control shown on every real profile."""
 function hfun_profile_switcher()
     is_person_page() || return ""
     choices = String[]
