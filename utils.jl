@@ -924,6 +924,21 @@ function setup_layout(record::AbstractDict, src::AbstractString)
     return layout
 end
 
+function render_setup_item(item)::String
+    item isa AbstractDict || return "<li>$(esc(string(item)))</li>"
+
+    item_type = String(get(item, "type", ""))
+    item_type == "source-url" ||
+        error("unsupported structured section item type '$item_type'")
+    label = strip(pick(item, "label"))
+    isempty(label) && error("source-url section item needs a label")
+    value = strip(String(get(item, "value", "")))
+    occursin(r"^https://[^/?#\s]+(?:[/?#][^\s]*)?$", value) ||
+        error("source-url section item needs an absolute https:// value")
+    safe_value = esc(value)
+    return "<li>$(esc(label)) <a href=\"$(safe_value)\">$(safe_value)</a></li>"
+end
+
 function render_setup_sections(record::AbstractDict)
     blocks = String[]
     for section in get(record, "section", Any[])
@@ -937,7 +952,7 @@ function render_setup_sections(record::AbstractDict)
         heading_html = isempty(heading) ? "" : "<h2>$(esc(heading))</h2>"
         body_html = isempty(body) ? "" : "<p>$(esc(body))</p>"
         items_html = isempty(items) ? "" :
-            "<ul>" * join(["<li>$(esc(item))</li>" for item in items]) * "</ul>"
+            "<ul>" * join([render_setup_item(item) for item in items]) * "</ul>"
         push!(blocks, "<section>$(heading_html)$(body_html)$(items_html)</section>")
     end
     return join(blocks, "\n")

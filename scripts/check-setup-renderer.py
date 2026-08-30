@@ -27,6 +27,12 @@ EXPECTED = {
         "/assets/img/facilities/falling-film-cooling-dimensions.png",
     ),
 }
+CARVERA_ROUTES = (
+    "facilities/carvera-desktop-cnc/index.html",
+    "zh/facilities/carvera-desktop-cnc/index.html",
+)
+CARVERA_SOURCE_URL = "https://www.kidentech.com/carvera"
+CARVERA_SOURCE_LABEL = "Link to detailed information:"
 
 
 class Page(HTMLParser):
@@ -34,16 +40,32 @@ class Page(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.nodes: list[tuple[str, set[str], dict[str, str | None]]] = []
         self.links: list[str] = []
+        self.anchors: list[tuple[str, str]] = []
         self.meta: list[dict[str, str | None]] = []
+        self._anchor_href: str | None = None
+        self._anchor_text: list[str] = []
 
     def handle_starttag(self, tag: str, attrs) -> None:
         values = dict(attrs)
         classes = set((values.get("class") or "").split())
         self.nodes.append((tag, classes, values))
         if tag == "a" and values.get("href"):
-            self.links.append(str(values["href"]))
+            href = str(values["href"])
+            self.links.append(href)
+            self._anchor_href = href
+            self._anchor_text = []
         elif tag == "meta":
             self.meta.append(values)
+
+    def handle_data(self, data: str) -> None:
+        if self._anchor_href is not None:
+            self._anchor_text.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "a" and self._anchor_href is not None:
+            self.anchors.append((self._anchor_href, "".join(self._anchor_text)))
+            self._anchor_href = None
+            self._anchor_text = []
 
     def matching(self, class_name: str):
         return [node for node in self.nodes if class_name in node[1]]
@@ -102,6 +124,34 @@ def renderer_contract_failures() -> list[str]:
         output = result.stdout + result.stderr
         if result.returncode == 0 or "blank" not in output.lower():
             failures.append(f"{label} blank section item must fail renderer validation")
+
+    typed_item_code = (
+        'include("utils.jl"); locvar(::Symbol) = "en"; '
+        'print(render_setup_sections(Dict{String, Any}("section" => '
+        'Any[Dict{String, Any}("items_en" => Any['
+        '"<em>ordinary</em>", Dict{String, Any}('
+        '"type" => "source-url", "label_en" => "Source:", '
+        '"value" => "https://example.com/source")])])))'
+    )
+    result = subprocess.run(
+        ["julia", "--project=.", "-e", typed_item_code],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    output = result.stdout + result.stderr
+    if result.returncode != 0:
+        failures.append("typed source-URL section item must render successfully")
+    else:
+        if "<li>&lt;em&gt;ordinary&lt;/em&gt;</li>" not in output:
+            failures.append("ordinary section items must remain escaped text")
+        expected_anchor = (
+            '<li>Source: <a href="https://example.com/source">'
+            'https://example.com/source</a></li>'
+        )
+        if expected_anchor not in output:
+            failures.append("typed source-URL section item must render a safe anchor")
     return failures
 
 
@@ -147,6 +197,19 @@ def main() -> int:
             _, page = parse(path)
             require(expected_href in page.links,
                     f"/{relative.removesuffix('index.html')}: missing canonical facility link {expected_href}")
+
+    for relative in CARVERA_ROUTES:
+        path = SITE / relative
+        route = "/" + relative.removesuffix("index.html")
+        require(path.is_file(), f"missing Carvera setup route: {relative}")
+        if path.is_file():
+            source, page = parse(path)
+            require(CARVERA_SOURCE_LABEL in source,
+                    f"{route}: missing exact source-URL label")
+            require(
+                (CARVERA_SOURCE_URL, CARVERA_SOURCE_URL) in page.anchors,
+                f"{route}: source URL must be an anchor with exact href and visible text",
+            )
 
     if failures:
         print("SETUP RENDERER AUDIT FAILED")

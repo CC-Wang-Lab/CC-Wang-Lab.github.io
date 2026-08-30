@@ -491,8 +491,7 @@ items_en = [
   "Weight: Approx. 50 kg",
   "Spindle power: 200 W",
   "Spindle speed: 0–15,000 rpm",
-  "Link to detailed information:",
-  "https://www.kidentech.com/carvera",
+  { type = "source-url", label_en = "Link to detailed information:", label_zh = "Link to detailed information:", value = "https://www.kidentech.com/carvera" },
 ]
 items_zh = [
   "Status: On standby",
@@ -500,8 +499,7 @@ items_zh = [
   "Weight: Approx. 50 kg",
   "Spindle power: 200 W",
   "Spindle speed: 0–15,000 rpm",
-  "Link to detailed information:",
-  "https://www.kidentech.com/carvera",
+  { type = "source-url", label_en = "Link to detailed information:", label_zh = "Link to detailed information:", value = "https://www.kidentech.com/carvera" },
 ]
 
 [[item.figure]]
