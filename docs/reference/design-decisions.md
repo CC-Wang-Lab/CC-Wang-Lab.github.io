@@ -157,6 +157,11 @@ field takes focus.
 27.6 px and every descendant inherited that absolute length whatever its own size, so a 10.9 px
 badge carried 27.6 px of leading.
 
+**The hero title uses a balanced text rail, not manual line breaks or full justification.** Its
+20ch English measure (18em for CJK) remains active at every viewport width, and `text-wrap: balance`
+chooses the line endings. Future headline changes therefore reflow without sentence-specific CSS;
+natural word spacing is preserved and the typed line and actions keep the same left axis.
+
 **`--font-ui` no longer starts with `Noto Serif TC`.** That face ships a Latin subset
 (`unicode-range: U+0000-00FF`), so all 32 rules that asked for the "UI" font were rendering English
 in a Chinese serif and never reached Segoe UI. The site is now one family on purpose, matching
@@ -168,36 +173,29 @@ did nothing at all. Only 400 and 700 are written now.
 
 ---
 
-## Why the four profile designs share one record, added 2026-08-29, revised 2026-08-30
+## Why profiles use the header identity design, added 2026-08-29, revised 2026-08-30
 
-Editorial, Dossier, Narrative-first and Header profile are design choices, not four versions of a
-person's record. Every identity presentation is generated from the same team row. Modes A-C show
-the ordinary body identity; mode D hides that presentation and shows the same portrait, role,
-topic and links inside the page header. A wording or factual correction is consequently made once
-and remains identical in every option, both in English and Traditional Chinese.
+The former D option is the selected and sole public profile design. Each profile generates its
+portrait, role, topic and links from one team record and places them in the page header. The body
+contains only the narrative and academic record, so there is no hidden duplicate identity block.
+English and Traditional Chinese therefore continue to share the same data relationships.
 
-The allowlisted query parameter is `profile-layout=editorial|dossier|narrative|header`. Missing,
-empty or invalid values resolve to Editorial before first paint. The A/B/C/D switcher appears on
-every real profile, updates the URL with `history.replaceState`, and writes nothing to local or
-session storage.
+The profile name uses `--fs-3xl`, narrative copy `--fs-md`, narrative headings `--fs-xl`, fact
+values `--fs-sm`, and fact labels `--fs-xs`. The portrait is capped at 180px on wide screens. The
+role and unlabelled, pipe-separated expertise sit in one row beneath the name, followed by one row
+of contact controls; the portrait remains at the right. The usual short title rule is omitted so
+the two identity rows form the name's visual anchor. These rows wrap safely before the header
+stacks on narrow screens. ET Book, Noto Serif TC, the color system and the 44px control minimum
+remain unchanged.
 
-The four layouts use the existing typography ladder rather than new sizes: Editorial names use
-`--fs-3xl`, Dossier names `--fs-2xl`, Narrative-first names `--fs-4xl`, roles `--fs-lg`, narrative
-copy `--fs-md`, narrative headings `--fs-xl`, fact values `--fs-sm`, and fact labels `--fs-xs`.
-Header profile uses a `--fs-3xl` name and caps its portrait at 180px on wide screens. Its role and
-unlabelled, pipe-separated expertise sit in one row beneath the name, followed by one row of contact controls;
-the portrait remains at the right. The usual short title rule is omitted in this mode so the two
-identity rows form the name's visual anchor. These rows wrap safely before the header stacks on
-narrow screens. ET Book, Noto Serif TC, the color system and the 44px control minimum remain
-unchanged.
+The old `profile-layout` query, A/B/C/D switcher, comparison pages and conditional layout styles
+are no longer published. Existing URLs that retain the obsolete query still resolve to the normal
+profile because the server ignores query parameters. The archived alternatives and their recovery
+commits are recorded in `docs/archive/profile-layout-variants.md`.
 
 Page-header notes, section introductions and prose notes now follow the full width available in
 their content container instead of a separate 74ch cap. They remain justified at every viewport,
 including phones; headings and functional labels stay left-aligned.
-
-The unlinked `/profile-designs/` and `/zh/profile-designs/` pages are marked `noindex` and exist
-only for selection. After one design is approved, those pages, the switcher and unused CSS states
-can be removed without migrating or reconciling profile content.
 
 ---
 
@@ -286,6 +284,10 @@ being replaced with a differently named file, which busts itself.
 nothing on GitHub Pages can shorten that. The ten minutes are now bounded and harmless. A visitor
 gets the whole old page or the whole new page, never a mix, and it heals itself.
 **Nobody has to hard reload, and nobody has to be told to.**
+
+Motion state follows the same expectation. Every new page starts moving; the shared Play/Pause
+control changes only the current page. An obsolete saved `labMotion=off` value is ignored, so a
+normal reload never requires storage cleanup to restore the hero, news slider, or partner rows.
 
 If ten minutes ever becomes too long, the answer is a CDN in front of Pages, or a host that reads
 a `_headers` file. That is a hosting change, not a code change.

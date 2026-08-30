@@ -1109,7 +1109,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-hd .pi-heading { margin-bottom: 0.5rem; }
 .person-hd .pi-rule { margin-bottom: 0; }
 .person-hd-copy { min-width: 0; }
-.profile-header-identity { display: none; }
 .pi-heading {
   color: var(--lab-accent);
   font-size: var(--fs-3xl);
@@ -1142,106 +1141,27 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-row-name a { color: inherit; }
 .person-row-name a:hover { color: var(--lab-accent); }
 
-.profile-switcher {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0 0 2.25rem;
-  padding: 0.75rem;
-  border: var(--rule);
-  border-radius: var(--radius-md);
-  background: var(--lab-surface-2);
-}
-.profile-switcher[hidden] { display: none; }
-.profile-switcher-label {
-  padding-inline: 0.35rem;
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-eyebrow);
-  text-transform: uppercase;
-  color: var(--lab-muted);
-}
-.profile-switcher-options {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.4rem;
-}
-.profile-layout-choice {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-width: 0;
-  min-height: var(--control-min);
-  padding: 0.45rem 0.8rem;
-  border: var(--rule);
-  border-radius: 999px;
-  background: var(--lab-surface);
-  color: var(--bs-body-color);
-  font-family: var(--font-ui);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-ui);
-}
-.profile-layout-choice > span:last-child { overflow-wrap: anywhere; }
-.profile-layout-choice:hover,
-.profile-layout-choice[aria-pressed="true"] {
-  border-color: var(--lab-accent);
-  color: var(--lab-accent);
-}
-.profile-layout-letter {
-  color: var(--lab-muted);
-  font-size: var(--fs-xs);
-}
-
 .profile-layout {
   display: grid;
-  grid-template-columns: minmax(15rem, 0.78fr) minmax(0, 1.42fr);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    "identity record"
-    "narrative narrative";
+    "narrative"
+    "record";
   align-items: start;
   gap: clamp(2rem, 1.648rem + 1.502vw, 3rem);
 }
-.profile-identity { grid-area: identity; min-width: 0; }
 .profile-narrative { grid-area: narrative; }
 .profile-record { grid-area: record; min-width: 0; }
 
-[data-profile-layout="editorial"] .pi-heading { font-size: var(--fs-3xl); }
-
-[data-profile-layout="dossier"] .pi-heading { font-size: var(--fs-2xl); }
-[data-profile-layout="dossier"] .profile-layout {
-  grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
-  grid-template-areas:
-    "identity record"
-    "narrative narrative";
-}
-
-[data-profile-layout="narrative"] .pi-heading { font-size: var(--fs-4xl); }
-[data-profile-layout="narrative"] .profile-layout {
-  grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
-  grid-template-areas:
-    "narrative narrative"
-    "identity record";
-  justify-content: space-between;
-}
-[data-profile-layout="narrative"] .pf-row {
-  grid-template-columns: 1fr;
-  gap: 0.55rem;
-  padding: 1.15rem 1.1rem;
-}
-
 .profile-layout:not(:has(.person-facts)) {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "identity"
-    "narrative";
+  grid-template-areas: "narrative";
 }
 .profile-layout:not(:has(.person-facts)) .profile-record { display: none; }
 
-/* D — the name and two compact identity rows share the left side of the page
-   header while the portrait stays at the right. The body copy remains one
-   semantic source; its ordinary identity block is hidden only in D. */
-[data-profile-layout="header"] .person-hd .container {
+/* The selected profile design places the name and two compact identity rows
+   in the page header while the portrait stays at the right. */
+.person-hd .container {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 180px;
   grid-template-areas:
@@ -1251,22 +1171,20 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   column-gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
   row-gap: 0.9rem;
 }
-[data-profile-layout="header"] .person-hd-copy { grid-area: copy; }
-[data-profile-layout="header"] .person-hd .pi-rule { display: none; }
-[data-profile-layout="header"] .profile-header-identity {
-  display: contents;
-}
-[data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
+.person-hd-copy { grid-area: copy; }
+.person-hd .pi-rule { display: none; }
+.profile-header-identity { display: contents; }
+.profile-header-identity .pi-portrait-frame {
   grid-area: portrait;
   width: 100%;
   max-width: 180px;
   margin-left: auto;
 }
-[data-profile-layout="header"] .profile-header-details {
+.profile-header-details {
   grid-area: details;
   min-width: 0;
 }
-[data-profile-layout="header"] .profile-header-summary {
+.profile-header-summary {
   display: flex;
   align-items: baseline;
   flex-wrap: nowrap;
@@ -1278,134 +1196,63 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   text-align: left;
   white-space: nowrap;
 }
-[data-profile-layout="header"] .profile-header-summary .profile-role {
+.profile-header-summary .profile-role {
   flex: 0 0 auto;
 }
-[data-profile-layout="header"] .profile-expertise {
+.profile-expertise {
   display: inline-flex;
   align-items: baseline;
   gap: 0.5rem;
   min-width: 0;
 }
-[data-profile-layout="header"] .profile-header-divider {
+.profile-header-divider {
   color: var(--lab-accent);
 }
-[data-profile-layout="header"] .profile-expertise-item + .profile-expertise-item::before {
+.profile-expertise-item + .profile-expertise-item::before {
   content: "|";
   margin-right: 0.5rem;
   color: var(--lab-accent);
 }
-[data-profile-layout="header"] .profile-header-identity .pi-chips {
+.profile-header-identity .pi-chips {
   flex-wrap: nowrap;
   max-width: none;
   margin-top: 0.65rem;
 }
-[data-profile-layout="header"] .profile-layout,
-[data-profile-layout="header"] .profile-layout:not(:has(.person-facts)) {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "narrative"
-    "record";
-}
-[data-profile-layout="header"] .profile-identity { display: none; }
-[data-profile-layout="header"] .pi-heading { font-size: var(--fs-3xl); }
-
-.profile-design-grid { display: grid; gap: 2rem; }
-.profile-design-card {
-  padding: clamp(1.25rem, 0.986rem + 1.127vw, 2rem);
-  border: var(--rule);
-  border-radius: var(--radius-md);
-  background: var(--lab-surface);
-  box-shadow: var(--lab-shadow);
-}
-.profile-design-card h2 {
-  margin: 0 0 1.25rem;
-  font-size: var(--fs-2xl);
-}
-.profile-design-role {
-  margin: 0 0 0.35rem;
-  color: var(--lab-muted);
-  font-size: var(--fs-sm);
-}
-.profile-design-links {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-.profile-design-link {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-  min-height: var(--control-min);
-  padding: 1rem;
-  border: var(--rule);
-  border-radius: var(--radius-md);
-  color: inherit;
-}
-.profile-design-link:hover {
-  border-color: var(--lab-accent);
-  color: var(--lab-accent);
-  text-decoration: none;
-}
-.profile-design-letter {
-  flex: 0 0 auto;
-  color: var(--lab-muted);
-  font-size: var(--fs-xs);
-}
-.profile-design-copy { display: grid; gap: 0.3rem; }
-.profile-design-copy strong { font-size: var(--fs-lg); }
-.profile-design-copy > span {
-  color: var(--lab-muted);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-}
 
 @media (max-width: 991.98px) {
   .profile-layout,
-  [data-profile-layout="dossier"] .profile-layout,
-  [data-profile-layout="narrative"] .profile-layout,
-  [data-profile-layout="header"] .profile-layout,
   .profile-layout:not(:has(.person-facts)) {
     display: flex;
     flex-direction: column;
     gap: 2.25rem;
   }
-  .profile-identity,
   .profile-narrative,
   .profile-record { width: 100%; }
   .pi-portrait-frame { max-width: 220px; }
   .pi-chips { max-width: none; }
-  [data-profile-layout="header"] .person-hd .container {
+  .person-hd .container {
     grid-template-columns: 1fr;
     grid-template-areas:
       "copy"
       "details"
       "portrait";
   }
-  [data-profile-layout="header"] .profile-header-summary,
-  [data-profile-layout="header"] .profile-header-identity .pi-chips {
+  .profile-header-summary,
+  .profile-header-identity .pi-chips {
     flex-wrap: wrap;
     white-space: normal;
   }
-  [data-profile-layout="header"] .profile-expertise {
+  .profile-expertise {
     flex: 1 1 auto;
     flex-wrap: wrap;
     max-width: 100%;
     min-width: 0;
     white-space: normal;
   }
-  [data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
+  .profile-header-identity .pi-portrait-frame {
     max-width: 150px;
     margin: 0;
   }
-}
-
-@media (max-width: 767.98px) {
-  .profile-switcher { align-items: stretch; flex-direction: column; }
-  .profile-switcher-label { padding-block: 0.3rem; }
-  .profile-switcher-options { width: 100%; }
-  .profile-layout-choice { padding-inline: 0.45rem; }
-  .profile-design-links { grid-template-columns: 1fr; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1658,7 +1505,10 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     min-height: auto;
     padding: 6.5rem 0 3rem;
   }
-  .hero-title { line-height: var(--lh-tight); max-width: none; }
+  /* Keep the shared 20ch measure on phones. The previous `max-width: none`
+     made wrapping depend on the device width, so replacement headlines lost
+     the balanced text rail and invited sentence-specific <br> tags. */
+  .hero-title { line-height: var(--lh-tight); }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions .btn { width: 100%; text-align: center; }
   .hero-caption {
@@ -2410,18 +2260,24 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 /* Two INDEPENDENT bands, drifting in opposite directions, with a real gap
    between them. Each clipped row is its own drag/keyboard control. */
 .pt-bands { display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0; }
-.pt-band { position: relative; border-radius: var(--radius-md); }
+.pt-band { position: relative; }
 .pt-band::after {
   content: "";
   position: absolute;
   z-index: 4;
-  inset: 0.15rem;
-  border-radius: var(--radius-md);
-  box-shadow: 0 0 0 3px transparent;
+  left: 50%;
+  bottom: -0.25rem;
+  width: min(8rem, 40%);
+  height: 3px;
+  background: var(--lab-accent);
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s ease-out;
   pointer-events: none;
 }
 .pt-band:has(.pt-viewport:focus-visible)::after {
-  box-shadow: 0 0 0 3px var(--lab-accent);
+  background: var(--lab-accent);
+  transform: translateX(-50%) scaleX(1);
 }
 
 /* The viewport clips; the track inside it is what moves, under a transform.
@@ -2435,15 +2291,16 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   user-select: none;
 }
 .pt-viewport:focus-visible {
-  outline: 3px solid var(--lab-accent);
-  outline-offset: -3px;
+  outline: none;
 }
 .pt-viewport.is-dragging { cursor: grabbing; }
 .pt-track { display: flex; will-change: transform; user-select: none; }
 
 @media (forced-colors: active) {
-  .pt-band:has(.pt-viewport:focus-visible)::after { box-shadow: none; }
-  .pt-viewport:focus-visible { outline-color: Highlight; }
+  .pt-band:has(.pt-viewport:focus-visible)::after {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
 }
 
 .pt-row {

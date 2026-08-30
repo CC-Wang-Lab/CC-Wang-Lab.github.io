@@ -98,9 +98,13 @@ def main() -> int:
     require("filter: grayscale(0) invert(0);" in css,
             "style.css: previous dark-theme sponsor hover treatment was not restored")
     focus_rule = re.search(r"\.pt-viewport:focus-visible\s*\{([^{}]*)\}", css)
-    require(bool(focus_rule) and "outline:" in focus_rule.group(1) and
-            not re.search(r"outline\s*:\s*(0|none)", focus_rule.group(1)),
-            "style.css: partner rows need an outline fallback for visible focus")
+    require(bool(focus_rule) and re.search(r"outline\s*:\s*(0|none)", focus_rule.group(1)),
+            "style.css: partner focus must not draw a rectangular outline")
+    cue_rule = re.search(
+        r"\.pt-band:has\(\.pt-viewport:focus-visible\)::after\s*\{([^{}]*)\}", css
+    )
+    require(bool(cue_rule) and "background:" in cue_rule.group(1),
+            "style.css: keyboard focus needs a non-rectangular line cue")
     require("@media (forced-colors: active)" in css,
             "style.css: partner focus needs a forced-colors fallback")
 
@@ -127,6 +131,11 @@ def main() -> int:
             "partners.js: failed pointer capture can leave a row dragging")
     require(controller.find("setPointerCapture") < controller.find("b.dragging = true"),
             "partners.js: drag state starts before pointer capture succeeds")
+    require("view.focus(" not in controller,
+            "partners.js: pointer drag must not force a focus rectangle")
+    require("if (moving && !b.dragging)" in controller and
+            "b.baseTime = performance.now();" in controller,
+            "partners.js: automatic movement must resume after drag release")
 
     if failures:
         print("PARTNER STRIP AUDIT FAILED")

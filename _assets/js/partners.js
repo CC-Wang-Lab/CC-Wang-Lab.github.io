@@ -142,7 +142,6 @@
         b.dragX = e.clientX;
         b.nudge = 0;
         view.classList.add("is-dragging");
-        try { view.focus({ preventScroll: true }); } catch (err) { view.focus(); }
       });
 
       view.addEventListener("pointermove", function (e) {

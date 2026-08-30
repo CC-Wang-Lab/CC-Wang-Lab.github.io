@@ -277,7 +277,17 @@ end
 hfun_page_robots() = page_noindex() ?
     """<meta name="robots" content="noindex,follow">""" : ""
 
-"""Point every query-selected profile variant at its clean public route."""
+"""Whether the current Markdown page is backed by one team record."""
+function is_person_page()
+    id = try
+        locvar(:person)
+    catch
+        nothing
+    end
+    return id !== nothing && !isempty(String(id))
+end
+
+"""Point every profile at its clean public route."""
 function hfun_page_canonical()
     is_person_page() || return ""
     id = String(locvar(:person))
@@ -1411,7 +1421,7 @@ $(isempty(links) ? "" : """<div class="pi-chips">""" * join(links, "") * "</div>
 """
 end
 
-"""Compact, data-driven identity rows used only by profile layout D."""
+"""Compact, data-driven identity rows used by every public profile header."""
 function person_header_identity(p)
     links = person_links(p)
     topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
@@ -1467,110 +1477,6 @@ $(person_header_identity(p))
   </div>
 </header>
 """
-end
-
-const PROFILE_LAYOUTS = ("editorial", "dossier", "narrative", "header")
-const PROFILE_LAYOUT_LETTERS = Dict(
-    "editorial" => "A",
-    "dossier"   => "B",
-    "narrative" => "C",
-    "header"    => "D",
-)
-const PROFILE_COMPARISON_IDS = Set(("cc-wang", "maysam-gholampour"))
-
-"""Whether the current Markdown page is backed by one team record."""
-function is_person_page()
-    id = try
-        locvar(:person)
-    catch
-        nothing
-    end
-    return id !== nothing && !isempty(String(id))
-end
-
-"""
-Set the allowlisted profile layout before the stylesheet paints.
-
-An absent or invalid query value resolves to Editorial. The source is emitted
-only on profile pages.
-"""
-function hfun_profile_layout_init()
-    is_person_page() || return ""
-    return """
-<script>
-(function () {
-  var allowed = ["editorial", "dossier", "narrative", "header"];
-  var value = new URLSearchParams(window.location.search).get("profile-layout");
-  var valid = allowed.indexOf(value) !== -1;
-  var root = document.documentElement;
-  root.setAttribute("data-profile-layout", valid ? value : "editorial");
-  root.setAttribute("data-profile-layout-compare", valid ? "true" : "false");
-})();
-</script>
-"""
-end
-
-"""The A/B/C/D profile-layout control shown on every real profile."""
-function hfun_profile_switcher()
-    is_person_page() || return ""
-    choices = String[]
-    for layout in PROFILE_LAYOUTS
-        letter = PROFILE_LAYOUT_LETTERS[layout]
-        name = ui("profile_layout", layout)
-        push!(choices, """
-    <button class="profile-layout-choice" type="button"
-            data-profile-layout-choice="$(layout)" aria-pressed="false"
-            aria-label="$(esc(letter * " — " * name))">
-      <span class="profile-layout-letter" aria-hidden="true">$(letter)</span>
-      <span>$(esc(name))</span>
-    </button>""")
-    end
-    return """
-<div class="profile-switcher" data-profile-switcher role="group"
-     aria-label="$(esc(ui("profile_layout", "switcher")))">
-  <span class="profile-switcher-label">$(esc(ui("profile_layout", "switcher")))</span>
-  <div class="profile-switcher-options">
-$(join(choices, "\n"))
-  </div>
-</div>
-"""
-end
-
-"""Cards linking the two approved profiles to the three shareable layouts."""
-function hfun_profile_designs()
-    cards = String[]
-    for p in people()
-        id = String(get(p, "id", ""))
-        id in PROFILE_COMPARISON_IDS || continue
-        person_page(id) || continue
-        links = String[]
-        for layout in PROFILE_LAYOUTS
-            letter = PROFILE_LAYOUT_LETTERS[layout]
-            name = ui("profile_layout", layout)
-            note = ui("profile_layout", layout * "_note")
-            push!(links, """
-      <a class="profile-design-link" href="$(esc(person_href(id)))?profile-layout=$(layout)">
-        <span class="profile-design-letter" aria-hidden="true">$(letter)</span>
-        <span class="profile-design-copy">
-          <strong>$(esc(name))</strong>
-          <span>$(esc(note))</span>
-        </span>
-      </a>""")
-        end
-        option_label = ui("profile_layout", "person_options")
-        accessible = lang() == "zh" ? option_label * pick(p, "name") : option_label * " " * pick(p, "name")
-        push!(cards, """
-  <section class="profile-design-card">
-    <p class="profile-design-role">$(esc(pick(p, "role")))</p>
-    <h2>$(esc(pick(p, "name")))</h2>
-    <nav class="profile-design-links" aria-label="$(esc(accessible))">
-$(join(links, "\n"))
-    </nav>
-  </section>""")
-    end
-    return """<div class="profile-design-grid">
-$(join(cards, "\n"))
-</div>"""
 end
 
 """

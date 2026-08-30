@@ -10,15 +10,7 @@ lang = "zh"
 
 @@page-body,profile-page
 @@container
-~~~
-{{profile_switcher}}
-~~~
 @@profile-layout
-@@profile-identity
-~~~
-{{person_portrait}}
-~~~
-@@
 @@profile-narrative,prose
 
 ## 個人簡介
