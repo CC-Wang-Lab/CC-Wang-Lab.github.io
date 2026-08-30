@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import sys
 import tomllib
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,7 +25,7 @@ PILOT_OUTPUTS = (
     "facilities/falling-film-cooling-b/index.html",
     "facilities/falling-film-cooling-c/index.html",
 )
-PILOT_HREFS = (
+PILOT_ROUTES = (
     "/facility-designs/",
     "/facilities/falling-film-cooling-a/",
     "/facilities/falling-film-cooling-b/",
@@ -84,10 +85,46 @@ def has_data_value(html: str, name: str, value: str) -> bool:
     return bool(re.search(rf'\b{re.escape(name)}={attr_value(value)}', html))
 
 
-def has_link(html: str, href: str) -> bool:
-    return bool(re.search(
-        rf'<a\b[^>]*\bhref={attr_value(href)}', html, re.IGNORECASE,
-    ))
+def links(html: str) -> list[str]:
+    matches = re.finditer(
+        r'<a\b[^>]*\bhref=(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))', html, re.IGNORECASE,
+    )
+    return [next(value for value in match.groups() if value is not None) for match in matches]
+
+
+def normalize_internal_path(value: str) -> str | None:
+    parts = urlsplit(value.replace("\\", "/"))
+    if parts.scheme or parts.netloc or not parts.path.startswith("/"):
+        return None
+    segments = [segment for segment in parts.path.split("/") if segment]
+    if segments and segments[-1] == "index.html":
+        segments.pop()
+    return "/" + "/".join(segments) + ("/" if segments else "")
+
+
+def sitemap_routes(sitemap: str) -> set[str]:
+    routes: set[str] = set()
+    for loc in re.findall(r"<loc>(.*?)</loc>", sitemap, re.DOTALL):
+        route = normalize_internal_path(urlsplit(loc.replace("\\", "/")).path)
+        if route is not None:
+            routes.add(route)
+    return routes
+
+
+def normalization_regression_failures() -> list[str]:
+    failures: list[str] = []
+    cases = (
+        ("missing trailing slash", "/facility-designs", "/facility-designs/"),
+        ("index output", "/facilities/falling-film-cooling-a/index.html", "/facilities/falling-film-cooling-a/"),
+        ("query and fragment", "/facilities/falling-film-cooling-b/?draft=1#figures", "/facilities/falling-film-cooling-b/"),
+    )
+    for label, raw, expected in cases:
+        if normalize_internal_path(raw) != expected:
+            failures.append(f"path normalization regression: {label}")
+    sitemap = "<loc>https://cc-wang-lab.github.io\\facilities\\falling-film-cooling-c\\index.html</loc>"
+    if "/facilities/falling-film-cooling-c/" not in sitemap_routes(sitemap):
+        failures.append("path normalization regression: Windows sitemap output")
+    return failures
 
 
 def main() -> int:
@@ -98,16 +135,18 @@ def main() -> int:
         return 2
 
     failures: list[str] = []
+    failures.extend(normalization_regression_failures())
     sitemap = (SITE / "sitemap.xml").read_text(encoding="utf-8")
+    sitemap_paths = sitemap_routes(sitemap)
     for relative in PILOT_OUTPUTS:
         expect(not (SITE / relative).exists(),
                f"temporary pilot output remains published: /{relative}", failures)
-        expect(relative.removesuffix("index.html") not in sitemap,
+        expect(normalize_internal_path("/" + relative) not in sitemap_paths,
                f"temporary pilot output remains in sitemap.xml: /{relative}", failures)
     for relative in CANONICAL_FALLING_FILM_ROUTES:
         expect((SITE / relative).is_file(),
                f"canonical falling-film route is missing: /{relative}", failures)
-        expect(relative.replace("/", "\\") in sitemap,
+        expect(normalize_internal_path("/" + relative) in sitemap_paths,
                f"canonical falling-film route is missing from sitemap.xml: /{relative}", failures)
         route = "/" + relative.removesuffix("index.html")
         expect(not has_noindex(page(route)),
@@ -154,11 +193,18 @@ def main() -> int:
     forbidden = placeholder_tokens()
     for built in SITE.rglob("*.html"):
         html = built.read_text(encoding="utf-8")
-        for href in PILOT_HREFS:
-            expect(not has_link(html, href),
+        for href in links(html):
+            expect(normalize_internal_path(href) not in PILOT_ROUTES,
                    f"{built.relative_to(SITE)} links to retired pilot route {href}", failures)
         for token in forbidden:
             expect(token not in html, f"{built.relative_to(SITE)} exposes {token!r}", failures)
+
+    for route, expected_href in (
+        ("/facilities/", "/facilities/falling-film-cooling-system/"),
+        ("/zh/facilities/", "/zh/facilities/falling-film-cooling-system/"),
+    ):
+        expect(expected_href in {normalize_internal_path(href) for href in links(page(route))},
+               f"{route} is missing canonical facility link {expected_href}", failures)
 
     homes = (("/", ""), ("/zh/", "/zh"))
     for route, prefix in homes:

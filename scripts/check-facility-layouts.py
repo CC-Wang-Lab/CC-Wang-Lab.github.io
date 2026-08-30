@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import html
+import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -56,7 +58,7 @@ PILOT_OUTPUTS = (
     "facility-designs/index.html",
     *(f"facilities/falling-film-cooling-{variant}/index.html" for variant in VARIANTS),
 )
-PILOT_HREFS = (
+PILOT_ROUTES = (
     "/facility-designs/",
     *(f"/facilities/falling-film-cooling-{variant}/" for variant in VARIANTS),
 )
@@ -96,8 +98,44 @@ def parse(path: Path) -> tuple[str, Page]:
     return source, page
 
 
+def normalize_internal_path(value: str) -> str | None:
+    parts = urlsplit(value.replace("\\", "/"))
+    if parts.scheme or parts.netloc or not parts.path.startswith("/"):
+        return None
+    segments = [segment for segment in parts.path.split("/") if segment]
+    if segments and segments[-1] == "index.html":
+        segments.pop()
+    return "/" + "/".join(segments) + ("/" if segments else "")
+
+
+def sitemap_routes(sitemap: str) -> set[str]:
+    routes: set[str] = set()
+    for loc in re.findall(r"<loc>(.*?)</loc>", sitemap, re.DOTALL):
+        route = normalize_internal_path(urlsplit(loc.replace("\\", "/")).path)
+        if route is not None:
+            routes.add(route)
+    return routes
+
+
+def normalization_regression_failures() -> list[str]:
+    failures: list[str] = []
+    cases = (
+        ("missing trailing slash", "/facility-designs", "/facility-designs/"),
+        ("index output", "/facilities/falling-film-cooling-a/index.html", "/facilities/falling-film-cooling-a/"),
+        ("query and fragment", "/facilities/falling-film-cooling-b/?draft=1#figures", "/facilities/falling-film-cooling-b/"),
+    )
+    for label, raw, expected in cases:
+        if normalize_internal_path(raw) != expected:
+            failures.append(f"path normalization regression: {label}")
+    sitemap = "<loc>https://cc-wang-lab.github.io\\facilities\\falling-film-cooling-c\\index.html</loc>"
+    if "/facilities/falling-film-cooling-c/" not in sitemap_routes(sitemap):
+        failures.append("path normalization regression: Windows sitemap output")
+    return failures
+
+
 def main() -> int:
     failures: list[str] = []
+    failures.extend(normalization_regression_failures())
 
     def require(condition: bool, message: str) -> None:
         if not condition:
@@ -151,18 +189,32 @@ def main() -> int:
         require(LEGACY_SLIDE not in source,
                 "Facilities card still displays the complete slide")
 
+    for relative, expected_href in (
+        ("facilities/index.html", "/facilities/falling-film-cooling-system/"),
+        ("zh/facilities/index.html", "/zh/facilities/falling-film-cooling-system/"),
+    ):
+        path = SITE / relative
+        require(path.is_file(), f"missing facilities listing route: {relative}")
+        if path.is_file():
+            _, page = parse(path)
+            links = {normalize_internal_path(href) for href in page.links}
+            require(expected_href in links,
+                    f"/{relative.removesuffix('index.html')}: missing canonical facility link {expected_href}")
+
     sitemap = (SITE / "sitemap.xml").read_text(encoding="utf-8")
+    sitemap_paths = sitemap_routes(sitemap)
     for relative in PILOT_OUTPUTS:
-        require(relative.removesuffix("index.html") not in sitemap,
+        require(normalize_internal_path("/" + relative) not in sitemap_paths,
                 f"temporary pilot output remains in sitemap.xml: {relative}")
     for relative in CANONICAL_ROUTES:
-        require(relative.replace("/", "\\") in sitemap,
+        require(normalize_internal_path("/" + relative) in sitemap_paths,
                 f"canonical facility route is missing from sitemap.xml: {relative}")
 
     for path in SITE.rglob("*.html"):
         _, page = parse(path)
-        for href in PILOT_HREFS:
-            require(href not in page.links,
+        for href in page.links:
+            route = normalize_internal_path(href)
+            require(route not in PILOT_ROUTES,
                     f"{path.relative_to(SITE).as_posix()}: temporary pilot route is linked: {href}")
 
     if failures:

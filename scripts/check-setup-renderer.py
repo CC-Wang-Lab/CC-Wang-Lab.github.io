@@ -9,6 +9,7 @@ import subprocess
 import tomllib
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -34,7 +35,7 @@ PILOT_OUTPUTS = (
     "facilities/falling-film-cooling-b/index.html",
     "facilities/falling-film-cooling-c/index.html",
 )
-PILOT_HREFS = (
+PILOT_ROUTES = (
     "/facility-designs/",
     "/facilities/falling-film-cooling-a/",
     "/facilities/falling-film-cooling-b/",
@@ -120,6 +121,41 @@ def parse(path: Path) -> tuple[str, Page]:
     page = Page()
     page.feed(source)
     return source, page
+
+
+def normalize_internal_path(value: str) -> str | None:
+    parts = urlsplit(value.replace("\\", "/"))
+    if parts.scheme or parts.netloc or not parts.path.startswith("/"):
+        return None
+    segments = [segment for segment in parts.path.split("/") if segment]
+    if segments and segments[-1] == "index.html":
+        segments.pop()
+    return "/" + "/".join(segments) + ("/" if segments else "")
+
+
+def sitemap_routes(sitemap: str) -> set[str]:
+    routes: set[str] = set()
+    for loc in re.findall(r"<loc>(.*?)</loc>", sitemap, re.DOTALL):
+        route = normalize_internal_path(urlsplit(loc.replace("\\", "/")).path)
+        if route is not None:
+            routes.add(route)
+    return routes
+
+
+def normalization_regression_failures() -> list[str]:
+    failures: list[str] = []
+    cases = (
+        ("missing trailing slash", "/facility-designs", "/facility-designs/"),
+        ("index output", "/facilities/falling-film-cooling-a/index.html", "/facilities/falling-film-cooling-a/"),
+        ("query and fragment", "/facilities/falling-film-cooling-b/?draft=1#figures", "/facilities/falling-film-cooling-b/"),
+    )
+    for label, raw, expected in cases:
+        if normalize_internal_path(raw) != expected:
+            failures.append(f"path normalization regression: {label}")
+    sitemap = "<loc>https://cc-wang-lab.github.io\\facilities\\falling-film-cooling-c\\index.html</loc>"
+    if "/facilities/falling-film-cooling-c/" not in sitemap_routes(sitemap):
+        failures.append("path normalization regression: Windows sitemap output")
+    return failures
 
 
 def css_rule(css: str, selector: str) -> str:
@@ -258,6 +294,7 @@ def renderer_contract_failures() -> list[str]:
 
 def main() -> int:
     failures: list[str] = []
+    failures.extend(normalization_regression_failures())
 
     def require(condition: bool, message: str) -> None:
         if not condition:
@@ -304,17 +341,19 @@ def main() -> int:
     canonical_href = f"/facilities/{EXPECTED['id']}/"
     sitemap_path = SITE / "sitemap.xml"
     sitemap = sitemap_path.read_text(encoding="utf-8") if sitemap_path.is_file() else ""
+    sitemap_paths = sitemap_routes(sitemap)
 
     for relative in PILOT_OUTPUTS:
         require(not (SITE / relative).exists(),
                 f"temporary pilot output remains published: {relative}")
-        require(relative.removesuffix("index.html") not in sitemap,
+        require(normalize_internal_path("/" + relative) not in sitemap_paths,
                 f"temporary pilot output remains in sitemap.xml: {relative}")
 
     for path in SITE.rglob("*.html"):
         _, page = parse(path)
-        for href in PILOT_HREFS:
-            require(href not in page.links,
+        for href in page.links:
+            route = normalize_internal_path(href)
+            require(route not in PILOT_ROUTES,
                     f"{path.relative_to(SITE).as_posix()}: temporary pilot route is linked: {href}")
 
     for relative in EXPECTED["routes"]:
@@ -334,7 +373,7 @@ def main() -> int:
             require(source.count(f'src="{figure}"') == 1,
                     f"{route}: figure missing or duplicated: {figure}")
         require(not page.has_noindex(), f"{route}: must be indexable")
-        require(relative.replace("/", "\\") in sitemap,
+        require(normalize_internal_path("/" + relative) in sitemap_paths,
                 f"{route}: canonical setup route missing from sitemap.xml")
 
     for relative, expected_href in (
@@ -345,7 +384,8 @@ def main() -> int:
         require(path.is_file(), f"missing facilities listing route: {relative}")
         if path.is_file():
             _, page = parse(path)
-            require(expected_href in page.links,
+            links = {normalize_internal_path(href) for href in page.links}
+            require(expected_href in links,
                     f"/{relative.removesuffix('index.html')}: missing canonical facility link {expected_href}")
 
     for relative in CARVERA_ROUTES:
