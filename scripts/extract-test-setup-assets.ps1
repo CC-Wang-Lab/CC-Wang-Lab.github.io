@@ -34,6 +34,9 @@ function Export-Crop {
     }
 }
 
+Export-Crop -Slide 3 -Geometry '370x324+106+70' -RelativePath 'gaming-laptop-hybrid-vapor-chamber\upper-experimental-system.jpg'
+Export-Crop -Slide 3 -Geometry '370x278+106+414' -RelativePath 'gaming-laptop-hybrid-vapor-chamber\lower-experimental-system.jpg'
+
 Export-Crop -Slide 7 -Geometry '419x559+89+101' -RelativePath 'thermal-fin-natural-convection-chamber\chamber.jpg'
 Export-Crop -Slide 8 -Geometry '960x333+160+91' -RelativePath 'air-cooler-wind-tunnel\wind-tunnel.jpg'
 

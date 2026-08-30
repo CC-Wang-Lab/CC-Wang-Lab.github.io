@@ -6,6 +6,7 @@ from __future__ import annotations
 import sys
 import re
 import subprocess
+import tomllib
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -33,6 +34,30 @@ CARVERA_ROUTES = (
 )
 CARVERA_SOURCE_URL = "https://www.kidentech.com/carvera"
 CARVERA_SOURCE_LABEL = "Link to detailed information:"
+PROJECT_EXPECTED = {
+    "id": "gaming-laptop-hybrid-vapor-chamber",
+    "layout": "a",
+    "routes": (
+        "projects/gaming-laptop-hybrid-vapor-chamber/index.html",
+        "zh/projects/gaming-laptop-hybrid-vapor-chamber/index.html",
+    ),
+    "figures": (
+        "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/upper-experimental-system.jpg",
+        "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/lower-experimental-system.jpg",
+    ),
+    "title": "Hybrid Vapor Chamber–Heat Pipe Module for Thermal Management of Gaming Laptops",
+    "body": (
+        "This experimental system evaluates an additively manufactured hybrid "
+        "vapor chamber–heat pipe module for the thermal management of gaming "
+        "laptops. Heat is transferred from the heating block to the test specimen "
+        "and then conducted through the heat pipes to the fins on both sides. "
+        "Forced-convection cooling is provided by airflow conditioned through a "
+        "wind tunnel. An infrared thermal camera positioned below the specimen "
+        "measures the surface temperature distribution to evaluate temperature "
+        "uniformity and heat transfer performance."
+    ),
+}
+MAYSAM_PROJECT = "cpu-cooler-airflow"
 
 
 class Page(HTMLParser):
@@ -90,6 +115,28 @@ def css_rule(css: str, selector: str) -> str:
     return match.group(1) if match else ""
 
 
+def julia_result(code: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["julia", "--project=.", "-e", code],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+def studentless_project_literal() -> str:
+    return (
+        'Dict{String, Any}("id" => "studentless-test", '
+        '"area" => "electronics-cooling", '
+        '"image" => "/assets/img/projects/placeholder.svg", '
+        '"title_en" => "Studentless project", '
+        '"title_zh" => "Studentless project", '
+        '"lead_en" => "Studentless project lead", '
+        '"lead_zh" => "Studentless project lead")'
+    )
+
+
 def renderer_contract_failures() -> list[str]:
     failures: list[str] = []
     css = CSS_SOURCE.read_text(encoding="utf-8")
@@ -114,13 +161,7 @@ def renderer_contract_failures() -> list[str]:
         ),
     )
     for label, code in section_cases:
-        result = subprocess.run(
-            ["julia", "--project=.", "-e", code],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+        result = julia_result(code)
         output = result.stdout + result.stderr
         if result.returncode == 0 or "blank" not in output.lower():
             failures.append(f"{label} blank section item must fail renderer validation")
@@ -133,13 +174,7 @@ def renderer_contract_failures() -> list[str]:
         '"type" => "source-url", "label_en" => "Source:", '
         '"value" => "https://example.com/source")])])))'
     )
-    result = subprocess.run(
-        ["julia", "--project=.", "-e", typed_item_code],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    result = julia_result(typed_item_code)
     output = result.stdout + result.stderr
     if result.returncode != 0:
         failures.append("typed source-URL section item must render successfully")
@@ -152,6 +187,60 @@ def renderer_contract_failures() -> list[str]:
         )
         if expected_anchor not in output:
             failures.append("typed source-URL section item must render a safe anchor")
+
+    studentless = studentless_project_literal()
+    optional_cases = (
+        (
+            "project card",
+            'include("utils.jl"); locvar(::Symbol) = "en"; '
+            f"print(project_card({studentless}))",
+            "card-by",
+        ),
+        (
+            "project header",
+            'include("utils.jl"); '
+            'locvar(name::Symbol) = name == :project ? "studentless-test" : "en"; '
+            f"fixture = {studentless}; projects() = Any[fixture]; "
+            "print(hfun_project_header())",
+            "project-by",
+        ),
+        (
+            "person-profile project filtering",
+            'include("utils.jl"); '
+            'locvar(name::Symbol) = name == :person ? "maysam-gholampour" : "en"; '
+            f"fixture = {studentless}; projects() = Any[fixture]; "
+            "print(hfun_person_facts())",
+            "studentless-test",
+        ),
+    )
+    for label, code, forbidden in optional_cases:
+        result = julia_result(code)
+        output = result.stdout + result.stderr
+        if result.returncode != 0:
+            failures.append(f"omitted student must not break {label}: {output.strip()}")
+        elif forbidden in output:
+            failures.append(f"omitted student must not emit {forbidden} in {label}")
+
+    invalid_id = "explicit-invalid-student-id"
+    invalid_code = (
+        'include("utils.jl"); locvar(::Symbol) = "en"; '
+        f'fixture = {studentless}; fixture["student"] = "{invalid_id}"; '
+        "print(project_card(fixture))"
+    )
+    result = julia_result(invalid_code)
+    output = result.stdout + result.stderr
+    if result.returncode == 0 or invalid_id not in output:
+        failures.append("an explicit invalid student id must still fail through person_by_id")
+
+    existing_code = (
+        'include("utils.jl"); locvar(::Symbol) = "en"; '
+        f'fixture = only(filter(p -> p["id"] == "{MAYSAM_PROJECT}", projects())); '
+        "print(project_card(fixture))"
+    )
+    result = julia_result(existing_code)
+    output = result.stdout + result.stderr
+    if result.returncode != 0 or 'class="card-by"' not in output or "Maysam Gholampour" not in output:
+        failures.append("existing Maysam project card must retain its byline")
     return failures
 
 
@@ -163,6 +252,43 @@ def main() -> int:
             failures.append(message)
 
     failures.extend(renderer_contract_failures())
+    with (ROOT / "_data" / "projects.toml").open("rb") as handle:
+        project_data = tomllib.load(handle)
+    project_hits = [
+        project
+        for project in project_data.get("project", [])
+        if project.get("id") == PROJECT_EXPECTED["id"]
+    ]
+    require(len(project_hits) == 1,
+            f"expected one project record for {PROJECT_EXPECTED['id']}")
+    if project_hits:
+        project = project_hits[0]
+        require("student" not in project,
+                "imported Slide 3 project must omit student rather than infer a byline")
+        require(project.get("layout") == PROJECT_EXPECTED["layout"],
+                "imported Slide 3 project must use layout A")
+        require(project.get("source_slides") == [3],
+                "imported Slide 3 project must cite source_slides = [3]")
+        require(project.get("title_en") == PROJECT_EXPECTED["title"] and
+                project.get("title_zh") == PROJECT_EXPECTED["title"],
+                "imported Slide 3 project title must preserve and mirror the exact source")
+        require(project.get("body_en") == PROJECT_EXPECTED["body"] and
+                project.get("body_zh") == PROJECT_EXPECTED["body"],
+                "imported Slide 3 project body must preserve and mirror the exact source")
+        require(tuple(figure.get("image") for figure in project.get("figure", [])) ==
+                PROJECT_EXPECTED["figures"],
+                "imported Slide 3 project must contain exactly the upper and lower photographs")
+        card_code = (
+            'include("utils.jl"); locvar(::Symbol) = "en"; '
+            f'fixture = only(filter(p -> p["id"] == "{PROJECT_EXPECTED["id"]}", projects())); '
+            "print(project_card(fixture))"
+        )
+        result = julia_result(card_code)
+        output = result.stdout + result.stderr
+        require(result.returncode == 0,
+                "imported Slide 3 project card must render without a student")
+        require('class="card-by"' not in output,
+                "imported Slide 3 project card must omit .card-by")
     canonical_href = f"/facilities/{EXPECTED['id']}/"
     sitemap_path = SITE / "sitemap.xml"
     sitemap = sitemap_path.read_text(encoding="utf-8") if sitemap_path.is_file() else ""
@@ -210,6 +336,32 @@ def main() -> int:
                 (CARVERA_SOURCE_URL, CARVERA_SOURCE_URL) in page.anchors,
                 f"{route}: source URL must be an anchor with exact href and visible text",
             )
+
+    for relative in PROJECT_EXPECTED["routes"]:
+        path = SITE / relative
+        route = "/" + relative.removesuffix("index.html")
+        require(path.is_file(), f"missing imported project route: {relative}")
+        if not path.is_file():
+            continue
+        source, page = parse(path)
+        require(len(page.matching("setup-study")) == 1,
+                f"{route}: expected one setup-study")
+        require(len(page.matching("setup-study--a")) == 1,
+                f"{route}: expected setup-study--a")
+        require(not page.matching("project-by"),
+                f"{route}: studentless imported project must omit .project-by")
+        require(len(page.matching("setup-study-figure")) == 2,
+                f"{route}: expected exactly two setup-study figures")
+        for figure in PROJECT_EXPECTED["figures"]:
+            require(source.count(f'src="{figure}"') == 1,
+                    f"{route}: figure missing or duplicated: {figure}")
+
+    maysam_path = SITE / "projects" / MAYSAM_PROJECT / "index.html"
+    require(maysam_path.is_file(), "missing existing Maysam project route")
+    if maysam_path.is_file():
+        source, page = parse(maysam_path)
+        require(len(page.matching("project-by")) == 1 and "Maysam Gholampour" in source,
+                "existing Maysam project page must retain its byline")
 
     if failures:
         print("SETUP RENDERER AUDIT FAILED")

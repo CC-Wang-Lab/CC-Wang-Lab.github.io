@@ -1075,9 +1075,9 @@ end
 # ---------------------------------------------------------------------------
 #  Projects
 #
-#  One row in projects.toml plus one Markdown page per project. The row carries
-#  a `student` id and an `area` id, so a name or a research area is never typed
-#  twice and a typo fails the build instead of rendering an empty card.
+#  Projects may carry a `student` id and always carry an `area` id, so a name
+#  or research area is never typed twice. An explicit typo still fails the
+#  build, while imported lab-owned work can omit `student` and its byline.
 # ---------------------------------------------------------------------------
 
 """Projects sorted by `weight`, lowest first."""
@@ -1085,6 +1085,22 @@ function projects()
     ps = copy(public_rows(data("projects")["project"]))
     sort!(ps; by = p -> get(p, "weight", 999))
     return ps
+end
+
+function project_person(project)
+    id = get(project, "student", nothing)
+    id === nothing && return nothing
+    person = person_by_id(String(id))
+    return is_public(person) ? person : nothing
+end
+
+"""`{{project_setup_page}}` — one shared imported-project record in layout A, B or C."""
+function hfun_project_setup_page()::String
+    id = locvar(:project)
+    id === nothing && error("this page needs `project = \"<id>\"` in its front matter")
+    hit = filter(p -> p["id"] == String(id), projects())
+    isempty(hit) && error("no project with id '$(id)' in projects.toml")
+    return render_setup_page(first(hit), "project")
 end
 
 """
@@ -1098,11 +1114,11 @@ and a project write-up is a side trip, not a destination. Remove `target` and
 `rel` together if that is ever reversed.
 """
 function project_card(p)
-    person = person_by_id(p["student"])
+    person = project_person(p)
     area   = area_by_id(p["area"])
     href   = prefix() * "/projects/" * p["id"] * "/"
-    byline = is_public(person) ?
-        """<span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>""" : ""
+    byline = person === nothing ? "" :
+        """<span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>"""
     return """
       <div class="col-md-6 col-lg-4 pg-item" data-area="$(esc(p["area"]))">
         <a class="card-media" href="$(esc(href))" target="_blank" rel="noopener">
@@ -1184,16 +1200,16 @@ function hfun_project_header()
     hit = filter(p -> p["id"] == String(id), projects())
     isempty(hit) && error("no project with id '$(id)' in projects.toml")
     p = first(hit)
-    person = person_by_id(p["student"])
+    person = project_person(p)
     area   = area_by_id(p["area"])
-    byline = is_public(person) ? """
+    byline = person === nothing ? "" : """
     <p class="project-by">
       <img class="project-by-photo" src="$(esc(get(person, "photo", "/assets/img/team/placeholder.svg")))" alt="">
       <span>
         <strong>$(esc(pick(person, "name")))</strong><br>
         <span class="muted">$(esc(pick(person, "role")))</span>
       </span>
-    </p>""" : ""
+    </p>"""
     return """
 <header class="page-hd project-hd">
   <div class="container">
@@ -1640,7 +1656,10 @@ function hfun_person_facts()
     # Projects are a LIST OF LINKS, not a grid of cards. The cards repeated the
     # image and the summary that the project's own page already opens with, and
     # a person page is a record, not a second index. Asked for on 2026-08-20.
-    mine = filter(pr -> String(pr["student"]) == String(id), projects())
+    mine = filter(projects()) do project
+        person = project_person(project)
+        person !== nothing && String(person["id"]) == String(id)
+    end
     isempty(mine) || push!(rows, (ui("people", "projects_head"),
         ["""<a href="$(esc(prefix()))/projects/$(esc(pr["id"]))/">$(esc(pick(pr, "title")))</a>"""
          for pr in mine]))
