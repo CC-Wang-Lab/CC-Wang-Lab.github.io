@@ -176,6 +176,62 @@ looked up from the ids, so they can never disagree with the People page.
 
 ---
 
+## Add an imported facility or project
+
+Imported records use the shared A/B/C setup layouts. Keep the source wording and captions exactly
+as supplied; do not upload a complete slide when its individual figures can be used. This is one
+complete facility record for `_data/facilities.toml`:
+
+```toml
+[[item]]
+id            = "example-cold-plate-rig"
+area          = "two-phase"                 # an id from research.toml
+image         = "/assets/img/test-setups/example-cold-plate-rig/diagram.png"
+image_fit     = "contain"                   # "cover" (default) or "contain" for drawings
+layout        = "b"                         # exactly "a", "b", or "c"
+source_slides = [31, 32]                     # source-slide numbers; not displayed
+title_en      = "Example cold-plate test rig"
+title_zh      = "範例冷板測試平台"
+lead_en       = "One-sentence source summary."
+lead_zh       = "一段來源摘要。"
+body_en       = "The complete source description of this test rig."
+body_zh       = "此測試平台的完整來源說明。"
+
+[[item.section]]
+heading_en = "Operating conditions"
+heading_zh = "操作條件"
+body_en    = "Add a section only when the source has this material."
+body_zh    = "僅在來源包含這項資料時加入此段。"
+items_en   = [
+  "Maximum input: 3 kW",
+  { type = "source-url", label_en = "Source:", label_zh = "來源：", value = "https://example.org/cold-plate-rig" },
+]
+items_zh   = [
+  "最大輸入：3 kW",
+  { type = "source-url", label_en = "Source:", label_zh = "來源：", value = "https://example.org/cold-plate-rig" },
+]
+
+[[item.figure]]
+id         = "rig-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/example-cold-plate-rig/diagram.png"
+caption_en = ""                            # allowed only when the source gives no caption
+caption_zh = ""
+```
+
+`[[item.section]]` and its structured `source-url` item are optional: use them only when the
+source provides a section or a real `https://` source URL. Every figure belongs under the record
+as `[[item.figure]]`; use `[[project.section]]` and `[[project.figure]]` for a project instead.
+Put its images in `_assets/img/test-setups/<id>/` and use the matching `/assets/...` path in the
+record. Empty captions are permitted only when the source supplies none.
+
+Projects use the same `layout`, `source_slides`, sections, and figures. An imported
+project may omit `student` when the source does not identify a lab member. If you provide
+`student`, it must exactly match an existing `id` in `_data/team.toml`; never infer or invent a
+byline.
+
+---
+
 ## Add a news item
 
 Open `_data/news.toml`.

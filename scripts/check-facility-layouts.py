@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit the retained falling-film layout-pilot routes."""
+"""Audit the canonical falling-film facility and reject retired pilot routes."""
 
 from __future__ import annotations
 
@@ -48,6 +48,18 @@ DESCRIPTION = (
 )
 VARIANTS = ("a", "b", "c")
 CANONICAL_LAYOUT = "c"
+CANONICAL_ROUTES = (
+    "facilities/falling-film-cooling-system/index.html",
+    "zh/facilities/falling-film-cooling-system/index.html",
+)
+PILOT_OUTPUTS = (
+    "facility-designs/index.html",
+    *(f"facilities/falling-film-cooling-{variant}/index.html" for variant in VARIANTS),
+)
+PILOT_HREFS = (
+    "/facility-designs/",
+    *(f"/facilities/falling-film-cooling-{variant}/" for variant in VARIANTS),
+)
 
 
 class Page(HTMLParser):
@@ -91,13 +103,9 @@ def main() -> int:
         if not condition:
             failures.append(message)
 
-    expected_links = {
-        f"/facilities/falling-film-cooling-{variant}/" for variant in VARIANTS
-    }
-    for variant in VARIANTS:
-        relative = f"facilities/falling-film-cooling-{variant}/index.html"
+    for relative in CANONICAL_ROUTES:
         path = SITE / relative
-        require(path.is_file(), f"missing facility layout route: {relative}")
+        require(path.is_file(), f"missing canonical facility route: {relative}")
         if not path.is_file():
             continue
         source, page = parse(path)
@@ -107,7 +115,7 @@ def main() -> int:
             for meta in page.meta
             if (meta.get("name") or "").lower() == "robots"
         ]
-        require(any("noindex" in value for value in robots), f"{label}: missing noindex")
+        require(not any("noindex" in value for value in robots), f"{label}: must be indexable")
         require(len(page.matching("setup-study")) == 1,
                 f"{label}: expected one setup-study")
         require(len(page.matching(f"setup-study--{CANONICAL_LAYOUT}")) == 1,
@@ -125,24 +133,9 @@ def main() -> int:
             require(caption in page.normalized_text(),
                     f"{label}: source caption changed: {caption}")
 
-    comparison_path = SITE / "facility-designs" / "index.html"
-    require(comparison_path.is_file(), "missing facility design comparison route")
-    if comparison_path.is_file():
-        comparison_source, comparison = parse(comparison_path)
-        found = {href for href in comparison.links if href in expected_links}
-        require(found == expected_links,
-                "facility comparison does not link exactly to layouts A/B/C")
-        require(len(comparison.matching("facility-design-card--contain")) == 3,
-                "facility comparison cards must preserve the complete diagram")
-        require(comparison_source.count(f'src="{INDEX_IMAGE}"') == 3,
-                "facility comparison cards do not use the cabinet diagram")
-        robots = [
-            (meta.get("content") or "").lower()
-            for meta in comparison.meta
-            if (meta.get("name") or "").lower() == "robots"
-        ]
-        require(any("noindex" in value for value in robots),
-                "facility comparison route is missing noindex")
+    for relative in PILOT_OUTPUTS:
+        require(not (SITE / relative).exists(),
+                f"temporary pilot output remains published: {relative}")
 
     facilities_path = SITE / "facilities" / "index.html"
     require(facilities_path.is_file(), "missing Facilities index")
@@ -159,19 +152,18 @@ def main() -> int:
                 "Facilities card still displays the complete slide")
 
     sitemap = (SITE / "sitemap.xml").read_text(encoding="utf-8")
-    require("facility-designs" not in sitemap,
-            "temporary facility comparison leaked into sitemap.xml")
-    for variant in VARIANTS:
-        require(f"falling-film-cooling-{variant}" not in sitemap,
-                f"temporary layout {variant.upper()} leaked into sitemap.xml")
+    for relative in PILOT_OUTPUTS:
+        require(relative.removesuffix("index.html") not in sitemap,
+                f"temporary pilot output remains in sitemap.xml: {relative}")
+    for relative in CANONICAL_ROUTES:
+        require(relative.replace("/", "\\") in sitemap,
+                f"canonical facility route is missing from sitemap.xml: {relative}")
 
     for path in SITE.rglob("*.html"):
-        relative = path.relative_to(SITE).as_posix()
-        if relative == "facility-designs/index.html":
-            continue
-        source = path.read_text(encoding="utf-8")
-        require("/facility-designs/" not in source,
-                f"{relative}: temporary comparison route is publicly linked")
+        _, page = parse(path)
+        for href in PILOT_HREFS:
+            require(href not in page.links,
+                    f"{path.relative_to(SITE).as_posix()}: temporary pilot route is linked: {href}")
 
     if failures:
         print("FACILITY LAYOUT AUDIT FAILED")

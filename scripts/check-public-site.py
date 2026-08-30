@@ -14,6 +14,22 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
+CANONICAL_FALLING_FILM_ROUTES = (
+    "facilities/falling-film-cooling-system/index.html",
+    "zh/facilities/falling-film-cooling-system/index.html",
+)
+PILOT_OUTPUTS = (
+    "facility-designs/index.html",
+    "facilities/falling-film-cooling-a/index.html",
+    "facilities/falling-film-cooling-b/index.html",
+    "facilities/falling-film-cooling-c/index.html",
+)
+PILOT_HREFS = (
+    "/facility-designs/",
+    "/facilities/falling-film-cooling-a/",
+    "/facilities/falling-film-cooling-b/",
+    "/facilities/falling-film-cooling-c/",
+)
 
 
 def page(route: str) -> str:
@@ -68,6 +84,12 @@ def has_data_value(html: str, name: str, value: str) -> bool:
     return bool(re.search(rf'\b{re.escape(name)}={attr_value(value)}', html))
 
 
+def has_link(html: str, href: str) -> bool:
+    return bool(re.search(
+        rf'<a\b[^>]*\bhref={attr_value(href)}', html, re.IGNORECASE,
+    ))
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -76,6 +98,21 @@ def main() -> int:
         return 2
 
     failures: list[str] = []
+    sitemap = (SITE / "sitemap.xml").read_text(encoding="utf-8")
+    for relative in PILOT_OUTPUTS:
+        expect(not (SITE / relative).exists(),
+               f"temporary pilot output remains published: /{relative}", failures)
+        expect(relative.removesuffix("index.html") not in sitemap,
+               f"temporary pilot output remains in sitemap.xml: /{relative}", failures)
+    for relative in CANONICAL_FALLING_FILM_ROUTES:
+        expect((SITE / relative).is_file(),
+               f"canonical falling-film route is missing: /{relative}", failures)
+        expect(relative.replace("/", "\\") in sitemap,
+               f"canonical falling-film route is missing from sitemap.xml: /{relative}", failures)
+        route = "/" + relative.removesuffix("index.html")
+        expect(not has_noindex(page(route)),
+               f"canonical falling-film route must be indexable: {route}", failures)
+
     empty_routes = {
         "/news/": ("news", "No laboratory news is currently available."),
         "/people/alumni/": ("alumni", "No alumni records are currently published."),
@@ -117,6 +154,9 @@ def main() -> int:
     forbidden = placeholder_tokens()
     for built in SITE.rglob("*.html"):
         html = built.read_text(encoding="utf-8")
+        for href in PILOT_HREFS:
+            expect(not has_link(html, href),
+                   f"{built.relative_to(SITE)} links to retired pilot route {href}", failures)
         for token in forbidden:
             expect(token not in html, f"{built.relative_to(SITE)} exposes {token!r}", failures)
 

@@ -28,6 +28,18 @@ EXPECTED = {
         "/assets/img/facilities/falling-film-cooling-dimensions.png",
     ),
 }
+PILOT_OUTPUTS = (
+    "facility-designs/index.html",
+    "facilities/falling-film-cooling-a/index.html",
+    "facilities/falling-film-cooling-b/index.html",
+    "facilities/falling-film-cooling-c/index.html",
+)
+PILOT_HREFS = (
+    "/facility-designs/",
+    "/facilities/falling-film-cooling-a/",
+    "/facilities/falling-film-cooling-b/",
+    "/facilities/falling-film-cooling-c/",
+)
 CARVERA_ROUTES = (
     "facilities/carvera-desktop-cnc/index.html",
     "zh/facilities/carvera-desktop-cnc/index.html",
@@ -292,6 +304,18 @@ def main() -> int:
     canonical_href = f"/facilities/{EXPECTED['id']}/"
     sitemap_path = SITE / "sitemap.xml"
     sitemap = sitemap_path.read_text(encoding="utf-8") if sitemap_path.is_file() else ""
+
+    for relative in PILOT_OUTPUTS:
+        require(not (SITE / relative).exists(),
+                f"temporary pilot output remains published: {relative}")
+        require(relative.removesuffix("index.html") not in sitemap,
+                f"temporary pilot output remains in sitemap.xml: {relative}")
+
+    for path in SITE.rglob("*.html"):
+        _, page = parse(path)
+        for href in PILOT_HREFS:
+            require(href not in page.links,
+                    f"{path.relative_to(SITE).as_posix()}: temporary pilot route is linked: {href}")
 
     for relative in EXPECTED["routes"]:
         path = SITE / relative
