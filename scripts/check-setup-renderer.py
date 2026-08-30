@@ -123,15 +123,32 @@ def parse(path: Path) -> tuple[str, Page]:
     return source, page
 
 
-def configured_site_origin() -> tuple[str, str]:
+def normalized_origin(value: str) -> tuple[str, str, int] | None:
+    try:
+        parts = urlsplit(value)
+        hostname = parts.hostname
+        port = parts.port
+    except ValueError:
+        return None
+    scheme = parts.scheme.lower()
+    if (scheme not in ("http", "https") or not hostname or
+            parts.username is not None or parts.password is not None):
+        return None
+    effective_port = port if port is not None else (443 if scheme == "https" else 80)
+    if not 1 <= effective_port <= 65535:
+        return None
+    return scheme, hostname.lower(), effective_port
+
+
+def configured_site_origin() -> tuple[str, str, int]:
     config = (ROOT / "config.md").read_text(encoding="utf-8")
     match = re.search(r'^website_url\s*=\s*"([^"]+)"', config, re.MULTILINE)
     if match is None:
         raise RuntimeError("config.md must define website_url")
-    parts = urlsplit(match.group(1))
-    if parts.scheme.lower() not in ("http", "https") or not parts.netloc:
+    origin = normalized_origin(match.group(1))
+    if origin is None:
         raise RuntimeError("config.md website_url must be an absolute http(s) URL")
-    return parts.scheme.lower(), parts.netloc.lower()
+    return origin
 
 
 CANONICAL_ORIGIN = configured_site_origin()
@@ -154,10 +171,13 @@ def normalize_internal_path(value: str) -> str | None:
 def sitemap_routes(sitemap: str) -> set[str]:
     routes: set[str] = set()
     for loc in re.findall(r"<loc>(.*?)</loc>", sitemap, re.DOTALL):
-        parts = urlsplit(loc.replace("\\", "/"))
+        normalized_loc = loc.replace("\\", "/")
+        try:
+            parts = urlsplit(normalized_loc)
+        except ValueError:
+            continue
         if parts.scheme:
-            if (parts.scheme.lower() not in ("http", "https") or
-                    (parts.scheme.lower(), parts.netloc.lower()) != CANONICAL_ORIGIN):
+            if normalized_origin(normalized_loc) != CANONICAL_ORIGIN:
                 continue
         elif parts.netloc:
             continue
@@ -188,6 +208,21 @@ def normalization_regression_failures() -> list[str]:
     external = "<loc>https://evil.example/facilities/falling-film-cooling-system/index.html</loc><loc>https://evil.example/facilities/falling-film-cooling-a/index.html</loc>"
     if sitemap_routes(external):
         failures.append("sitemap origin regression: external authority was treated as internal")
+    configured = normalized_origin("https://cc-wang-lab.github.io/")
+    if normalized_origin("https://CC-WANG-LAB.GITHUB.IO:443/facilities/falling-film-cooling-c/index.html") != configured:
+        failures.append("sitemap origin regression: HTTPS default port or host case was rejected")
+    if normalized_origin("http://example.test/") != normalized_origin("http://EXAMPLE.TEST:80/"):
+        failures.append("sitemap origin regression: HTTP default port or host case was rejected")
+    if normalized_origin("https://user@cc-wang-lab.github.io/") is not None:
+        failures.append("sitemap origin regression: userinfo was accepted")
+    if normalized_origin("https://cc-wang-lab.github.io:bad/") is not None:
+        failures.append("sitemap origin regression: invalid port was accepted")
+    matching = "<loc>https://CC-WANG-LAB.GITHUB.IO:443\\facilities\\falling-film-cooling-c\\index.html</loc>"
+    if "/facilities/falling-film-cooling-c/" not in sitemap_routes(matching):
+        failures.append("sitemap origin regression: configured HTTPS default port was rejected")
+    rejected = "<loc>https://cc-wang-lab.github.io:444/facilities/falling-film-cooling-system/index.html</loc><loc>http://cc-wang-lab.github.io/facilities/falling-film-cooling-a/index.html</loc><loc>https://evil.example/facilities/falling-film-cooling-b/index.html</loc>"
+    if sitemap_routes(rejected):
+        failures.append("sitemap origin regression: wrong port, scheme, or host was accepted")
     return failures
 
 
