@@ -118,6 +118,11 @@ Export-Crop -Slide 25 -Geometry '82x154+735+515' -RelativePath 'embedded-microfl
 Export-Crop -Slide 25 -Geometry '447x335+710+368' -RelativePath 'embedded-microfluidic-interlayer-cooling\test-setup.jpg'
 Export-Crop -Slide 25 -Geometry '276x204+303+464' -RelativePath 'embedded-microfluidic-interlayer-cooling\infrared-camera.jpg'
 
+Export-Crop -Slide 26 -Geometry '301x403+44+311' -RelativePath 'supercritical-co2-chiller\co2-chiller.jpg'
+Export-Crop -Slide 26 -Geometry '260x268+366+427' -RelativePath 'supercritical-co2-chiller\test-cooler.jpg'
+
+Export-Crop -Slide 27 -Geometry '639x477+35+178' -RelativePath 'thermosyphon-working-fluid-filling-ratio\test-rig.jpg'
+
 Export-Crop -Slide 28 -Geometry '562x398+79+167' -RelativePath 'carvera-desktop-cnc\cnc-machine.jpg'
 
 Export-Crop -Slide 29 -Geometry '378x402+57+184' -RelativePath 'fabrication-and-microscopy-equipment\3d-printer.jpg'

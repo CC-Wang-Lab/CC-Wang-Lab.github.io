@@ -43,14 +43,33 @@ EXPECTED = {
         "pulsating-jet-impingement": ([23], "b", "electronics-cooling", 2),
         "expansion-tank-pre-charge-pressure": ([24], "c", "hvacr", 4),
         "embedded-microfluidic-interlayer-cooling": ([25], "a", "electronics-cooling", 4),
+        "supercritical-co2-chiller": ([26], "b", "hvacr", 2),
+        "thermosyphon-working-fluid-filling-ratio": ([27], "c", "two-phase", 1),
     },
 }
 
 PLURAL = {"facility": "facilities", "project": "projects"}
-EXPECTED_COUNTS = {"facility": 14, "project": 10}
+EXPECTED_COUNTS = {"facility": 14, "project": 12}
 EXPECTED_LAYOUTS = {
     "facility": {"a": 5, "b": 4, "c": 5},
-    "project": {"a": 4, "b": 3, "c": 3},
+    "project": {"a": 4, "b": 4, "c": 4},
+}
+
+REQUIRED_PROJECT_HTML_TEXT = {
+    "supercritical-co2-chiller": (
+        "This test facility is used to (1) performance evaluation of CO₂ (2) provide a test cold plate system having 15 kW capacity and applicable for multiple cold plate system to examine mal-distribution issues for 2-phase cold plates subject uneven heat loading.",
+        "This study primarily investigates the design of a 10 kW single-phase cold plate system using a CO₂-based chiller in conjunction with a single-phase fluorinated fluid, with the aim of testing and understanding the heat transfer capabilities of CO₂ in its supercritical state.",
+        "Status: Under Construction",
+        "1. SMC chiller (HRZC010-WS)",
+        "2. 20 kW air-cooled coil (Custom-made by Icherng)",
+        "CO₂ refrigerant, Galden HT-135 fluorinated fluid",
+    ),
+    "thermosyphon-working-fluid-filling-ratio": (
+        "This ongoing study investigates the effects of working fluid and filling ratio on the cooling performance of a two-phase thermosyphon heat sink. Heating power, evaporator and condenser temperature distributions, thermal resistance, and parameters related to high-power chip cooling in data centers are evaluated to determine the optimal filling ratio for each fluid and establish recommended filling-ratio ranges.",
+        "Status: In progress",
+        "R-1233zd(E), R-601, and acetone",
+        "Thermal test vehicle, six DC power supplies, data logger, T-type thermocouples, and pressure gauge",
+    ),
 }
 
 
@@ -58,10 +77,14 @@ class Page(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.classes: list[set[str]] = []
+        self.text_parts: list[str] = []
 
     def handle_starttag(self, _tag: str, attrs) -> None:
         values = dict(attrs)
         self.classes.append(set((values.get("class") or "").split()))
+
+    def handle_data(self, data: str) -> None:
+        self.text_parts.append(data)
 
     def has_class(self, class_name: str) -> bool:
         return any(class_name in classes for classes in self.classes)
@@ -166,6 +189,11 @@ def main() -> int:
                 page.feed(html)
                 require(page.has_class(f"setup-study--{layout}"),
                         f"{route}: expected setup-study--{layout}")
+                visible_text = " ".join(" ".join(page.text_parts).split())
+                for fact_index, fragment in enumerate(
+                        REQUIRED_PROJECT_HTML_TEXT.get(record_id, ()), start=1):
+                    require(fragment in visible_text,
+                            f"{route}: missing selectable source fact {fact_index}")
                 require(re.search(r"Slide[^/\\\"']*\.jpg", html, re.IGNORECASE) is None,
                         f"{route}: generated HTML references a source Slide*.jpg")
 
