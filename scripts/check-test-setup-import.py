@@ -40,14 +40,17 @@ EXPECTED = {
         "immersion-cooling-microchannel-lid": ([19], "b", "electronics-cooling", 3),
         "oil-immersion-heat-transfer-enhancement": ([20], "c", "electronics-cooling", 5),
         "multi-agent-server-cooling-control": ([21, 22], "a", "ai-thermal", 5),
+        "pulsating-jet-impingement": ([23], "b", "electronics-cooling", 2),
+        "expansion-tank-pre-charge-pressure": ([24], "c", "hvacr", 4),
+        "embedded-microfluidic-interlayer-cooling": ([25], "a", "electronics-cooling", 4),
     },
 }
 
 PLURAL = {"facility": "facilities", "project": "projects"}
-EXPECTED_COUNTS = {"facility": 14, "project": 7}
+EXPECTED_COUNTS = {"facility": 14, "project": 10}
 EXPECTED_LAYOUTS = {
     "facility": {"a": 5, "b": 4, "c": 5},
-    "project": {"a": 3, "b": 2, "c": 2},
+    "project": {"a": 4, "b": 3, "c": 3},
 }
 
 

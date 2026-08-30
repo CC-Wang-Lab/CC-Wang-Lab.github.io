@@ -421,6 +421,222 @@ image      = "/assets/img/test-setups/multi-agent-server-cooling-control/energy-
 caption_en = ""
 caption_zh = ""
 
+[[project]]
+id       = "pulsating-jet-impingement"
+weight   = 10
+image    = "/assets/img/test-setups/pulsating-jet-impingement/test-loop-schematic.png"
+area     = "electronics-cooling"
+layout   = "b"
+source_slides = [23]
+title_en = "Pulsating jet impingement – Testing trainsent and steady cold plate performance with PG25 and the like fluid"
+title_zh = "Pulsating jet impingement – Testing trainsent and steady cold plate performance with PG25 and the like fluid"
+lead_en  = "Pulsating Jet Impingement Cooling"
+lead_zh  = "Pulsating Jet Impingement Cooling"
+body_en  = ""
+body_zh  = ""
+
+[[project.section]]
+heading_en = "1. Distributed Return-Nozzle Design"
+heading_zh = "1. Distributed Return-Nozzle Design"
+body_en    = "Reducing crossflow interference and improves jet impingement uniformity."
+body_zh    = "Reducing crossflow interference and improves jet impingement uniformity."
+items_en   = []
+items_zh   = []
+
+[[project.section]]
+heading_en = "2. Pulsating Inlet Flow Control"
+heading_zh = "2. Pulsating Inlet Flow Control"
+body_en    = "A solenoid valve combined with a signal generator is used to periodically modulate the inlet flow rate and velocity, generating a pulsed impinging jet. The periodic acceleration and deceleration disturb the near-wall flow field, suppress the continuous development of the thermal boundary layer, and promote its repeated disruption and redevelopment, thereby enhancing local convective heat transfer performance."
+body_zh    = "A solenoid valve combined with a signal generator is used to periodically modulate the inlet flow rate and velocity, generating a pulsed impinging jet. The periodic acceleration and deceleration disturb the near-wall flow field, suppress the continuous development of the thermal boundary layer, and promote its repeated disruption and redevelopment, thereby enhancing local convective heat transfer performance."
+items_en   = []
+items_zh   = []
+
+[[project.figure]]
+id         = "test-loop-schematic"
+kind       = "diagram"
+image      = "/assets/img/test-setups/pulsating-jet-impingement/test-loop-schematic.png"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "response-chart"
+kind       = "chart"
+image      = "/assets/img/test-setups/pulsating-jet-impingement/response-chart.png"
+caption_en = ""
+caption_zh = ""
+
+[[project]]
+id       = "expansion-tank-pre-charge-pressure"
+weight   = 11
+image    = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/setup.jpg"
+area     = "hvacr"
+layout   = "c"
+source_slides = [24]
+title_en = "The Effect of Pre-Charge Pressure in an Expansion Tank on the Water Supply System"
+title_zh = "The Effect of Pre-Charge Pressure in an Expansion Tank on the Water Supply System"
+lead_en  = "This study primarily investigates the impact of expansion tanks on water distribution systems under different pre-charge pressures. By combining fluid temperature, flow rate, pre-charge pressure, and relevant parameters of data center water-cooling systems, the study evaluates the cavitation effects on pumps and proposes a pressure range as a design reference."
+lead_zh  = "This study primarily investigates the impact of expansion tanks on water distribution systems under different pre-charge pressures. By combining fluid temperature, flow rate, pre-charge pressure, and relevant parameters of data center water-cooling systems, the study evaluates the cavitation effects on pumps and proposes a pressure range as a design reference."
+body_en  = ""
+body_zh  = ""
+
+[[project.section]]
+heading_en = "Introduction:"
+heading_zh = "Introduction:"
+body_en    = "This study primarily investigates the impact of expansion tanks on water distribution systems under different pre-charge pressures. By combining fluid temperature, flow rate, pre-charge pressure, and relevant parameters of data center water-cooling systems, the study evaluates the cavitation effects on pumps and proposes a pressure range as a design reference."
+body_zh    = "This study primarily investigates the impact of expansion tanks on water distribution systems under different pre-charge pressures. By combining fluid temperature, flow rate, pre-charge pressure, and relevant parameters of data center water-cooling systems, the study evaluates the cavitation effects on pumps and proposes a pressure range as a design reference."
+items_en   = []
+items_zh   = []
+
+[[project.section]]
+heading_en = "Status: Under construction"
+heading_zh = "Status: Under construction"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
+[[project.section]]
+heading_en = "Equipment:"
+heading_zh = "Equipment:"
+body_en    = ""
+body_zh    = ""
+items_en   = [
+  "1. IWAKI Pump (NRD-08Z)",
+  "2. HUBA Differential Pressure Meter (Type 692)",
+  "3. Closed Expansion Tank*2 (2L)",
+  "4. Chiller (FIRSTEK CF-100-2)",
+  "5. Yokogawa Flow Meter (AXF-005G)",
+]
+items_zh   = [
+  "1. IWAKI Pump (NRD-08Z)",
+  "2. HUBA Differential Pressure Meter (Type 692)",
+  "3. Closed Expansion Tank*2 (2L)",
+  "4. Chiller (FIRSTEK CF-100-2)",
+  "5. Yokogawa Flow Meter (AXF-005G)",
+]
+
+[[project.section]]
+heading_en = "Working Fluid: Water"
+heading_zh = "Working Fluid: Water"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
+[[project.figure]]
+id         = "setup"
+kind       = "photo"
+image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/setup.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "system-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/system-diagram.png"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "expansion-tank"
+kind       = "photo"
+image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/expansion-tank.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "chiller"
+kind       = "photo"
+image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/chiller.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project]]
+id       = "embedded-microfluidic-interlayer-cooling"
+weight   = 12
+image    = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/test-setup.jpg"
+area     = "electronics-cooling"
+layout   = "a"
+source_slides = [25]
+title_en = "Novel Embedded Microfluidic Interlayer Cooling Solutions for Effective Thermal Management of 3D IC Chip Stack"
+title_zh = "Novel Embedded Microfluidic Interlayer Cooling Solutions for Effective Thermal Management of 3D IC Chip Stack"
+lead_en  = "The objective of this study is to design and develop a novel 3D-IC microchannel water-cooling integration technology, which involves fabricating a multilayer silicon structure containing microchannels and heaters, with water serving as the working fluid. The study aims to simulate and verify the water-cooling performance of this 3D-IC microchannel system. This research targets a heat flux of 2000 W/cm². Currently, under a 60 V input, the system is capable of dissipating a heat flux of 1188 W/cm²."
+lead_zh  = "The objective of this study is to design and develop a novel 3D-IC microchannel water-cooling integration technology, which involves fabricating a multilayer silicon structure containing microchannels and heaters, with water serving as the working fluid. The study aims to simulate and verify the water-cooling performance of this 3D-IC microchannel system. This research targets a heat flux of 2000 W/cm². Currently, under a 60 V input, the system is capable of dissipating a heat flux of 1188 W/cm²."
+body_en  = ""
+body_zh  = ""
+
+[[project.section]]
+heading_en = "Introduction:"
+heading_zh = "Introduction:"
+body_en    = "The objective of this study is to design and develop a novel 3D-IC microchannel water-cooling integration technology, which involves fabricating a multilayer silicon structure containing microchannels and heaters, with water serving as the working fluid. The study aims to simulate and verify the water-cooling performance of this 3D-IC microchannel system. This research targets a heat flux of 2000 W/cm². Currently, under a 60 V input, the system is capable of dissipating a heat flux of 1188 W/cm²."
+body_zh    = "The objective of this study is to design and develop a novel 3D-IC microchannel water-cooling integration technology, which involves fabricating a multilayer silicon structure containing microchannels and heaters, with water serving as the working fluid. The study aims to simulate and verify the water-cooling performance of this 3D-IC microchannel system. This research targets a heat flux of 2000 W/cm². Currently, under a 60 V input, the system is capable of dissipating a heat flux of 1188 W/cm²."
+items_en   = []
+items_zh   = []
+
+[[project.section]]
+heading_en = "Status: In Progress"
+heading_zh = "Status: In Progress"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
+[[project.section]]
+heading_en = "Equipment:"
+heading_zh = "Equipment:"
+body_en    = ""
+body_zh    = ""
+items_en   = [
+  "1. DC Power Supply (Nice-Power)",
+  "2. Yokogawa Differential Pressure Meter (AXF-005G)",
+  "3. IR-Camera (Fotric 227)",
+  "4. Water Bath (Gtec-615)",
+  "5. Data Logger (Yokogawa MX100)",
+]
+items_zh   = [
+  "1. DC Power Supply (Nice-Power)",
+  "2. Yokogawa Differential Pressure Meter (AXF-005G)",
+  "3. IR-Camera (Fotric 227)",
+  "4. Water Bath (Gtec-615)",
+  "5. Data Logger (Yokogawa MX100)",
+]
+
+[[project.section]]
+heading_en = "Working Fluid: Water"
+heading_zh = "Working Fluid: Water"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
+[[project.figure]]
+id         = "equipment-group"
+kind       = "photo"
+image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/equipment-group.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "working-fluid-container"
+kind       = "photo"
+image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/working-fluid-container.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "test-setup"
+kind       = "photo"
+image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/test-setup.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[project.figure]]
+id         = "infrared-camera"
+kind       = "photo"
+image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/infrared-camera.jpg"
+caption_en = ""
+caption_zh = ""
+
 # --- PLACEHOLDER. Copy this block for each new project, then delete this one. ---
 [[project]]
 id       = "placeholder-project"

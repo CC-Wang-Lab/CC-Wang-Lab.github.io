@@ -105,6 +105,19 @@ Export-Crop -Slide 22 -Geometry '847x404+22+121' -RelativePath 'multi-agent-serv
 Export-Crop -Slide 22 -Geometry '386x520+894+100' -RelativePath 'multi-agent-server-cooling-control\single-fan-observation-range.png'
 Export-Crop -Slide 22 -Geometry '555x69+176+592' -RelativePath 'multi-agent-server-cooling-control\energy-saving-equation.png'
 
+Export-Crop -Slide 23 -Geometry '562x510+24+84' -RelativePath 'pulsating-jet-impingement\test-loop-schematic.png' -Erase 'rectangle 275,0 561,15 rectangle 248,397 561,509'
+Export-Crop -Slide 23 -Geometry '335x187+273+481' -RelativePath 'pulsating-jet-impingement\response-chart.png'
+
+Export-Crop -Slide 24 -Geometry '428x231+21+80' -RelativePath 'expansion-tank-pre-charge-pressure\setup.jpg'
+Export-Crop -Slide 24 -Geometry '542x404+58+311' -RelativePath 'expansion-tank-pre-charge-pressure\system-diagram.png'
+Export-Crop -Slide 24 -Geometry '218x162+688+466' -RelativePath 'expansion-tank-pre-charge-pressure\expansion-tank.jpg'
+Export-Crop -Slide 24 -Geometry '149x245+977+433' -RelativePath 'expansion-tank-pre-charge-pressure\chiller.jpg'
+
+Export-Crop -Slide 25 -Geometry '227x204+58+464' -RelativePath 'embedded-microfluidic-interlayer-cooling\equipment-group.jpg'
+Export-Crop -Slide 25 -Geometry '82x154+735+515' -RelativePath 'embedded-microfluidic-interlayer-cooling\working-fluid-container.jpg'
+Export-Crop -Slide 25 -Geometry '447x335+710+368' -RelativePath 'embedded-microfluidic-interlayer-cooling\test-setup.jpg'
+Export-Crop -Slide 25 -Geometry '276x204+303+464' -RelativePath 'embedded-microfluidic-interlayer-cooling\infrared-camera.jpg'
+
 Export-Crop -Slide 28 -Geometry '562x398+79+167' -RelativePath 'carvera-desktop-cnc\cnc-machine.jpg'
 
 Export-Crop -Slide 29 -Geometry '378x402+57+184' -RelativePath 'fabrication-and-microscopy-equipment\3d-printer.jpg'
