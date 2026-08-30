@@ -1287,9 +1287,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   gap: 0.5rem;
   min-width: 0;
 }
-[data-profile-layout="header"] .profile-expertise-label {
-  color: var(--bs-body-color);
-}
 [data-profile-layout="header"] .profile-header-divider {
   color: var(--lab-accent);
 }
@@ -2477,7 +2474,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 /* Restore the original unified logo treatment: muted until hover, with the
    prior dark-theme transform. The row controls remain arrowless. */
 .pt-logo {
-  display: block;
   max-height: 2.6rem;
   max-width: 11rem;
   width: auto;
@@ -2485,8 +2481,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   filter: grayscale(1);
   opacity: 0.62;
   transition: filter 0.25s ease-out, opacity 0.25s ease-out;
-  user-select: none;
-  pointer-events: none;
 }
 .pt-item:hover .pt-logo { filter: grayscale(0); opacity: 1; }
 [data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }

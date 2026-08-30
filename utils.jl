@@ -1429,7 +1429,7 @@ function person_header_identity(p)
             """<span class="profile-expertise-item" role="listitem">$(esc(part))</span>"""
             for part in topic_parts
         ], "")
-        """<span class="profile-header-divider" aria-hidden="true">|</span><span class="profile-expertise-label" id="profile-header-expertise-label">$(esc(ui("people", "expertise")))</span><span class="profile-expertise" role="list" aria-labelledby="profile-header-expertise-label">$(items)</span>"""
+        """<span class="profile-header-divider" aria-hidden="true">|</span><span class="profile-expertise" role="list" aria-label="$(esc(ui("people", "expertise")))">$(items)</span>"""
     end
     return """
 <div class="profile-header-details">

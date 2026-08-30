@@ -353,6 +353,8 @@ window.addEventListener("load", function () {
         profileHeaderIdentity.querySelector(".profile-role") : null;
       var profileHeaderExpertise = profileHeaderIdentity ?
         profileHeaderIdentity.querySelector(".profile-expertise") : null;
+      var profileHeaderExpertiseLabel = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-expertise-label") : null;
       var profileHeaderContacts = profileHeaderIdentity ?
         profileHeaderIdentity.querySelector(".pi-chips") : null;
       var profileNarrative = profileShell.querySelector(".profile-narrative");
@@ -422,7 +424,8 @@ window.addEventListener("load", function () {
         ruleHidden: true,
         domOrderValid: true,
         expertiseWrapsOnNarrow: true,
-        expertiseListSemantics: true
+        expertiseListSemantics: true,
+        expertiseLabelAbsent: true
       };
       if (profileExpected === "header") {
         headerDetails.present = !!profileHeaderPortrait && !!profileHeaderSummary &&
@@ -437,6 +440,7 @@ window.addEventListener("load", function () {
         headerDetails.expertiseListSemantics = !profileHeaderExpertise ||
           (profileHeaderExpertise.getAttribute("role") === "list" &&
            expertiseItems.length >= 1);
+        headerDetails.expertiseLabelAbsent = !profileHeaderExpertiseLabel;
         if (profileHeaderExpertise && window.innerWidth <= 991.98) {
           var expertiseStyle = getComputedStyle(profileHeaderExpertise);
           headerDetails.expertiseWrapsOnNarrow = expertiseStyle.flexWrap === "wrap" &&
@@ -574,12 +578,15 @@ window.addEventListener("load", function () {
         }
       }
       var logosUnframed = true, logosLoaded = true, filtersPresent = true;
+      var logoPointerEventsRestored = true;
       for (var pl = 0; pl < partnerLogos.length; pl++) {
         var logo = partnerLogos[pl];
         var logoFrame = logo.closest(".pt-logo-frame");
         logosUnframed = logosUnframed && !logoFrame;
         logosLoaded = logosLoaded && logo.complete && logo.naturalWidth > 0;
         filtersPresent = filtersPresent && getComputedStyle(logo).filter !== "none";
+        logoPointerEventsRestored = logoPointerEventsRestored &&
+          getComputedStyle(logo).pointerEvents === "auto";
       }
       var partnerKeyboard = { tested: false, passed: false, motionPaused: false };
       if (window.__partners && window.__partners.bands &&
@@ -648,6 +655,7 @@ window.addEventListener("load", function () {
         logosUnframed: logosUnframed,
         logosLoaded: logosLoaded,
         filtersPresent: filtersPresent,
+        logoPointerEventsRestored: logoPointerEventsRestored,
         keyboard: partnerKeyboard
       };
     }
@@ -1047,6 +1055,8 @@ def main():
                         flags.append("mode-D expertise cannot wrap safely on narrow screens")
                     if not header_details.get("expertiseListSemantics"):
                         flags.append("mode-D expertise lacks list semantics")
+                    if not header_details.get("expertiseLabelAbsent"):
+                        flags.append("mode-D still displays the Expertise in label")
                 for label, actual_key, expected_key in (
                     ("name", "nameFont", "expectedNameFont"),
                     ("role", "roleFont", "expectedRoleFont"),
@@ -1102,6 +1112,7 @@ def main():
                     ("free of the reverted frames", "logosUnframed"),
                     ("loaded", "logosLoaded"),
                     ("using the restored filter treatment", "filtersPresent"),
+                    ("using the branch-start pointer behavior", "logoPointerEventsRestored"),
                 ):
                     if not partners.get(key):
                         flags.append("partner logos are not all %s" % label)
