@@ -10,7 +10,8 @@ function Export-Crop {
     param(
         [int]$Slide,
         [string]$Geometry,
-        [string]$RelativePath
+        [string]$RelativePath,
+        [string]$Erase = ''
     )
 
     $source = Join-Path $SourceDir ("Slide{0}.jpg" -f $Slide)
@@ -27,6 +28,10 @@ function Export-Crop {
         & magick $source -crop $Geometry +repage -strip $target
     }
     if ($LASTEXITCODE -ne 0) { throw "ImageMagick failed for Slide $Slide" }
+    if ($Erase) {
+        & magick $target -fill white -draw $Erase -strip $target
+        if ($LASTEXITCODE -ne 0) { throw "ImageMagick cleanup failed for Slide $Slide" }
+    }
 }
 
 Export-Crop -Slide 7 -Geometry '419x559+89+101' -RelativePath 'thermal-fin-natural-convection-chamber\chamber.jpg'
@@ -51,3 +56,17 @@ Export-Crop -Slide 13 -Geometry '272x117+185+476' -RelativePath 'boiler-surface-
 Export-Crop -Slide 13 -Geometry '272x117+185+595' -RelativePath 'boiler-surface-test-rig\acid-etched.jpg'
 Export-Crop -Slide 13 -Geometry '692x417+578+70' -RelativePath 'boiler-surface-test-rig\test-schematic.png'
 Export-Crop -Slide 13 -Geometry '267x184+844+528' -RelativePath 'boiler-surface-test-rig\test-rig.jpg'
+
+Export-Crop -Slide 15 -Geometry '604x452+8+168' -RelativePath 'three-kilowatt-cold-plate-test-facility\rig.jpg'
+Export-Crop -Slide 15 -Geometry '651x368+629+204' -RelativePath 'three-kilowatt-cold-plate-test-facility\flow-diagram.png'
+
+Export-Crop -Slide 16 -Geometry '470x352+104+148' -RelativePath 'vapor-compression-cooling-system\system-overview.jpg'
+Export-Crop -Slide 16 -Geometry '515x387+650+130' -RelativePath 'vapor-compression-cooling-system\cold-plate-loop.jpg'
+
+Export-Crop -Slide 17 -Geometry '395x343+157+79' -RelativePath 'refrigerant-lubricant-boiling-system\apparatus.jpg'
+Export-Crop -Slide 17 -Geometry '478x397+721+62' -RelativePath 'refrigerant-lubricant-boiling-system\system-diagram.png'
+Export-Crop -Slide 17 -Geometry '540x166+720+518' -RelativePath 'refrigerant-lubricant-boiling-system\heater-diagram.png'
+
+Export-Crop -Slide 18 -Geometry '270x408+54+125' -RelativePath 'liquid-desiccant-air-conditioning-system\rig-front-view.jpg'
+Export-Crop -Slide 18 -Geometry '811x426+469+64' -RelativePath 'liquid-desiccant-air-conditioning-system\perspective-system-diagram.png' -Erase 'rectangle 0,0 22,28'
+Export-Crop -Slide 18 -Geometry '258x169+60+360' -RelativePath 'liquid-desiccant-air-conditioning-system\process-flow-diagram.png'

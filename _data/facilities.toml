@@ -345,6 +345,132 @@ caption_en = ""
 caption_zh = ""
 
 [[item]]
+id       = "three-kilowatt-cold-plate-test-facility"
+area     = "two-phase"
+image    = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
+image_fit = "contain"
+layout   = "a"
+source_slides = [15]
+title_en = "Two-phase cold plate test facility, up to 3 kW for various working fluids"
+title_zh = "Two-phase cold plate test facility, up to 3 kW for various working fluids"
+lead_en  = "The cold plate setup supports up to 3 kW of power"
+lead_zh  = "The cold plate setup supports up to 3 kW of power"
+body_en  = "The cold plate setup supports up to 3 kW of power"
+body_zh  = "The cold plate setup supports up to 3 kW of power"
+
+[[item.figure]]
+id         = "rig"
+kind       = "photo"
+image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/rig.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "flow-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "vapor-compression-cooling-system"
+area     = "hvacr"
+image    = "/assets/img/test-setups/vapor-compression-cooling-system/cold-plate-loop.jpg"
+image_fit = "contain"
+layout   = "b"
+source_slides = [16]
+title_en = "Vapor Compression Refrigeration Cooling System (VCRC) Two phase Cold Plate"
+title_zh = "Vapor Compression Refrigeration Cooling System (VCRC) Two phase Cold Plate"
+lead_en  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate."
+lead_zh  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate."
+body_en  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate. Refrigerant temperature, pressure, flow rate, and cold-plate temperature are measured throughout the system. The experimental variables include compressor speed, heat load, and expansion-valve opening. The measured data are used to evaluate cooling capacity, heat transfer rate, thermal resistance, refrigerant enthalpy, vapor quality, and coefficient of performance."
+body_zh  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate. Refrigerant temperature, pressure, flow rate, and cold-plate temperature are measured throughout the system. The experimental variables include compressor speed, heat load, and expansion-valve opening. The measured data are used to evaluate cooling capacity, heat transfer rate, thermal resistance, refrigerant enthalpy, vapor quality, and coefficient of performance."
+
+[[item.figure]]
+id         = "system-overview"
+kind       = "photo"
+image      = "/assets/img/test-setups/vapor-compression-cooling-system/system-overview.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "cold-plate-loop"
+kind       = "photo"
+image      = "/assets/img/test-setups/vapor-compression-cooling-system/cold-plate-loop.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "refrigerant-lubricant-boiling-system"
+area     = "two-phase"
+image    = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/system-diagram.png"
+image_fit = "contain"
+layout   = "c"
+source_slides = [17]
+title_en = "Single Tube Boiling Test System for Refrigerant–Lubricant Mixtures"
+title_zh = "Single Tube Boiling Test System for Refrigerant–Lubricant Mixtures"
+lead_en  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces."
+lead_zh  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces."
+body_en  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces. A heating tube is immersed in the refrigerant within a closed system and operated at heat fluxes of 10–110 kW/m² under different saturation temperatures. The evaporator serves as the boiling test chamber, while the condenser controls the saturation temperature. The 19.05 mm heating tube has a heated length of 115 mm and contains four thermocouples for temperature measurement. A high-speed camera records bubble-generation frequency and departure size."
+body_zh  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces. A heating tube is immersed in the refrigerant within a closed system and operated at heat fluxes of 10–110 kW/m² under different saturation temperatures. The evaporator serves as the boiling test chamber, while the condenser controls the saturation temperature. The 19.05 mm heating tube has a heated length of 115 mm and contains four thermocouples for temperature measurement. A high-speed camera records bubble-generation frequency and departure size."
+
+[[item.figure]]
+id         = "apparatus"
+kind       = "photo"
+image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/apparatus.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "system-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/system-diagram.png"
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "heater-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/heater-diagram.png"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "liquid-desiccant-air-conditioning-system"
+area     = "hvacr"
+image    = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/perspective-system-diagram.png"
+image_fit = "contain"
+layout   = "a"
+source_slides = [18]
+title_en = "Liquid desiccant air-conditioning system"
+title_zh = "Liquid desiccant air-conditioning system"
+lead_en  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant."
+lead_zh  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant."
+body_en  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant. The system consists of a regeneration tower and a dehumidification tower equipped with packed beds, an immersion dehumidifier, a precooling coil, and a reheat coil. The evaporators cool the solution to enhance moisture absorption as the solution directly contacts the air through the packed bed. Condenser heat is used for solution regeneration and air reheating, enabling dehumidification, cooling, and heating operation."
+body_zh  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant. The system consists of a regeneration tower and a dehumidification tower equipped with packed beds, an immersion dehumidifier, a precooling coil, and a reheat coil. The evaporators cool the solution to enhance moisture absorption as the solution directly contacts the air through the packed bed. Condenser heat is used for solution regeneration and air reheating, enabling dehumidification, cooling, and heating operation."
+
+[[item.figure]]
+id         = "rig-front-view"
+kind       = "photo"
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/rig-front-view.jpg"
+caption_en = "Photograph of the liquid desiccant air-conditioning system (Front view)"
+caption_zh = "Photograph of the liquid desiccant air-conditioning system (Front view)"
+
+[[item.figure]]
+id         = "perspective-system-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/perspective-system-diagram.png"
+caption_en = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
+caption_zh = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
+
+[[item.figure]]
+id         = "process-flow-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/process-flow-diagram.png"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
 id       = "placeholder-facility-1"
 placeholder = true
 area     = "two-phase"

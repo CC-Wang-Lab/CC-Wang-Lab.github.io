@@ -23,6 +23,10 @@ EXPECTED = {
         "two-phase-cold-plate-test-platform": ([11], "a", "two-phase", 1),
         "flooded-evaporator-test-rig": ([12], "b", "two-phase", 2),
         "boiler-surface-test-rig": ([13], "c", "two-phase", 6),
+        "three-kilowatt-cold-plate-test-facility": ([15], "a", "two-phase", 2),
+        "vapor-compression-cooling-system": ([16], "b", "hvacr", 2),
+        "refrigerant-lubricant-boiling-system": ([17], "c", "two-phase", 3),
+        "liquid-desiccant-air-conditioning-system": ([18], "a", "hvacr", 3),
     },
     "project": {},
 }
