@@ -93,8 +93,8 @@ def main() -> int:
         )
         switchers = page.matching("profile-switcher")
         require(
-            bool(switchers) and "hidden" in switchers[0][2],
-            f"{label}: comparison switcher must be hidden by default",
+            bool(switchers) and "hidden" not in switchers[0][2],
+            f"{label}: three-mode profile switcher must be visible by default",
         )
         order = [
             page.first_index("pi-heading"),
@@ -202,6 +202,10 @@ def main() -> int:
         require("history.replaceState" in source, "profile switcher does not update the URL")
         require(".lang-switch" in source,
                 "profile controller does not preserve the layout on language links")
+        require("switcher.hidden = false" in source,
+                "profile controller does not keep the three-mode selector visible")
+        require("switcher.hidden = !value" not in source,
+                "profile controller still hides the selector without a query value")
         require("localStorage" not in source and "sessionStorage" not in source,
                 "profile layout choice must not persist")
 

@@ -1,6 +1,6 @@
 +++
 title = "Contact us"
-descr = "Contact details, visitor information and an inquiry form for research and industrial collaboration."
+descr = "Contact details and an inquiry form for research and industrial collaboration."
 lang = "en"
 +++
 
@@ -27,13 +27,6 @@ lang = "en"
 @@
 @@col-lg-5
 @@contact-card
-
-## Visit the laboratory
-
-**Prof. Chi-Chuan Wang**, Chair Professor  \
-Department of Mechanical Engineering  \
-National Yang Ming Chiao Tung University  \
-1001 University Road, Hsinchu 300093, Taiwan
 
 ## Primary contact
 

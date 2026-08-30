@@ -346,6 +346,9 @@ window.addEventListener("load", function () {
       var profileSwitcher = document.querySelector("[data-profile-switcher]");
       var profileChoices = profileSwitcher ?
         profileSwitcher.querySelectorAll("[data-profile-layout-choice]") : [];
+      var profileLanguageHref = document.querySelector(".lang-switch") ?
+        document.querySelector(".lang-switch").getAttribute("href") : "";
+      var profileCompareFlag = profileRoot.getAttribute("data-profile-layout-compare");
       var profileRects = [profileIdentity, profileNarrative, profileRecord]
         .filter(Boolean).map(function (node) { return node.getBoundingClientRect(); });
       function rectanglesOverlap(a, b) {
@@ -374,7 +377,7 @@ window.addEventListener("load", function () {
       var expectedNameToken = profileExpected === "dossier" ? "--fs-2xl" :
         (profileExpected === "narrative" ? "--fs-4xl" : "--fs-3xl");
       var interaction = { tested: false, passed: true };
-      if (profileValid && profileChoices.length === 3) {
+      if (profileChoices.length === 3) {
         var alternative = Array.prototype.find.call(profileChoices, function (choice) {
           return choice.getAttribute("data-profile-layout-choice") !== profileExpected;
         });
@@ -397,7 +400,7 @@ window.addEventListener("load", function () {
         requested: profileRequested || "",
         expected: profileExpected,
         applied: profileRoot.getAttribute("data-profile-layout"),
-        compareFlag: profileRoot.getAttribute("data-profile-layout-compare"),
+        compareFlag: profileCompareFlag,
         switcherVisible: !!profileSwitcher && !profileSwitcher.hidden,
         choiceCount: profileChoices.length,
         activeChoiceCount: profileSwitcher ?
@@ -423,8 +426,7 @@ window.addEventListener("load", function () {
         factValueFont: profileFactValue ?
           parseFloat(getComputedStyle(profileFactValue).fontSize) : 0,
         expectedFactValueFont: tokenSize("--fs-sm"),
-        languageHref: document.querySelector(".lang-switch") ?
-          document.querySelector(".lang-switch").getAttribute("href") : "",
+        languageHref: profileLanguageHref,
         mobileOrder: profileMobileOrder,
         overlaps: profileOverlap,
         interaction: interaction
@@ -466,39 +468,13 @@ window.addEventListener("load", function () {
                      bandRows[1].getBoundingClientRect().width) <= 1;
         }
       }
-      var frameProbe = document.createElement("span");
-      frameProbe.style.cssText = "position:fixed;visibility:hidden;background:var(--sponsor-frame-bg)";
-      document.body.appendChild(frameProbe);
-      var expectedFrameBackground = getComputedStyle(frameProbe).backgroundColor;
-      frameProbe.remove();
-      var frameChannels = expectedFrameBackground.match(/[0-9.]+/g) || [];
-      var frameAlpha = frameChannels.length > 3 ? parseFloat(frameChannels[3]) : 1;
-      function linearChannel(channel) {
-        channel = channel / 255;
-        return channel <= 0.04045 ? channel / 12.92 :
-          Math.pow((channel + 0.055) / 1.055, 2.4);
-      }
-      var frameLuminance = frameChannels.length >= 3 ?
-        0.2126 * linearChannel(parseFloat(frameChannels[0])) +
-        0.7152 * linearChannel(parseFloat(frameChannels[1])) +
-        0.0722 * linearChannel(parseFloat(frameChannels[2])) : 0;
-      var frameOpaqueLight = frameAlpha >= 0.99 && frameLuminance >= 0.75;
-      var logosFramed = true, logosLoaded = true, filtersNone = true;
-      var logosFit = true, frameBackgroundsMatch = true;
+      var logosUnframed = true, logosLoaded = true, filtersPresent = true;
       for (var pl = 0; pl < partnerLogos.length; pl++) {
         var logo = partnerLogos[pl];
         var logoFrame = logo.closest(".pt-logo-frame");
-        logosFramed = logosFramed && !!logoFrame;
+        logosUnframed = logosUnframed && !logoFrame;
         logosLoaded = logosLoaded && logo.complete && logo.naturalWidth > 0;
-        filtersNone = filtersNone && getComputedStyle(logo).filter === "none";
-        if (logoFrame) {
-          var logoRect = logo.getBoundingClientRect();
-          var frameRect = logoFrame.getBoundingClientRect();
-          logosFit = logosFit && logoRect.width <= frameRect.width + 0.5 &&
-            logoRect.height <= frameRect.height + 0.5;
-          frameBackgroundsMatch = frameBackgroundsMatch &&
-            getComputedStyle(logoFrame).backgroundColor === expectedFrameBackground;
-        }
+        filtersPresent = filtersPresent && getComputedStyle(logo).filter !== "none";
       }
       var partnerKeyboard = { tested: false, passed: false, motionPaused: false };
       if (window.__partners && window.__partners.bands &&
@@ -564,13 +540,9 @@ window.addEventListener("load", function () {
         duplicateRowsHidden: duplicateRowsHidden,
         rowWidthsMatch: rowWidthsMatch,
         logoCount: partnerLogos.length,
-        logosFramed: logosFramed,
+        logosUnframed: logosUnframed,
         logosLoaded: logosLoaded,
-        filtersNone: filtersNone,
-        logosFit: logosFit,
-        frameBackground: expectedFrameBackground,
-        frameOpaqueLight: frameOpaqueLight,
-        frameBackgroundsMatch: frameBackgroundsMatch,
+        filtersPresent: filtersPresent,
         keyboard: partnerKeyboard
       };
     }
@@ -655,7 +627,7 @@ for layout in ("editorial", "dossier", "narrative"):
     ))
 
 MATRIX.extend([
-    ("/people/cc-wang/", 492, "light", "normal profile visit hides comparison controls"),
+    ("/people/cc-wang/", 492, "light", "normal profile visit shows all three layout controls"),
     ("/people/cc-wang/?profile-layout=invalid", 492, "light", "invalid profile query falls back safely"),
     ("/profile-designs/", 492, "light", "English profile comparison hub on mobile"),
     ("/profile-designs/", 1440, "light", "English profile comparison hub on desktop"),
@@ -892,10 +864,6 @@ def main():
                   % (len(made), len(REPORTS)))
             return 1
         bad = 0
-        partner_frame_backgrounds = {
-            report.get("partners", {}).get("frameBackground")
-            for report in REPORTS if report.get("partners")
-        }
         for r in REPORTS:
             over = r["scrollWidth"] - r["clientWidth"]
             flags = []
@@ -935,11 +903,11 @@ def main():
                                  % (profile.get("applied"), profile.get("expected")))
                 if profile.get("compareFlag") != ("true" if valid_profile_query else "false"):
                     flags.append("profile comparison flag disagrees with query validity")
-                if bool(profile.get("switcherVisible")) != valid_profile_query:
-                    flags.append("profile switcher visibility disagrees with query validity")
+                if not profile.get("switcherVisible"):
+                    flags.append("profile switcher is not visible")
                 if profile.get("choiceCount") != 3:
                     flags.append("profile switcher does not have exactly three choices")
-                expected_active = 1 if valid_profile_query else 0
+                expected_active = 1
                 if profile.get("activeChoiceCount") != expected_active:
                     flags.append("profile switcher has %s active choices, expected %s"
                                  % (profile.get("activeChoiceCount"), expected_active))
@@ -969,7 +937,7 @@ def main():
                 if not valid_profile_query and "profile-layout=" in language_href:
                     flags.append("language switch invents a profile layout on a normal visit")
                 interaction = profile.get("interaction", {})
-                if valid_profile_query and not interaction.get("tested"):
+                if not interaction.get("tested"):
                     flags.append("profile switcher interaction was not exercised")
                 if interaction.get("tested") and not interaction.get("passed"):
                     flags.append("profile switcher did not update and restore the query/layout")
@@ -998,18 +966,12 @@ def main():
                 if partners.get("logoCount", 0) <= 0:
                     flags.append("partner SVG logos are missing")
                 for label, key in (
-                    ("inside neutral frames", "logosFramed"),
+                    ("free of the reverted frames", "logosUnframed"),
                     ("loaded", "logosLoaded"),
-                    ("unfiltered", "filtersNone"),
-                    ("contained by their frames", "logosFit"),
-                    ("using the sponsor-frame token", "frameBackgroundsMatch"),
+                    ("using the restored filter treatment", "filtersPresent"),
                 ):
                     if not partners.get(key):
                         flags.append("partner logos are not all %s" % label)
-                if not partners.get("frameOpaqueLight"):
-                    flags.append("partner logo canvas is not opaque and light-neutral")
-                if len(partner_frame_backgrounds) != 1:
-                    flags.append("partner logo canvas changes between language/theme runs")
                 partner_keyboard = partners.get("keyboard", {})
                 if not partner_keyboard.get("tested"):
                     flags.append("partner keyboard interaction was not exercised")
@@ -1058,7 +1020,7 @@ def main():
                 print("        partners rows=%s logos=%s keyboard=%s filters=%s"
                       % (partners.get("viewportCount"), partners.get("logoCount"),
                          "pass" if partners.get("keyboard", {}).get("passed") else "fail",
-                         "none" if partners.get("filtersNone") else "present"))
+                         "present" if partners.get("filtersPresent") else "missing"))
             for x in r["overflowing"]:
                 print("        wide   " + x)
             if r.get("midBar") or r.get("midHero"):

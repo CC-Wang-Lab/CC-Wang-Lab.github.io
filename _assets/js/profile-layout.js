@@ -21,16 +21,17 @@
 
   function render(value) {
     var switcher = document.querySelector("[data-profile-switcher]");
-    root.setAttribute("data-profile-layout", value || "editorial");
+    var active = value || "editorial";
+    root.setAttribute("data-profile-layout", active);
     root.setAttribute("data-profile-layout-compare", value ? "true" : "false");
     syncLanguageLink(value);
     if (!switcher) return;
 
-    switcher.hidden = !value;
+    switcher.hidden = false;
     switcher.querySelectorAll("[data-profile-layout-choice]").forEach(function (choice) {
       choice.setAttribute(
         "aria-pressed",
-        choice.getAttribute("data-profile-layout-choice") === value ? "true" : "false"
+        choice.getAttribute("data-profile-layout-choice") === active ? "true" : "false"
       );
     });
   }

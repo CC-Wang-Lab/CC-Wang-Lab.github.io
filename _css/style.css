@@ -128,14 +128,6 @@
   --space-news-y: clamp(2.5rem, 1.972rem + 2.253vw, 4rem);
   --pad-partners-top: clamp(3rem, 2.648rem + 1.502vw, 4rem);
   --map-height: clamp(16rem, 55vw, 21.25rem);
-  --sponsor-frame-bg: #f5f2ec;
-  --sponsor-frame-border: #d8d2c7;
-  --sponsor-frame-height: 3.5rem;
-  --sponsor-frame-pad-y: 0.5rem;
-  --sponsor-frame-pad-x: 1rem;
-  --sponsor-frame-radius: 0.55rem;
-  --sponsor-logo-max-height: 2.25rem;
-  --sponsor-logo-max-width: 10rem;
 
   /* ONE prose measure for the whole site.
      Three different widths were in play before this: .page-hd p at 54ch,
@@ -2374,7 +2366,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    at 0.43px per frame that is a visible step. See partners.js. */
 .pt-viewport {
   overflow: hidden;
-  min-height: var(--sponsor-frame-height);
+  min-height: 3rem;
   touch-action: pan-y;
   cursor: grab;
   user-select: none;
@@ -2404,7 +2396,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--sponsor-frame-height);
+  height: 3rem;
   flex: 0 0 auto;
 }
 .pt-name {
@@ -2413,29 +2405,26 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   font-weight: 700;
   white-space: nowrap;
   color: var(--lab-muted);
+  transition: color 0.2s ease-out;
 }
-.pt-logo-frame {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: calc(var(--sponsor-logo-max-width) + 2 * var(--sponsor-frame-pad-x));
-  height: var(--sponsor-frame-height);
-  padding: var(--sponsor-frame-pad-y) var(--sponsor-frame-pad-x);
-  border: 1px solid var(--sponsor-frame-border);
-  border-radius: var(--sponsor-frame-radius);
-  background: var(--sponsor-frame-bg);
-}
+.pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
+/* Restore the original unified logo treatment: muted until hover, with the
+   prior dark-theme transform. The row controls remain arrowless. */
 .pt-logo {
   display: block;
-  max-height: var(--sponsor-logo-max-height);
-  max-width: var(--sponsor-logo-max-width);
+  max-height: 2.6rem;
+  max-width: 11rem;
   width: auto;
-  height: auto;
   object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.62;
+  transition: filter 0.25s ease-out, opacity 0.25s ease-out;
   user-select: none;
   pointer-events: none;
 }
+.pt-item:hover .pt-logo { filter: grayscale(0); opacity: 1; }
+[data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }
+[data-bs-theme="dark"] .pt-item:hover .pt-logo { filter: grayscale(0) invert(0); }
 
 /* A short edge fade softens clipping without hiding a logo behind a control. */
 .pt-fade {

@@ -248,7 +248,10 @@ function section_has_public_records(key::AbstractString)
     return true
 end
 
-visible_nav() = filter(item -> section_has_public_records(first(item)), NAV)
+# Facilities remains discoverable while its records are being prepared. Its
+# empty page is still noindex; this exception affects navigation only.
+visible_nav() = filter(item -> first(item) == "facilities" ||
+                                section_has_public_records(first(item)), NAV)
 
 public_alumni_records() = filter(p -> get(p, "status", "") == "alumni",
                                   public_rows(data("team")["person"]))
@@ -761,7 +764,7 @@ function partner_item(o)
     name = esc(pick(o, "name"))
     body = isempty(logo) ?
         """<span class="pt-name">$(name)</span>""" :
-        """<span class="pt-logo-frame"><img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy" draggable="false"></span>"""
+        """<img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy" draggable="false">"""
     return """<li class="pt-item">$(body)</li>"""
 end
 
@@ -1154,7 +1157,17 @@ $(join([person_row(p) for p in ps], "
 
 function people_section(tier, label)
     body = cards_of(tier)
-    isempty(body) && return ""
+    if isempty(body)
+        tier in ("lead", "phd", "msc") || return ""
+        body = """<p class="people-tier-empty">$(esc(ui("people", "empty_tier")))</p>"""
+        return """
+<section class="people-tier" data-empty-tier="$(esc(tier))">
+  <div class="section-head mt-5">
+    <h2>$(esc(ui("people", label)))</h2>
+  </div>
+$(body)
+</section>"""
+    end
     return """
 <section class="people-tier">
   <div class="section-head mt-5">
@@ -1441,8 +1454,8 @@ end
 """
 Set the allowlisted profile layout before the stylesheet paints.
 
-An absent or invalid query value resolves to Editorial and does not expose the
-temporary switcher. The source is emitted only on profile pages.
+An absent or invalid query value resolves to Editorial. The source is emitted
+only on profile pages.
 """
 function hfun_profile_layout_init()
     is_person_page() || return ""
@@ -1460,7 +1473,7 @@ function hfun_profile_layout_init()
 """
 end
 
-"""The temporary A/B/C control, hidden unless the URL contains a valid value."""
+"""The A/B/C profile-layout control shown on every real profile."""
 function hfun_profile_switcher()
     is_person_page() || return ""
     choices = String[]
@@ -1476,7 +1489,7 @@ function hfun_profile_switcher()
     </button>""")
     end
     return """
-<div class="profile-switcher" data-profile-switcher hidden role="group"
+<div class="profile-switcher" data-profile-switcher role="group"
      aria-label="$(esc(ui("profile_layout", "switcher")))">
   <span class="profile-switcher-label">$(esc(ui("profile_layout", "switcher")))</span>
   <div class="profile-switcher-options">
@@ -1725,27 +1738,18 @@ function hfun_footer()
   <div class="container">
     <div class="row g-4">
 
-      <div class="col-lg-5">
+      <div class="col-lg-6">
         <p class="foot-brand">$(esc(ui("site", "name")))</p>
         <p class="foot-uni">$(esc(ui("site", "uni")))</p>
         <p class="foot-addr">$(esc(ui("foot", "address")))</p>
       </div>
 
-      <div class="col-12 col-sm-6 col-lg-3">
+      <div class="col-12 col-lg-6">
         <p class="foot-head">$(esc(ui("foot", "nav")))</p>
         <nav class="foot-nav foot-nav-2col">
           $(navlinks)
           $(alumni)
 $(join(["""          <a href="$(pre)$(href)">$(esc(ui("nav", k)))</a>""" for (k, href) in NAV_FOOT], "\n"))
-        </nav>
-      </div>
-
-      <div class="col-12 col-sm-6 col-lg-4">
-        <p class="foot-head">$(esc(ui("foot", "contact")))</p>
-        <nav class="foot-nav">
-          <a href="mailto:$(esc(ui("foot", "email")))">$(icon("envelope")) $(esc(ui("foot", "email")))</a>
-          <span class="foot-plain">$(icon("telephone")) $(esc(ui("foot", "phone")))</span>
-          <a href="$(pre)/contact/">$(icon("geo-alt")) $(esc(ui("foot", "contact")))</a>
         </nav>
       </div>
 

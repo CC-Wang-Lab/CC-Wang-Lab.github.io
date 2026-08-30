@@ -123,14 +123,52 @@ def main() -> int:
     for route, prefix in homes:
         html = page(route)
         expect(not has_data_value(html, "id", "newsSlider"), f"{route} exposes placeholder news", failures)
-        for hidden in ("news", "facilities"):
+        for hidden in ("news",):
             href = f'href="{prefix}/{hidden}/"'
             expect(href not in html, f"{route} navigation exposes empty {hidden}", failures)
-        for visible in ("people", "projects"):
+        for visible in ("people", "projects", "facilities"):
             href = f'href="{prefix}/{visible}/"'
             expect(href in html, f"{route} lost populated {visible} navigation", failures)
         alumni_href = f'href="{prefix}/people/alumni/"'
         expect(alumni_href not in html, f"{route} footer exposes empty alumni", failures)
+        expect(
+            "mailto:juliahsieh@nycu.edu.tw" not in html,
+            f"{route} footer still exposes the removed contact column",
+            failures,
+        )
+
+    people_empty_tiers = {
+        "/people/": {
+            "lead": ("Research leads", "Profiles will be added here."),
+            "phd": ("PhD students", "Profiles will be added here."),
+            "msc": ("MSc students", "Profiles will be added here."),
+        },
+        "/zh/people/": {
+            "lead": ("研究主持群", "成員資料將於此處公布。"),
+            "phd": ("博士班學生", "成員資料將於此處公布。"),
+            "msc": ("碩士班學生", "成員資料將於此處公布。"),
+        },
+    }
+    for route, tiers in people_empty_tiers.items():
+        html = page(route)
+        for tier, (heading, message) in tiers.items():
+            expect(
+                has_data_value(html, "data-empty-tier", tier),
+                f"{route} does not render the empty {tier} section",
+                failures,
+            )
+            expect(heading in html, f"{route} is missing the {heading!r} heading", failures)
+            expect(message in html, f"{route} is missing localized temporary tier copy", failures)
+
+    contact_pages = {
+        "/contact/": ("Visit the laboratory", "Chair Professor", "Primary contact"),
+        "/zh/contact/": ("參訪資訊", "講座教授", "主要聯絡人"),
+    }
+    for route, (visit_heading, title, retained_heading) in contact_pages.items():
+        html = page(route)
+        expect(visit_heading not in html, f"{route} still shows the visit section", failures)
+        expect(title not in html, f"{route} still shows the removed professor title", failures)
+        expect(retained_heading in html, f"{route} lost the primary contact details", failures)
 
     for route in ("/projects/", "/zh/projects/"):
         html = page(route)

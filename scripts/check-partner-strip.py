@@ -34,13 +34,6 @@ def parse(path: Path) -> tuple[str, PageAudit]:
     return html, audit
 
 
-def relative_luminance(hex_color: str) -> float:
-    channels = [int(hex_color[index:index + 2], 16) / 255 for index in (1, 3, 5)]
-    linear = [value / 12.92 if value <= 0.04045 else
-              ((value + 0.055) / 1.055) ** 2.4 for value in channels]
-    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
-
-
 def main() -> int:
     failures: list[str] = []
 
@@ -79,7 +72,7 @@ def main() -> int:
         logos = page.matching("pt-logo")
         frames = page.matching("pt-logo-frame")
         require(len(logos) > 0, f"{relative}: sponsor SVG logos are missing")
-        require(len(frames) == len(logos), f"{relative}: every image logo needs one neutral frame")
+        require(not frames, f"{relative}: sponsor logo frames were not reverted")
         for tag, _, attrs in logos:
             require(tag == "img" and attrs.get("draggable") == "false",
                     f"{relative}: logo images must not start native image dragging")
@@ -94,25 +87,16 @@ def main() -> int:
         require(bool(partners.get(key)), f"ui.toml: missing localized partner label {key}")
 
     css = (ROOT / "_css" / "style.css").read_text(encoding="utf-8")
-    for token in (
-        "--sponsor-frame-bg", "--sponsor-frame-border", "--sponsor-frame-height",
-        "--sponsor-frame-pad-y", "--sponsor-frame-pad-x",
-        "--sponsor-logo-max-height", "--sponsor-logo-max-width",
-    ):
-        require(token in css, f"style.css: missing {token}")
-    frame_color = re.search(
-        r"--sponsor-frame-bg\s*:\s*(#[0-9a-fA-F]{6})\s*;", css
-    )
-    require(bool(frame_color), "style.css: sponsor frame needs an opaque six-digit color")
-    if frame_color:
-        require(relative_luminance(frame_color.group(1)) >= 0.75,
-                "style.css: sponsor frame must remain light-neutral in both themes")
+    require(".pt-logo-frame" not in css, "style.css: sponsor logo frame styling remains")
     require(".pt-arrow" not in css, "style.css: arrow styling remains")
-    require('[data-bs-theme="dark"] .pt-logo' not in css,
-            "style.css: dark-theme logo transformation remains")
-    for selector, declarations in re.findall(r"([^{}]*\.pt-logo[^{}]*)\{([^{}]*)\}", css):
-        require("filter:" not in declarations,
-                f"style.css: logo filter remains in {selector.strip()}")
+    require("filter: grayscale(1);" in css,
+            "style.css: default grayscale sponsor treatment was not restored")
+    require("filter: grayscale(0);" in css,
+            "style.css: sponsor hover color treatment was not restored")
+    require("filter: grayscale(1) invert(1) brightness(1.6);" in css,
+            "style.css: previous dark-theme sponsor treatment was not restored")
+    require("filter: grayscale(0) invert(0);" in css,
+            "style.css: previous dark-theme sponsor hover treatment was not restored")
     focus_rule = re.search(r"\.pt-viewport:focus-visible\s*\{([^{}]*)\}", css)
     require(bool(focus_rule) and "outline:" in focus_rule.group(1) and
             not re.search(r"outline\s*:\s*(0|none)", focus_rule.group(1)),
@@ -123,8 +107,9 @@ def main() -> int:
     generator = (ROOT / "utils.jl").read_text(encoding="utf-8")
     require("pt-arrow" not in generator, "utils.jl: partner arrow markup remains")
     for attribute in ("tabindex=\"0\"", "aria-keyshortcuts=\"ArrowLeft ArrowRight\"",
-                      "aria-describedby", "pt-logo-frame", "draggable=\"false\""):
+                      "aria-describedby", "draggable=\"false\""):
         require(attribute in generator, f"utils.jl: partner markup lacks {attribute}")
+    require("pt-logo-frame" not in generator, "utils.jl: sponsor logo frame markup remains")
 
     controller = (ROOT / "_assets" / "js" / "partners.js").read_text(encoding="utf-8")
     for obsolete in (".pt-prev", ".pt-next"):
