@@ -1411,6 +1411,37 @@ $(isempty(links) ? "" : """<div class="pi-chips">""" * join(links, "") * "</div>
 """
 end
 
+"""Compact, data-driven identity rows used only by profile layout D."""
+function person_header_identity(p)
+    links = person_links(p)
+    topic = String(get(p, "topic_" * lang(), get(p, "topic_en", "")))
+    topic_parts = if isempty(topic)
+        String[]
+    elseif lang() == "zh"
+        [strip(String(part)) for part in split(topic, r"[、與]") if !isempty(strip(String(part)))]
+    else
+        [strip(String(part)) for part in split(topic, r",\s*|\s+and\s+") if !isempty(strip(String(part)))]
+    end
+    expertise = if isempty(topic_parts)
+        ""
+    else
+        items = join([
+            """<span class="profile-expertise-item" role="listitem">$(esc(part))</span>"""
+            for part in topic_parts
+        ], "")
+        """<span class="profile-header-divider" aria-hidden="true">|</span><span class="profile-expertise-label" id="profile-header-expertise-label">$(esc(ui("people", "expertise")))</span><span class="profile-expertise" role="list" aria-labelledby="profile-header-expertise-label">$(items)</span>"""
+    end
+    return """
+<div class="profile-header-details">
+  <p class="profile-header-summary"><span class="profile-role">$(esc(pick(p, "role")))</span>$(expertise)</p>
+$(isempty(links) ? "" : """  <div class="pi-chips">""" * join(links, "") * "</div>")
+</div>
+<figure class="pi-portrait-frame">
+  <img class="pi-portrait" src="$(esc(get(p, "photo", "/assets/img/team/placeholder.svg")))" alt="$(esc(pick(p, "name")))">
+</figure>
+"""
+end
+
 """
 `{{person_header}}` — the page header band: breadcrumb, name and rule.
 
@@ -1431,7 +1462,7 @@ function hfun_person_header()
       <div class="pi-rule"></div>
     </div>
     <aside class="profile-header-identity" aria-label="$(esc(pick(p, "name")))">
-$(hfun_person_portrait())
+$(person_header_identity(p))
     </aside>
   </div>
 </header>

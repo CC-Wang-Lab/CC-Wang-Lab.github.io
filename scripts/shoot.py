@@ -259,7 +259,7 @@ window.addEventListener("load", function () {
       }
     }
     var noteTextSelector = [
-      ".page-hd p", ".section-head p", ".page-narrow p", ".pi-body p",
+      ".page-hd p:not(.profile-header-summary)", ".section-head p", ".page-narrow p", ".pi-body p",
       ".pub-theme p", ".pub-theme li", ".profile-narrative p",
       ".form-col > p", ".pg-scope", ".project-body > p:not(:has(img, picture, video))",
       ".project-body > :is(ul, ol) > li", ".project-body > blockquote"
@@ -342,6 +342,19 @@ window.addEventListener("load", function () {
       var profileName = document.querySelector(".person-hd .pi-heading");
       var profileIdentity = profileShell.querySelector(".profile-identity");
       var profileHeaderIdentity = document.querySelector(".profile-header-identity");
+      var profileHeaderPortrait = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".pi-portrait-frame") : null;
+      var profileHeaderRule = document.querySelector(".person-hd .pi-rule");
+      var profileHeaderDetailsNode = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-header-details") : null;
+      var profileHeaderSummary = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-header-summary") : null;
+      var profileHeaderRole = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-role") : null;
+      var profileHeaderExpertise = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-expertise") : null;
+      var profileHeaderContacts = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".pi-chips") : null;
       var profileNarrative = profileShell.querySelector(".profile-narrative");
       var profileRecord = profileShell.querySelector(".profile-record");
       var profileRole = profileShell.querySelector(".profile-role");
@@ -356,7 +369,10 @@ window.addEventListener("load", function () {
       var profileCompareFlag = profileRoot.getAttribute("data-profile-layout-compare");
       var visibleProfileIdentity = profileExpected === "header" ?
         profileHeaderIdentity : profileIdentity;
-      var profileRects = [visibleProfileIdentity, profileNarrative, profileRecord]
+      var profileRects = (profileExpected === "header" ?
+        [profileHeaderPortrait, profileHeaderSummary, profileHeaderContacts,
+         profileNarrative, profileRecord] :
+        [visibleProfileIdentity, profileNarrative, profileRecord])
         .filter(Boolean).map(function (node) { return node.getBoundingClientRect(); });
       function rectanglesOverlap(a, b) {
         return Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
@@ -371,8 +387,25 @@ window.addEventListener("load", function () {
         }
       }
       var profileMobileOrder = true;
-      if (window.innerWidth <= 991.98 && profileName && visibleProfileIdentity &&
-          profileNarrative && profileRecord) {
+      if (window.innerWidth <= 991.98 && profileExpected === "header") {
+        if (profileName && profileHeaderSummary && profileHeaderContacts &&
+            profileHeaderPortrait && profileNarrative && profileRecord) {
+          var mobileNameRect = profileName.getBoundingClientRect();
+          var mobileSummaryRect = profileHeaderSummary.getBoundingClientRect();
+          var mobileContactsRect = profileHeaderContacts.getBoundingClientRect();
+          var mobilePortraitRect = profileHeaderPortrait.getBoundingClientRect();
+          var mobileNarrativeRect = profileNarrative.getBoundingClientRect();
+          var mobileRecordRect = profileRecord.getBoundingClientRect();
+          profileMobileOrder = mobileNameRect.bottom <= mobileSummaryRect.top + 1 &&
+            mobileSummaryRect.bottom <= mobileContactsRect.top + 1 &&
+            mobileContactsRect.bottom <= mobilePortraitRect.top + 1 &&
+            mobilePortraitRect.bottom <= mobileNarrativeRect.top + 1 &&
+            mobileNarrativeRect.bottom <= mobileRecordRect.top + 1;
+        } else {
+          profileMobileOrder = false;
+        }
+      } else if (window.innerWidth <= 991.98 && profileName && visibleProfileIdentity &&
+                 profileNarrative && profileRecord) {
         var nameRect = profileName.getBoundingClientRect();
         var identityRect = visibleProfileIdentity.getBoundingClientRect();
         var narrativeRect = profileNarrative.getBoundingClientRect();
@@ -383,6 +416,60 @@ window.addEventListener("load", function () {
       }
       var expectedNameToken = profileExpected === "dossier" ? "--fs-2xl" :
         (profileExpected === "narrative" ? "--fs-4xl" : "--fs-3xl");
+      var headerDetails = {
+        present: true,
+        desktopTwoRows: true,
+        ruleHidden: true,
+        domOrderValid: true,
+        expertiseWrapsOnNarrow: true,
+        expertiseListSemantics: true
+      };
+      if (profileExpected === "header") {
+        headerDetails.present = !!profileHeaderPortrait && !!profileHeaderSummary &&
+          !!profileHeaderRole && !!profileHeaderContacts;
+        headerDetails.ruleHidden = !!profileHeaderRule &&
+          getComputedStyle(profileHeaderRule).display === "none";
+        headerDetails.domOrderValid = !!profileHeaderDetailsNode && !!profileHeaderPortrait &&
+          !!(profileHeaderDetailsNode.compareDocumentPosition(profileHeaderPortrait) &
+             Node.DOCUMENT_POSITION_FOLLOWING);
+        var expertiseItems = profileHeaderExpertise ?
+          profileHeaderExpertise.querySelectorAll('[role="listitem"]') : [];
+        headerDetails.expertiseListSemantics = !profileHeaderExpertise ||
+          (profileHeaderExpertise.getAttribute("role") === "list" &&
+           expertiseItems.length >= 1);
+        if (profileHeaderExpertise && window.innerWidth <= 991.98) {
+          var expertiseStyle = getComputedStyle(profileHeaderExpertise);
+          headerDetails.expertiseWrapsOnNarrow = expertiseStyle.flexWrap === "wrap" &&
+            expertiseStyle.minWidth === "0px" &&
+            profileHeaderExpertise.scrollWidth <= profileHeaderExpertise.clientWidth + 1;
+        }
+        if (headerDetails.present && window.innerWidth > 991.98) {
+          var headerNameRect = profileName.getBoundingClientRect();
+          var headerPortraitRect = profileHeaderPortrait.getBoundingClientRect();
+          var headerSummaryRect = profileHeaderSummary.getBoundingClientRect();
+          var headerContactsRect = profileHeaderContacts.getBoundingClientRect();
+          var headerRoleRect = profileHeaderRole.getBoundingClientRect();
+          var headerContactLinks = profileHeaderContacts.querySelectorAll(".pi-chip");
+          var contactTop = headerContactLinks.length ?
+            headerContactLinks[0].getBoundingClientRect().top : headerContactsRect.top;
+          var contactsShareRow = Array.prototype.every.call(headerContactLinks, function (link) {
+            return Math.abs(link.getBoundingClientRect().top - contactTop) <= 1;
+          });
+          var expertiseRect = profileHeaderExpertise ?
+            profileHeaderExpertise.getBoundingClientRect() : null;
+          var expertiseSharesRow = !expertiseRect ||
+            Math.min(expertiseRect.bottom, headerRoleRect.bottom) -
+              Math.max(expertiseRect.top, headerRoleRect.top) > 1;
+          headerDetails.desktopTwoRows =
+            headerSummaryRect.top >= headerNameRect.bottom - 1 &&
+            Math.abs(headerSummaryRect.left - headerNameRect.left) <= 2 &&
+            headerContactsRect.top >= headerSummaryRect.bottom - 1 &&
+            Math.abs(headerContactsRect.left - headerNameRect.left) <= 2 &&
+            headerPortraitRect.left > headerSummaryRect.left &&
+            headerPortraitRect.top <= headerSummaryRect.top &&
+            expertiseSharesRow && contactsShareRow;
+        }
+      }
       var interaction = { tested: false, passed: true };
       if (profileChoices.length === 4) {
         var alternative = Array.prototype.find.call(profileChoices, function (choice) {
@@ -427,6 +514,7 @@ window.addEventListener("load", function () {
           profileHeaderIdentity.querySelector(".pi-portrait-frame").getBoundingClientRect().width : 0,
         headerIdentityInsideHeader: profileExpected !== "header" ||
           (!!profileHeaderIdentity && !!profileHeaderIdentity.closest(".person-hd")),
+        headerDetails: headerDetails,
         nameFont: profileName ? parseFloat(getComputedStyle(profileName).fontSize) : 0,
         expectedNameFont: tokenSize(expectedNameToken),
         roleFont: profileRole ? parseFloat(getComputedStyle(profileRole).fontSize) : 0,
@@ -645,6 +733,8 @@ for layout in ("editorial", "dossier", "narrative", "header"):
     ))
 
 MATRIX.extend([
+    ("/people/maysam-gholampour/?profile-layout=header", 492, "light",
+     "expertise-heavy header profile wrapping on mobile"),
     ("/people/cc-wang/", 492, "light", "normal profile visit shows all four layout controls"),
     ("/people/cc-wang/?profile-layout=invalid", 492, "light", "invalid profile query falls back safely"),
     ("/profile-designs/", 492, "light", "English profile comparison hub on mobile"),
@@ -944,6 +1034,19 @@ def main():
                         flags.append("mode-D portrait exceeds the 180px target")
                     if not profile.get("headerIdentityInsideHeader"):
                         flags.append("mode-D identity is not inside the profile header")
+                    header_details = profile.get("headerDetails", {})
+                    if not header_details.get("present"):
+                        flags.append("mode-D role/contact rows are missing")
+                    if not header_details.get("desktopTwoRows"):
+                        flags.append("mode-D details are not two rows beneath the name")
+                    if not header_details.get("ruleHidden"):
+                        flags.append("mode-D title accent rule is still visible")
+                    if not header_details.get("domOrderValid"):
+                        flags.append("mode-D DOM does not order details before portrait")
+                    if not header_details.get("expertiseWrapsOnNarrow"):
+                        flags.append("mode-D expertise cannot wrap safely on narrow screens")
+                    if not header_details.get("expertiseListSemantics"):
+                        flags.append("mode-D expertise lacks list semantics")
                 for label, actual_key, expected_key in (
                     ("name", "nameFont", "expectedNameFont"),
                     ("role", "roleFont", "expectedRoleFont"),

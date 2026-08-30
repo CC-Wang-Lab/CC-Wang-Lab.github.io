@@ -184,8 +184,12 @@ session storage.
 The four layouts use the existing typography ladder rather than new sizes: Editorial names use
 `--fs-3xl`, Dossier names `--fs-2xl`, Narrative-first names `--fs-4xl`, roles `--fs-lg`, narrative
 copy `--fs-md`, narrative headings `--fs-xl`, fact values `--fs-sm`, and fact labels `--fs-xs`.
-Header profile uses a `--fs-3xl` name and caps its portrait at 180px on wide screens. ET Book,
-Noto Serif TC, the color system and the 44px control minimum remain unchanged.
+Header profile uses a `--fs-3xl` name and caps its portrait at 180px on wide screens. Its role and
+pipe-separated expertise sit in one row beneath the name, followed by one row of contact controls;
+the portrait remains at the right. The usual short title rule is omitted in this mode so the two
+identity rows form the name's visual anchor. These rows wrap safely before the header stacks on
+narrow screens. ET Book, Noto Serif TC, the color system and the 44px control minimum remain
+unchanged.
 
 Page-header notes, section introductions and prose notes now follow the full width available in
 their content container instead of a separate 74ch cap. They remain justified at every viewport,

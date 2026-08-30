@@ -229,6 +229,8 @@ scholar_en      = "Google Scholar"
 scholar_zh      = "Google Scholar"
 nycu_hub_en     = "NYCU Academic Hub"
 nycu_hub_zh     = "陽明交大學術成果網"
+expertise_en    = "Expertise in"
+expertise_zh    = "專長"
 
 [profile_layout]
 switcher_en     = "Profile design"

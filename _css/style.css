@@ -1238,30 +1238,70 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .profile-layout:not(:has(.person-facts)) .profile-record { display: none; }
 
-/* D — a compact identity rail inside the page header. The body copy remains
-   one semantic source; its ordinary identity block is hidden only in D. */
+/* D — the name and two compact identity rows share the left side of the page
+   header while the portrait stays at the right. The body copy remains one
+   semantic source; its ordinary identity block is hidden only in D. */
 [data-profile-layout="header"] .person-hd .container {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 18rem);
-  grid-template-areas: "copy identity";
+  grid-template-columns: minmax(0, 1fr) 180px;
+  grid-template-areas:
+    "copy portrait"
+    "details portrait";
   align-items: start;
-  gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+  column-gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+  row-gap: 0.9rem;
 }
 [data-profile-layout="header"] .person-hd-copy { grid-area: copy; }
+[data-profile-layout="header"] .person-hd .pi-rule { display: none; }
 [data-profile-layout="header"] .profile-header-identity {
-  display: block;
-  grid-area: identity;
-  width: 100%;
-  justify-self: end;
+  display: contents;
 }
 [data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
+  grid-area: portrait;
+  width: 100%;
   max-width: 180px;
   margin-left: auto;
 }
-[data-profile-layout="header"] .profile-header-identity .profile-role-block,
+[data-profile-layout="header"] .profile-header-details {
+  grid-area: details;
+  min-width: 0;
+}
+[data-profile-layout="header"] .profile-header-summary {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  text-align: left;
+  white-space: nowrap;
+}
+[data-profile-layout="header"] .profile-header-summary .profile-role {
+  flex: 0 0 auto;
+}
+[data-profile-layout="header"] .profile-expertise {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+[data-profile-layout="header"] .profile-expertise-label {
+  color: var(--bs-body-color);
+}
+[data-profile-layout="header"] .profile-header-divider {
+  color: var(--lab-accent);
+}
+[data-profile-layout="header"] .profile-expertise-item + .profile-expertise-item::before {
+  content: "|";
+  margin-right: 0.5rem;
+  color: var(--lab-accent);
+}
 [data-profile-layout="header"] .profile-header-identity .pi-chips {
-  max-width: 18rem;
-  margin-left: auto;
+  flex-wrap: nowrap;
+  max-width: none;
+  margin-top: 0.65rem;
 }
 [data-profile-layout="header"] .profile-layout,
 [data-profile-layout="header"] .profile-layout:not(:has(.person-facts)) {
@@ -1338,6 +1378,29 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .profile-record { width: 100%; }
   .pi-portrait-frame { max-width: 220px; }
   .pi-chips { max-width: none; }
+  [data-profile-layout="header"] .person-hd .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "details"
+      "portrait";
+  }
+  [data-profile-layout="header"] .profile-header-summary,
+  [data-profile-layout="header"] .profile-header-identity .pi-chips {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+  [data-profile-layout="header"] .profile-expertise {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+  [data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
+    max-width: 150px;
+    margin: 0;
+  }
 }
 
 @media (max-width: 767.98px) {
@@ -1346,25 +1409,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .profile-switcher-options { width: 100%; }
   .profile-layout-choice { padding-inline: 0.45rem; }
   .profile-design-links { grid-template-columns: 1fr; }
-  [data-profile-layout="header"] .person-hd .container {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "copy"
-      "identity";
-  }
-  [data-profile-layout="header"] .profile-header-identity {
-    justify-self: start;
-    max-width: 100%;
-  }
-  [data-profile-layout="header"] .profile-header-identity .pi-portrait-frame {
-    max-width: 150px;
-    margin-left: 0;
-  }
-  [data-profile-layout="header"] .profile-header-identity .profile-role-block,
-  [data-profile-layout="header"] .profile-header-identity .pi-chips {
-    max-width: none;
-    margin-left: 0;
-  }
 }
 
 /* --------------------------------------------------------------------------
