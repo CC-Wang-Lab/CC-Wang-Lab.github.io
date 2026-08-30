@@ -70,3 +70,11 @@ Export-Crop -Slide 17 -Geometry '540x166+720+518' -RelativePath 'refrigerant-lub
 Export-Crop -Slide 18 -Geometry '270x408+54+125' -RelativePath 'liquid-desiccant-air-conditioning-system\rig-front-view.jpg'
 Export-Crop -Slide 18 -Geometry '811x426+469+64' -RelativePath 'liquid-desiccant-air-conditioning-system\perspective-system-diagram.png' -Erase 'rectangle 0,0 22,28'
 Export-Crop -Slide 18 -Geometry '258x169+60+360' -RelativePath 'liquid-desiccant-air-conditioning-system\process-flow-diagram.png'
+
+Export-Crop -Slide 28 -Geometry '562x398+79+167' -RelativePath 'carvera-desktop-cnc\cnc-machine.jpg'
+
+Export-Crop -Slide 29 -Geometry '378x402+57+184' -RelativePath 'fabrication-and-microscopy-equipment\3d-printer.jpg'
+Export-Crop -Slide 29 -Geometry '316x402+490+184' -RelativePath 'fabrication-and-microscopy-equipment\microscope-1.jpg'
+Export-Crop -Slide 29 -Geometry '331x402+860+184' -RelativePath 'fabrication-and-microscopy-equipment\microscope-2.jpg'
+
+Export-Crop -Slide 30 -Geometry '548x411+45+170' -RelativePath 'amca-wind-tunnel\wind-tunnel-environmental-room.jpg'

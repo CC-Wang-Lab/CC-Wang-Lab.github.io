@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 import sys
 import tomllib
+from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -27,11 +28,19 @@ EXPECTED = {
         "vapor-compression-cooling-system": ([16], "b", "hvacr", 2),
         "refrigerant-lubricant-boiling-system": ([17], "c", "two-phase", 3),
         "liquid-desiccant-air-conditioning-system": ([18], "a", "hvacr", 3),
+        "carvera-desktop-cnc": ([28], "b", "electronics-cooling", 1),
+        "fabrication-and-microscopy-equipment": ([29], "c", "electronics-cooling", 3),
+        "amca-wind-tunnel": ([30], "a", "heat-exchangers", 1),
     },
     "project": {},
 }
 
 PLURAL = {"facility": "facilities", "project": "projects"}
+EXPECTED_COUNTS = {"facility": 14, "project": 0}
+EXPECTED_LAYOUTS = {
+    "facility": {"a": 5, "b": 4, "c": 5},
+    "project": {},
+}
 
 
 class Page(HTMLParser):
@@ -78,6 +87,20 @@ def main() -> int:
 
     for kind, expected_records in EXPECTED.items():
         records = load_records(kind)
+        imported_records = {
+            record_id: record
+            for record_id, record in records.items()
+            if isinstance(record.get("source_slides"), list)
+        }
+        require(len(imported_records) == EXPECTED_COUNTS[kind],
+                f"expected {EXPECTED_COUNTS[kind]} imported {PLURAL[kind]}, "
+                f"found {len(imported_records)}")
+        require(set(imported_records) == set(expected_records),
+                f"{kind} imported record IDs do not match the literal manifest")
+        layouts = Counter(record.get("layout") for record in imported_records.values())
+        require(dict(sorted(layouts.items())) == EXPECTED_LAYOUTS[kind],
+                f"{kind} layout counts: expected {EXPECTED_LAYOUTS[kind]!r}, "
+                f"found {dict(sorted(layouts.items()))!r}")
         for record_id, (slides, layout, area, figure_count) in expected_records.items():
             record = records.get(record_id)
             if record is None:

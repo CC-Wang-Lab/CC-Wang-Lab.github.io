@@ -471,6 +471,107 @@ caption_en = ""
 caption_zh = ""
 
 [[item]]
+id       = "carvera-desktop-cnc"
+area     = "electronics-cooling"
+image    = "/assets/img/test-setups/carvera-desktop-cnc/cnc-machine.jpg"
+image_fit = "contain"
+layout   = "b"
+source_slides = [28]
+title_en = "MAKEAR Carvera Desktop CNC Machine"
+title_zh = "MAKEAR Carvera Desktop CNC Machine"
+lead_en  = "Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+lead_zh  = "Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+body_en  = "Description: Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+body_zh  = "Description: Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+
+[[item.section]]
+items_en = [
+  "Status: On standby",
+  "Dimensions: 57.9 × 52.1 × 54.1 cm",
+  "Weight: Approx. 50 kg",
+  "Spindle power: 200 W",
+  "Spindle speed: 0–15,000 rpm",
+  "Link to detailed information:",
+  "https://www.kidentech.com/carvera",
+]
+items_zh = [
+  "Status: On standby",
+  "Dimensions: 57.9 × 52.1 × 54.1 cm",
+  "Weight: Approx. 50 kg",
+  "Spindle power: 200 W",
+  "Spindle speed: 0–15,000 rpm",
+  "Link to detailed information:",
+  "https://www.kidentech.com/carvera",
+]
+
+[[item.figure]]
+id         = "cnc-machine"
+kind       = "photo"
+image      = "/assets/img/test-setups/carvera-desktop-cnc/cnc-machine.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "fabrication-and-microscopy-equipment"
+area     = "electronics-cooling"
+image    = "/assets/img/test-setups/fabrication-and-microscopy-equipment/3d-printer.jpg"
+image_fit = "contain"
+layout   = "c"
+source_slides = [29]
+title_en = "Fabrication and microscopy equipment"
+title_zh = "Fabrication and microscopy equipment"
+lead_en  = "3D Printer"
+lead_zh  = "3D Printer"
+body_en  = "3D Printer"
+body_zh  = "3D Printer"
+
+[[item.figure]]
+id         = "3d-printer"
+kind       = "photo"
+image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/3d-printer.jpg"
+caption_en = "3D Printer"
+caption_zh = "3D Printer"
+
+[[item.figure]]
+id         = "microscope-1"
+kind       = "photo"
+image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/microscope-1.jpg"
+caption_en = "Microscope"
+caption_zh = "Microscope"
+
+[[item.figure]]
+id         = "microscope-2"
+kind       = "photo"
+image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/microscope-2.jpg"
+caption_en = "Microscope"
+caption_zh = "Microscope"
+
+[[item]]
+id       = "amca-wind-tunnel"
+area     = "heat-exchangers"
+image    = "/assets/img/test-setups/amca-wind-tunnel/wind-tunnel-environmental-room.jpg"
+image_fit = "contain"
+layout   = "a"
+source_slides = [30]
+title_en = "AMCA WIND TUNNEL+Environmental Control Room"
+title_zh = "AMCA WIND TUNNEL+Environmental Control Room"
+lead_en  = "Ambient control 10-30 DB, 15-25 WB"
+lead_zh  = "Ambient control 10-30 DB, 15-25 WB"
+body_en  = "Ambient control 10-30 DB, 15-25 WB"
+body_zh  = "Ambient control 10-30 DB, 15-25 WB"
+
+[[item.section]]
+body_en = "The LW-4900 AMCA wind tunnel operates under controlled environmental conditions, including temperature, cooling, heating, and humidity. Airflow is supplied by a compressed-air-assisted fan system and adjusted using selectable nozzles. The airflow rate is determined from the measured pressure drop and covers a range of 40–1,107 CFM. Operating data are captured and recorded using the LW9015M data acquisition program."
+body_zh = "The LW-4900 AMCA wind tunnel operates under controlled environmental conditions, including temperature, cooling, heating, and humidity. Airflow is supplied by a compressed-air-assisted fan system and adjusted using selectable nozzles. The airflow rate is determined from the measured pressure drop and covers a range of 40–1,107 CFM. Operating data are captured and recorded using the LW9015M data acquisition program."
+
+[[item.figure]]
+id         = "wind-tunnel-environmental-room"
+kind       = "photo"
+image      = "/assets/img/test-setups/amca-wind-tunnel/wind-tunnel-environmental-room.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
 id       = "placeholder-facility-1"
 placeholder = true
 area     = "two-phase"
