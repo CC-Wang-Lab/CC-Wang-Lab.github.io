@@ -112,6 +112,7 @@
   --lh-snug: 1.25;
   --lh-normal: 1.55;
   --lh-ui: 1.35;
+  --measure: 74ch;
 
   /* Tracking - 3 tokens replacing 7 ad-hoc values (0.01 to 0.14em). */
   --tracking-eyebrow: 0.1em;
@@ -2109,6 +2110,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .setup-study-copy {
   grid-area: copy;
   min-width: 0;
+  max-width: var(--measure);
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
 }
@@ -2175,9 +2177,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   grid-template-areas:
     "copy"
     "figures";
-}
-.setup-study--b .setup-study-copy {
-  max-width: var(--measure);
 }
 .setup-study--b .setup-study-figures {
   grid-template-columns: repeat(4, minmax(0, 1fr));

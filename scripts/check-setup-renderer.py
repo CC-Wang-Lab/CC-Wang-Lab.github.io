@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import sys
+import re
+import subprocess
 from html.parser import HTMLParser
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
+CSS_SOURCE = ROOT / "_css" / "style.css"
 EXPECTED = {
     "id": "falling-film-cooling-system",
     "layout": "c",
@@ -60,6 +63,48 @@ def parse(path: Path) -> tuple[str, Page]:
     return source, page
 
 
+def css_rule(css: str, selector: str) -> str:
+    match = re.search(rf"{re.escape(selector)}\s*\{{([^}}]*)\}}", css, re.DOTALL)
+    return match.group(1) if match else ""
+
+
+def renderer_contract_failures() -> list[str]:
+    failures: list[str] = []
+    css = CSS_SOURCE.read_text(encoding="utf-8")
+    if "--measure: 74ch;" not in css:
+        failures.append("CSS must define --measure as the 74ch narrative width")
+    if "max-width: var(--measure);" not in css_rule(css, ".setup-study-copy"):
+        failures.append("shared setup-study copy must cap narrative width at --measure")
+
+    section_cases = (
+        (
+            "localized",
+            'include("utils.jl"); locvar(::Symbol) = "zh"; '
+            'render_setup_sections(Dict{String, Any}("section" => '
+            'Any[Dict{String, Any}("items_en" => Any["valid"], '
+            '"items_zh" => Any["   "])]))',
+        ),
+        (
+            "fallback",
+            'include("utils.jl"); locvar(::Symbol) = "zh"; '
+            'render_setup_sections(Dict{String, Any}("section" => '
+            'Any[Dict{String, Any}("items_en" => Any["   "])]))',
+        ),
+    )
+    for label, code in section_cases:
+        result = subprocess.run(
+            ["julia", "--project=.", "-e", code],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        output = result.stdout + result.stderr
+        if result.returncode == 0 or "blank" not in output.lower():
+            failures.append(f"{label} blank section item must fail renderer validation")
+    return failures
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -67,6 +112,7 @@ def main() -> int:
         if not condition:
             failures.append(message)
 
+    failures.extend(renderer_contract_failures())
     canonical_href = f"/facilities/{EXPECTED['id']}/"
     sitemap_path = SITE / "sitemap.xml"
     sitemap = sitemap_path.read_text(encoding="utf-8") if sitemap_path.is_file() else ""

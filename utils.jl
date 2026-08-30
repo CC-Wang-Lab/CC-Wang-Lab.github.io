@@ -929,7 +929,11 @@ function render_setup_sections(record::AbstractDict)
     for section in get(record, "section", Any[])
         heading = strip(pick(section, "heading"))
         body = strip(pick(section, "body"))
-        items = get(section, "items_" * lang(), get(section, "items_en", Any[]))
+        items_key = "items_" * lang()
+        items = get(section, items_key, get(section, "items_en", Any[]))
+        items isa AbstractVector || error("section '$items_key' must be an array")
+        any(item -> isempty(strip(string(item))), items) &&
+            error("section '$items_key' must not contain blank items")
         heading_html = isempty(heading) ? "" : "<h2>$(esc(heading))</h2>"
         body_html = isempty(body) ? "" : "<p>$(esc(body))</p>"
         items_html = isempty(items) ? "" :
