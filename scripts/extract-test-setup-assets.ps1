@@ -37,6 +37,18 @@ function Export-Crop {
 Export-Crop -Slide 3 -Geometry '370x324+106+70' -RelativePath 'gaming-laptop-hybrid-vapor-chamber\upper-experimental-system.jpg'
 Export-Crop -Slide 3 -Geometry '370x278+106+414' -RelativePath 'gaming-laptop-hybrid-vapor-chamber\lower-experimental-system.jpg'
 
+Export-Crop -Slide 4 -Geometry '357x522+96+108' -RelativePath 'two-phase-closed-loop-thermosyphon\system-apparatus.jpg'
+Export-Crop -Slide 4 -Geometry '264x266+547+448' -RelativePath 'two-phase-closed-loop-thermosyphon\glass-visualization-chamber.jpg'
+Export-Crop -Slide 4 -Geometry '362x264+859+448' -RelativePath 'two-phase-closed-loop-thermosyphon\filling-ratio-levels.png'
+
+Export-Crop -Slide 5 -Geometry '368x311+57+144' -RelativePath 'chip-package-lid-thermal-spreading\vapor-chamber-schematic.png'
+Export-Crop -Slide 5 -Geometry '147x308+427+145' -RelativePath 'chip-package-lid-thermal-spreading\vapor-chamber-sample.jpg'
+Export-Crop -Slide 5 -Geometry '279x195+101+460' -RelativePath 'chip-package-lid-thermal-spreading\diamond-copper-composite.jpg'
+Export-Crop -Slide 5 -Geometry '194x195+379+460' -RelativePath 'chip-package-lid-thermal-spreading\pure-copper-plate.jpg'
+Export-Crop -Slide 6 -Geometry '510x364+66+276' -RelativePath 'chip-package-lid-thermal-spreading\experimental-setup.jpg'
+Export-Crop -Slide 6 -Geometry '293x271+618+363' -RelativePath 'chip-package-lid-thermal-spreading\thermal-map-tmax-60c.png'
+Export-Crop -Slide 6 -Geometry '305x272+911+362' -RelativePath 'chip-package-lid-thermal-spreading\thermal-map-tmax-55-4c.png'
+
 Export-Crop -Slide 7 -Geometry '419x559+89+101' -RelativePath 'thermal-fin-natural-convection-chamber\chamber.jpg'
 Export-Crop -Slide 8 -Geometry '960x333+160+91' -RelativePath 'air-cooler-wind-tunnel\wind-tunnel.jpg'
 
@@ -59,6 +71,9 @@ Export-Crop -Slide 13 -Geometry '272x117+185+476' -RelativePath 'boiler-surface-
 Export-Crop -Slide 13 -Geometry '272x117+185+595' -RelativePath 'boiler-surface-test-rig\acid-etched.jpg'
 Export-Crop -Slide 13 -Geometry '692x417+578+70' -RelativePath 'boiler-surface-test-rig\test-schematic.png'
 Export-Crop -Slide 13 -Geometry '267x184+844+528' -RelativePath 'boiler-surface-test-rig\test-rig.jpg'
+
+Export-Crop -Slide 14 -Geometry '505x378+22+260' -RelativePath 'heat-pipes-freezing-conditions\freezing-chamber.jpg'
+Export-Crop -Slide 14 -Geometry '611x281+552+158' -RelativePath 'heat-pipes-freezing-conditions\heat-pipe-apparatus.jpg'
 
 Export-Crop -Slide 15 -Geometry '604x452+8+168' -RelativePath 'three-kilowatt-cold-plate-test-facility\rig.jpg'
 Export-Crop -Slide 15 -Geometry '651x368+629+204' -RelativePath 'three-kilowatt-cold-plate-test-facility\flow-diagram.png'

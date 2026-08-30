@@ -32,14 +32,19 @@ EXPECTED = {
         "fabrication-and-microscopy-equipment": ([29], "c", "electronics-cooling", 3),
         "amca-wind-tunnel": ([30], "a", "heat-exchangers", 1),
     },
-    "project": {},
+    "project": {
+        "gaming-laptop-hybrid-vapor-chamber": ([3], "a", "electronics-cooling", 2),
+        "two-phase-closed-loop-thermosyphon": ([4], "b", "two-phase", 3),
+        "chip-package-lid-thermal-spreading": ([5, 6], "c", "electronics-cooling", 7),
+        "heat-pipes-freezing-conditions": ([14], "a", "two-phase", 2),
+    },
 }
 
 PLURAL = {"facility": "facilities", "project": "projects"}
-EXPECTED_COUNTS = {"facility": 14, "project": 0}
+EXPECTED_COUNTS = {"facility": 14, "project": 4}
 EXPECTED_LAYOUTS = {
     "facility": {"a": 5, "b": 4, "c": 5},
-    "project": {},
+    "project": {"a": 2, "b": 1, "c": 1},
 }
 
 
@@ -64,7 +69,7 @@ def load_records(kind: str) -> dict[str, dict]:
         data = tomllib.load(handle)
     return {
         record.get("id", ""): record
-        for record in data.get("item", [])
+        for record in data.get("item" if kind == "facility" else "project", [])
         if not record.get("placeholder")
     }
 
