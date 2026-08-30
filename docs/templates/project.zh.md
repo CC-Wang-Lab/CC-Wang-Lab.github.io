@@ -1,6 +1,6 @@
 +++
-title = "範例 — 專案名稱"
-project = "placeholder-project"
+title = "專案名稱"
+project = "your-project-id"
 lang = "zh"
 +++
 
@@ -21,7 +21,7 @@ lang = "zh"
 建置或模擬了什麼。量測哪些量、使用什麼儀器。並附上照片：
 
 ```markdown
-![](/assets/img/projects/placeholder-project/rig.jpg)
+![](/assets/img/projects/your-project-id/rig.jpg)
 ```
 
 影像檔請放在 `_assets/img/projects/<本專案 id>/`。

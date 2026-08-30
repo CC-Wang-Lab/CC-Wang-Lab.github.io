@@ -1,6 +1,6 @@
 +++
 title = "Home"
-descr = "Experimental and computational thermal engineering at National Yang Ming Chiao Tung University: electronics cooling, data-center thermal management, boiling heat transfer and HVAC&R."
+descr = "The CC Wang Lab conducts experimental and computational research in electronics cooling, data-center thermal management, boiling heat transfer, heat exchangers and HVAC&R."
 lang = "en"
 +++
 

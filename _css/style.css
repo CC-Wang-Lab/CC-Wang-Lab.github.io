@@ -129,24 +129,6 @@
   --pad-partners-top: clamp(3rem, 2.648rem + 1.502vw, 4rem);
   --map-height: clamp(16rem, 55vw, 21.25rem);
 
-  /* ONE prose measure for the whole site.
-     Three different widths were in play before this: .page-hd p at 54ch,
-     .section-head at 46rem and everything else at the full container. That is
-     why an intro paragraph wrapped early above cards that ran much wider.
-
-     `.page-hd p` was taken back OUT of this on 2026-08-20. Unifying the number
-     did not fix the symptom, because a page header sits above a body that runs
-     the full container, so 74ch still wrapped it 510px short. The reason is
-     written out at the `.page-hd p` rule itself.
-
-     Note that 74ch is not one pixel width. It scales with the element's font
-     size, so it is 810px at --fs-lg and 663px at --fs-md.
-
-     It is in `ch`, which scales with the font size. That is what lets --fs-md
-     be fluid without changing the characters per line, so the justified text
-     keeps the same word gaps at every width. */
-  --measure: 74ch;
-
   /* Text on an always-dark ground: hero, CTA band, news slider, motion toggle.
      Replaces 15 rgba(255,255,255,a) literals across 10 different alphas.
      Worst case measured over the hero ground #0b0b12: 7.25:1. */
@@ -342,7 +324,7 @@ a:hover { color: var(--lab-accent-hover); text-decoration: underline; }
 
 .section { padding: var(--pad-section) 0; }
 .section-alt { background: var(--lab-surface-2); }
-.section-head { max-width: var(--measure); margin-bottom: 2.5rem; }
+.section-head { max-width: none; margin-bottom: 2.5rem; }
 .section-head p { color: var(--lab-muted); margin-bottom: 0; }
 
 /* --------------------------------------------------------------------------
@@ -786,7 +768,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    -------------------------------------------------------------------------- */
 
 .pi-block { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; align-items: start; }
-.pi-body { max-width: var(--measure); }
+.pi-body { max-width: none; }
 .pi-photo img {
   width: 100%;
   border-radius: 0.9rem;
@@ -863,7 +845,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    Publications
    -------------------------------------------------------------------------- */
 
-.pub-theme { max-width: var(--measure); margin-bottom: 3rem; }
+.pub-theme { max-width: none; margin-bottom: 3rem; }
 .pub-theme h2 { border-bottom: 2px solid var(--lab-orange); padding-bottom: 0.4rem; display: inline-block; }
 .pub-list { padding-left: 1.4rem; margin-top: 1.2rem; }
 .pub { margin-bottom: 1rem; }
@@ -1014,23 +996,20 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    its first line is 119 of about 120 characters, so justification barely
    stretches it.
 
-   /about/ is the exception and needs nothing: its body is `.page-narrow` at
-   663px, but its lead is 71 characters and ends at about 780px on its own, so
-   a cap at 810px would never have bound anyway. */
+   Full-width note and prose blocks keep this justification at every viewport. */
 .page-hd p {
   color: var(--lab-muted);
   font-size: var(--fs-lg);
   margin-bottom: 0;
 }
 .page-body { padding: 3.5rem 0 5rem; }
-.page-narrow { max-width: var(--measure); }
+.page-narrow { max-width: none; }
 
-/* Project media keeps the full container width. Direct textual children use
-   the shared reading measure, so the page can carry expansive photography and
-   video without making its paragraphs run to roughly 130 characters. */
+/* Project media and direct textual children follow the same full container
+   width used by the project header. */
 .project-body { max-width: 100%; }
 .project-body > :where(h2, h3, h4, p, ul, ol, blockquote) {
-  max-width: var(--measure);
+  max-width: none;
 }
 .project-body > p:has(img, picture, video) { max-width: none; }
 .project-body > p:has(img, picture, video) img,
@@ -1042,12 +1021,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 /* --------------------------------------------------------------------------
-   A page per person
+   Profile pages
 
-   The arrangement asked for on 2026-08-20: the photograph and the narrative in
-   a narrow left column, the name and the checkable record in a wide right one.
-   There is no full-width header band - the name sits at the top of the right
-   column, where the facts under it read as its continuation.
+   Every design uses one document order: name, identity, narrative, record.
+   The query-selected desktop layouts only move those semantic regions in CSS;
+   copy, facts and accessibility order never change.
    -------------------------------------------------------------------------- */
 
 /* The photograph, framed like a card so it belongs to the same site. */
@@ -1095,46 +1073,48 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   text-decoration: none;
 }
 
-/* The bio under the photograph. Smaller than page prose, because it is a
-   sidebar to the record beside it, not the main reading. */
-.pi-bio {
-  margin-top: 1.9rem;
+.profile-role-block { margin-top: 1.25rem; }
+.profile-role {
+  margin: 0;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  color: var(--bs-body-color);
+}
+.profile-topic {
+  margin: 0.45rem 0 0;
   font-size: var(--fs-sm);
-  line-height: 1.6;
+  line-height: var(--lh-normal);
+  color: var(--lab-muted);
+}
+
+.profile-narrative {
+  max-width: none;
+  min-width: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
   text-align: justify;
 }
-.pi-bio h2 {
-  font-size: var(--fs-md);
-  font-style: italic;
-  margin: 1.8rem 0 0.5rem;
+.profile-narrative h2 {
+  font-size: var(--fs-xl);
+  margin: 2.35rem 0 0.65rem;
   text-align: left;
 }
-.pi-bio h2:first-child { margin-top: 0; }
-.pi-bio p { margin-bottom: 0.9rem; }
-
-.pi-eyebrow { margin-bottom: 0.45rem; }
+.profile-narrative h2:first-child { margin-top: 0; }
+.profile-narrative p { margin-bottom: 1rem; }
 
 /* The name block sits in the standard .page-hd band now, so it clears the
    navbar and reads like every other page header on the site. Only the pieces
    .page-hd does not already handle are set here. */
 .person-hd .project-crumb { margin-bottom: 1.1rem; }
 .person-hd .pi-heading { margin-bottom: 0.5rem; }
-.person-hd .pi-titles { margin-bottom: 1.1rem; max-width: none; }
 .person-hd .pi-rule { margin-bottom: 0; }
+.person-hd-copy { min-width: 0; }
 .pi-heading {
   color: var(--lab-accent);
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-3xl);
   line-height: 1.15;
   margin: 0 0 0.7rem;
 }
-.pi-titles {
-  font-size: var(--fs-md);
-  line-height: 1.6;
-  color: var(--bs-body-color);
-  margin-bottom: 1.2rem;
-  text-align: left;
-}
-.pi-topic { color: var(--lab-muted); }
 /* The short accent rule under the titles, which is what separates the name
    block from the table without a full-width line. */
 .pi-rule {
@@ -1161,10 +1141,118 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .person-row-name a { color: inherit; }
 .person-row-name a:hover { color: var(--lab-accent); }
 
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "narrative"
+    "record";
+  align-items: start;
+  gap: clamp(2rem, 1.648rem + 1.502vw, 3rem);
+}
+.profile-narrative { grid-area: narrative; }
+.profile-record { grid-area: record; min-width: 0; }
+
+.profile-layout:not(:has(.person-facts)) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "narrative";
+}
+.profile-layout:not(:has(.person-facts)) .profile-record { display: none; }
+
+/* The selected profile design places the name and two compact identity rows
+   in the page header while the portrait stays at the right. */
+.person-hd .container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  grid-template-areas:
+    "copy portrait"
+    "details portrait";
+  align-items: start;
+  column-gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+  row-gap: 0.9rem;
+}
+.person-hd-copy { grid-area: copy; }
+.person-hd .pi-rule { display: none; }
+.profile-header-identity { display: contents; }
+.profile-header-identity .pi-portrait-frame {
+  grid-area: portrait;
+  width: 100%;
+  max-width: 180px;
+  margin-left: auto;
+}
+.profile-header-details {
+  grid-area: details;
+  min-width: 0;
+}
+.profile-header-summary {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  text-align: left;
+  white-space: nowrap;
+}
+.profile-header-summary .profile-role {
+  flex: 0 0 auto;
+}
+.profile-expertise {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.profile-header-divider {
+  color: var(--lab-accent);
+}
+.profile-expertise-item + .profile-expertise-item::before {
+  content: "|";
+  margin-right: 0.5rem;
+  color: var(--lab-accent);
+}
+.profile-header-identity .pi-chips {
+  flex-wrap: nowrap;
+  max-width: none;
+  margin-top: 0.65rem;
+}
+
 @media (max-width: 991.98px) {
+  .profile-layout,
+  .profile-layout:not(:has(.person-facts)) {
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+  }
+  .profile-narrative,
+  .profile-record { width: 100%; }
   .pi-portrait-frame { max-width: 220px; }
   .pi-chips { max-width: none; }
-  .pi-heading { font-size: var(--fs-xl); }
+  .person-hd .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "details"
+      "portrait";
+  }
+  .profile-header-summary,
+  .profile-header-identity .pi-chips {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+  .profile-expertise {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+  .profile-header-identity .pi-portrait-frame {
+    max-width: 150px;
+    margin: 0;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1233,6 +1321,9 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .page-hd p,
 .section-head p,
 .pi-body p,
+.profile-topic,
+.pub-theme p,
+.pub-theme li,
 .card-scope,
 .person-row-topic,
 .news-body,
@@ -1315,15 +1406,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 /* --------------------------------------------------------------------------
    The inquiry form
 
-   THE WIDTH. The prose that used to sit here ran the full col-lg-7, about
-   745px, while every other page's prose runs at --measure, about 650px. That
-   was the last of the three widths this site used to have. The column keeps its
-   grid position; the content inside it stops at the same measure as everywhere
-   else, so the form and the page heading above it share one left edge and one
-   right edge.
+   The form follows the full width of its grid column, matching the full-width
+   lead and note policy used throughout the site.
    -------------------------------------------------------------------------- */
 
-.form-col { max-width: var(--measure); }
+.form-col { max-width: none; }
 /* --fs-2xl, the section-heading step. At --fs-xl it measured exactly the
    same as `.contact-card h2` in the sidebar beside it, so the page's main
    heading carried no more weight than a panel title. */
@@ -1400,6 +1487,12 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .lang-switch { display: inline-flex; width: fit-content; }
 }
 
+/* The tagline is decorative metadata. Below 420px its English version plus
+   the mark, brand name and 44px menu control cannot share one navbar row. */
+@media (max-width: 419.98px) {
+  .brand-tag { display: none; }
+}
+
 @media (max-width: 767.98px) {
   /*
     The hero is `display: flex` on desktop. On mobile the caption stops being
@@ -1412,7 +1505,10 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     min-height: auto;
     padding: 6.5rem 0 3rem;
   }
-  .hero-title { line-height: var(--lh-tight); max-width: none; }
+  /* Keep the shared 20ch measure on phones. The previous `max-width: none`
+     made wrapping depend on the device width, so replacement headlines lost
+     the balanced text rail and invited sentence-specific <br> tags. */
+  .hero-title { line-height: var(--lh-tight); }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions .btn { width: 100%; text-align: center; }
   .hero-caption {
@@ -1425,19 +1521,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .pi-photo { max-width: 180px; }
   .person-row { grid-template-columns: 1fr; gap: 0.15rem; }
   .person-table .person-row-head { display: none; }
-  /* At 390px a justified line is about 32 characters, and the white rivers
-     between words are unavoidable. Everything the justification block above
-     turned on is turned back off here. */
-  .prose,
-  .page-hd p,
-  .section-head p,
-  .pi-body p,
-  .card-scope,
-  .person-row-topic,
-  .news-body,
-  .pg-scope,
-  .ff-lead { text-align: left; }
-
   /* Half a phone wide is not enough for two columns of "Publications". */
   .foot-nav-2col { columns: 1; }
 }
@@ -1984,8 +2067,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 .project-hd .card-badge { margin-bottom: 0.6rem; }
 /* The lead runs the full container too, so the whole project page is one width:
-   heading, lead, hero photo and body all start and end on the same two lines.
-   Every OTHER page keeps its intro at --measure. */
+   heading, lead, hero photo and body all start and end on the same two lines. */
 .project-hd p { max-width: none; }
 .project-crumb { font-family: var(--font-ui); font-size: var(--fs-xs); margin-bottom: 1rem; }
 .project-by { display: flex; align-items: center; gap: 0.9rem; margin-top: 1.5rem; margin-bottom: 0; }
@@ -2176,19 +2258,50 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 
 /* Two INDEPENDENT bands, drifting in opposite directions, with a real gap
-   between them. The first version shared one control and one pair of arrows,
-   and the two rows crept along together 8px apart at 30 and 24 px/s. The eye
-   reads a small difference between neighbours as a shake. 26 px/s each way is
-   a difference of 52 px/s, which reads as two separate things. */
+   between them. Each clipped row is its own drag/keyboard control. */
 .pt-bands { display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem 0; }
 .pt-band { position: relative; }
+.pt-band::after {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: -0.25rem;
+  width: min(8rem, 40%);
+  height: 3px;
+  background: var(--lab-accent);
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s ease-out;
+  pointer-events: none;
+}
+.pt-band:has(.pt-viewport:focus-visible)::after {
+  background: var(--lab-accent);
+  transform: translateX(-50%) scaleX(1);
+}
 
 /* The viewport clips; the track inside it is what moves, under a transform.
    Not overflow-x:auto - a scroll offset is painted at whole device pixels, and
    at 0.43px per frame that is a visible step. See partners.js. */
-.pt-viewport { overflow: hidden; touch-action: pan-y; cursor: grab; }
+.pt-viewport {
+  overflow: hidden;
+  min-height: 3rem;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.pt-viewport:focus-visible {
+  outline: none;
+}
 .pt-viewport.is-dragging { cursor: grabbing; }
-.pt-track { display: flex; will-change: transform; }
+.pt-track { display: flex; will-change: transform; user-select: none; }
+
+@media (forced-colors: active) {
+  .pt-band:has(.pt-viewport:focus-visible)::after {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}
 
 .pt-row {
   display: flex;
@@ -2215,8 +2328,8 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   transition: color 0.2s ease-out;
 }
 .pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
-/* Greyscale until hover. Uses less of each mark, and it is also what makes
-   sixty logos of wildly different quality look like one set. */
+/* Restore the original unified logo treatment: muted until hover, with the
+   prior dark-theme transform. The row controls remain arrowless. */
 .pt-logo {
   max-height: 2.6rem;
   max-width: 11rem;
@@ -2230,43 +2343,17 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 [data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }
 [data-bs-theme="dark"] .pt-item:hover .pt-logo { filter: grayscale(0) invert(0); }
 
-.pt-arrow {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  transform: translateY(-50%);
-  width: var(--control-min);
-  height: var(--control-min);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 50%;
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
-  font-size: var(--icon-md);
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.18s ease-out, border-color 0.18s ease-out, color 0.18s ease-out;
-}
-.pt-arrow:hover { border-color: var(--lab-accent-hover); color: var(--lab-accent-hover); }
-.pt-prev { left: 0.5rem; }
-.pt-next { right: 0.5rem; }
-.pt-prev:hover { transform: translate(-0.2rem, -50%); }
-.pt-next:hover { transform: translate(0.2rem, -50%); }
-
-/* The edges fade so names do not appear chopped off. Opaque for the first 55%,
-   which is what keeps a half-word from showing beside the arrow; the old 30%
-   left "...chnology Council" legible under the button. */
+/* A short edge fade softens clipping without hiding a logo behind a control. */
 .pt-fade {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 7.5rem;
+  width: 4rem;
   pointer-events: none;
   z-index: 2;
 }
-.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 55%, transparent 100%); }
-.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 55%, transparent 100%); }
+.pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 12%, transparent 100%); }
+.pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 12%, transparent 100%); }
 
 .pt-note {
   font-family: var(--font-ui);
@@ -2280,7 +2367,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 
 @media (max-width: 767.98px) {
   .pt-row { gap: 2rem; padding: 0 1rem; }
-  .pt-fade { width: 3rem; }
+  .pt-fade { width: 2rem; }
     .hero { padding-bottom: 5rem; }
   .typed-line { margin-bottom: 1.1rem; }
 }
@@ -2350,7 +2437,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    shove the grid up and down the page. */
 .pg-scope {
   color: var(--lab-muted);
-  max-width: var(--measure);
+  max-width: none;
   min-height: 1.5em;
   margin-bottom: 2.25rem;
 }

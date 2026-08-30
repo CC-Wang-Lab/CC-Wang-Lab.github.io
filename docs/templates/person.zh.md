@@ -1,6 +1,6 @@
 +++
-title = "範例 - 成員姓名"
-person = "placeholder-phd-1"
+title = "成員姓名"
+person = "your-id"
 lang = "zh"
 +++
 
@@ -8,14 +8,10 @@ lang = "zh"
 {{person_header}}
 ~~~
 
-@@page-body
+@@page-body,profile-page
 @@container
-@@row,g-5
-@@col-lg-4
-~~~
-{{person_portrait}}
-~~~
-@@pi-bio
+@@profile-layout
+@@profile-narrative,prose
 
 ## 範例頁面
 
@@ -40,8 +36,7 @@ lang = "zh"
 ![](/assets/img/team/your-id/rig.jpg)
 ```
 @@
-@@
-@@col-lg-8
+@@profile-record
 ~~~
 {{person_facts}}
 ~~~

@@ -67,6 +67,15 @@ jobs:
           fi
           echo "No unresolved template calls."
 
+      - name: Check public content policy
+        run: python scripts/check-public-site.py
+
+      - name: Check profile layout variants
+        run: python scripts/check-profile-layouts.py
+
+      - name: Check partner strip
+        run: python scripts/check-partner-strip.py
+
       - name: Report site size
         run: du -sh __site && du -sh __site/assets/video
 

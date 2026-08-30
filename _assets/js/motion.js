@@ -15,7 +15,8 @@
  * What replaces it is the requirement that actually applies, WCAG 2.2.2
  * "Pause, Stop, Hide": motion that starts on its own and runs past five seconds
  * must have a mechanism to stop it. That mechanism is this control. It is
- * visible, it is keyboard reachable, and the choice is remembered.
+ * visible and keyboard reachable. The choice lasts for the current page only,
+ * so a previous visit can never make a fresh page look broken or stale.
  *
  * Everything starts running, for everyone. The control is what makes that
  * acceptable, and the reasoning is spelled out again at the `running` default
@@ -24,16 +25,7 @@
 window.LabMotion = (function () {
   "use strict";
 
-  var KEY = "labMotion"; // "on" | "off"
   var listeners = [];
-
-  function stored() {
-    try {
-      return localStorage.getItem(KEY);
-    } catch (e) {
-      return null;
-    }
-  }
 
   // MOTION STARTS RUNNING FOR EVERYONE.
   //
@@ -45,10 +37,9 @@ window.LabMotion = (function () {
   // The requirement that actually applies is WCAG 2.2.2 "Pause, Stop, Hide":
   // motion that starts on its own and runs past five seconds needs a mechanism
   // to stop it. That mechanism is the visible, keyboard-reachable control this
-  // file drives, and the choice is remembered across pages and visits.
-  //
-  // An explicit choice always wins over the default.
-  var running = stored() ? stored() === "on" : true;
+  // file drives. It is deliberately current-page state: every fresh navigation
+  // starts running, without a hard reload or local-storage cleanup.
+  var running = true;
 
   function apply() {
     document.documentElement.classList.toggle("motion-off", !running);
@@ -78,11 +69,6 @@ window.LabMotion = (function () {
     },
     set: function (value) {
       running = !!value;
-      try {
-        localStorage.setItem(KEY, running ? "on" : "off");
-      } catch (e) {
-        /* the choice still holds for this page view */
-      }
       apply();
     },
     toggle: function () {

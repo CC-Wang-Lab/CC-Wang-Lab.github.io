@@ -40,6 +40,7 @@ lead_zh  = "模擬空氣通過 ATX 主機板上塔型散熱器的流動路徑，
 # --- PLACEHOLDER. Copy this block for each new project, then delete this one. ---
 [[project]]
 id       = "placeholder-project"
+placeholder = true
 weight   = 99
 image    = "/assets/img/projects/placeholder.svg"
 student  = "placeholder-postdoc-1"

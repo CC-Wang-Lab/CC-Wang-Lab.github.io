@@ -1,6 +1,6 @@
 +++
 title = "News"
-descr = "What the lab has been doing lately."
+descr = "Updates on the laboratory's research, publications, facilities, awards and activities."
 lang = "en"
 +++
 

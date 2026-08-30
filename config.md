@@ -29,7 +29,7 @@ ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", "CLAUDE.md",
 
 generate_rss = false
 website_title = "CC Wang Lab"
-website_descr = "Thermal engineering research at National Yang Ming Chiao Tung University"
+website_descr = "Experimental and computational thermal-engineering research at National Yang Ming Chiao Tung University."
 website_url   = "https://cc-wang-lab.github.io/"
 
 # --- lab facts, used by the numbers band and the credibility block ---

@@ -21,9 +21,10 @@ Five things here are not decoration:
    script injected right after <head> and therefore before theme-init.js. The
    simpler trick, setting data-bs-theme directly, would bypass theme-init.js
    entirely, so a broken theme-init.js would still screenshot a perfect page.
-   Each launch gets a throwaway --user-data-dir, so the forced theme can never
-   leak into the reviewer's own browser. That leak has already caused one false
-   bug report, when a paused marquee was reported as broken.
+   Motion is selected after load through the real LabMotion API. The harness
+   also seeds the obsolete labMotion key to "off" so every shot proves stale
+   storage cannot freeze a fresh page. Each launch gets a throwaway
+   --user-data-dir, so neither state can leak into the reviewer's own browser.
 
 3. --virtual-time-budget fast-forwards the page. Without `__motion=off` that
    runs past the news slider's 6 s dwell and you screenshot an arbitrary slide.
@@ -59,6 +60,7 @@ import time
 import sys
 import threading
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
@@ -74,7 +76,7 @@ SEED = """<script>
   var q = new URLSearchParams(location.search);
   try {
     if (q.get("__theme")) localStorage.setItem("labTheme", q.get("__theme"));
-    if (q.get("__motion")) localStorage.setItem("labMotion", q.get("__motion"));
+    if (q.get("__storedmotion")) localStorage.setItem("labMotion", q.get("__storedmotion"));
   } catch (e) {}
   /* __scrollto=0.35 shoots the page a third of the way down, which is the only
      way to see a scroll-linked effect in a still: the progress bar under the
@@ -97,6 +99,14 @@ AUDIT = """<script>
    every element that really renders text, and anything wider than the
    viewport. */
 window.addEventListener("load", function () {
+  /* A stale saved pause value must never freeze a new page. The audit records
+     the production default first, then uses the public API to select the
+     current-page state needed by this particular shot. */
+  var auditQuery = new URLSearchParams(location.search);
+  var motionStartsRunning = !!window.LabMotion && window.LabMotion.isRunning();
+  if (window.LabMotion && typeof window.LabMotion.set === "function") {
+    window.LabMotion.set(auditQuery.get("__motion") !== "off");
+  }
   /* Scroll the whole page first. The reveal effect only shows a block when it
      comes into view, so measuring at the top would call every block below the
      fold "hidden" and be wrong. Sweep down, sweep back, then measure. */
@@ -159,7 +169,8 @@ window.addEventListener("load", function () {
       return false;
     }
     var floor = 12.8, targetFloor = 44;
-    var small = [], wide = [], undersizedTargets = [], unboundedReading = [], seen = {};
+    var small = [], wide = [], undersizedTargets = [], constrainedNotes = [];
+    var unjustifiedNotes = [], seen = {};
     var docW = document.documentElement.clientWidth;
     var all = document.querySelectorAll("*");
     for (var i = 0; i < all.length; i++) {
@@ -199,7 +210,7 @@ window.addEventListener("load", function () {
     var targetSelector = [
       ".btn-cta", ".btn-ghost", ".btn-icon", ".navbar-toggler",
       ".lab-nav .nav-link", ".motion-toggle", ".ns-arrow",
-      ".ns-nav-item", ".pt-arrow", ".pg-chip", ".pi-chip",
+      ".ns-nav-item", ".pt-viewport", ".pg-chip", ".pi-chip",
       ".foot-nav a", "#backToTop", ".ff input", ".ff textarea", ".ff select"
     ].join(",");
     var targets = document.querySelectorAll(targetSelector);
@@ -233,41 +244,44 @@ window.addEventListener("load", function () {
         }
       }
     }
-    /* These blocks carry long-form reading text. Their media and parent grids
-       stay full-width, but the text block itself must declare a readable cap. */
-    var readingSelector = [
-      ".pi-body", ".pub-theme", ".project-body > h2",
-      ".project-body > h3", ".project-body > h4",
-      ".project-body > p:not(:has(img, picture, video))",
-      ".project-body > ul", ".project-body > ol",
-      ".project-body > blockquote"
+    /* Notes and prose now follow the full-width page-header lead. They may be
+       narrowed by an actual grid column, but not by a second max-width cap. */
+    var noteWidthSelector = [
+      ".section-head", ".page-narrow", ".pi-body", ".pub-theme",
+      ".profile-narrative", ".form-col", ".pg-scope",
+      ".project-body > h2", ".project-body > h3", ".project-body > h4",
+      ".project-body > p:not(:has(img, picture, video))", ".project-body > ul",
+      ".project-body > ol", ".project-body > blockquote"
     ].join(",");
-    var reading = document.querySelectorAll(readingSelector);
-    var readingSeen = {};
-    function readingLimit(readingStyle) {
-      var probe = document.createElement("span");
-      probe.style.cssText = "position:fixed;visibility:hidden;display:block;" +
-                            "width:var(--measure);pointer-events:none";
-      probe.style.fontFamily = readingStyle.fontFamily;
-      probe.style.fontSize = readingStyle.fontSize;
-      probe.style.fontStyle = readingStyle.fontStyle;
-      probe.style.fontWeight = readingStyle.fontWeight;
-      document.body.appendChild(probe);
-      var width = probe.getBoundingClientRect().width;
-      probe.remove();
-      return width;
+    var noteWidths = document.querySelectorAll(noteWidthSelector);
+    var noteWidthSeen = {};
+    for (var u = 0; u < noteWidths.length; u++) {
+      var noteWidthStyle = getComputedStyle(noteWidths[u]);
+      if (noteWidthStyle.display === "none" || noteWidthStyle.visibility === "hidden") continue;
+      if (noteWidthStyle.maxWidth !== "none") {
+        var noteWidthKey = sel(noteWidths[u]);
+        if (!noteWidthSeen[noteWidthKey]) {
+          noteWidthSeen[noteWidthKey] = 1;
+          constrainedNotes.push(noteWidthKey + " max " + noteWidthStyle.maxWidth);
+        }
+      }
     }
-    for (var u = 0; u < reading.length; u++) {
-      var readingStyle = getComputedStyle(reading[u]);
-      if (readingStyle.display === "none" || readingStyle.visibility === "hidden") continue;
-      var maxWidth = parseFloat(readingStyle.maxWidth);
-      var limit = readingLimit(readingStyle);
-      if (!isFinite(maxWidth) || maxWidth > limit + 1) {
-        var readingKey = sel(reading[u]);
-        if (!readingSeen[readingKey]) {
-          readingSeen[readingKey] = 1;
-          unboundedReading.push(readingKey + " max " + readingStyle.maxWidth +
-            " exceeds " + limit.toFixed(1) + "px measure");
+    var noteTextSelector = [
+      ".page-hd p:not(.profile-header-summary)", ".section-head p", ".page-narrow p", ".pi-body p",
+      ".pub-theme p", ".pub-theme li", ".profile-narrative p",
+      ".form-col > p", ".pg-scope", ".project-body > p:not(:has(img, picture, video))",
+      ".project-body > :is(ul, ol) > li", ".project-body > blockquote"
+    ].join(",");
+    var noteTexts = document.querySelectorAll(noteTextSelector);
+    var justifySeen = {};
+    for (var jn = 0; jn < noteTexts.length; jn++) {
+      var noteTextStyle = getComputedStyle(noteTexts[jn]);
+      if (noteTextStyle.display === "none" || noteTextStyle.visibility === "hidden") continue;
+      if (noteTextStyle.textAlign !== "justify") {
+        var justifyKey = sel(noteTexts[jn]);
+        if (!justifySeen[justifyKey]) {
+          justifySeen[justifyKey] = 1;
+          unjustifiedNotes.push(justifyKey + " = " + noteTextStyle.textAlign);
         }
       }
     }
@@ -325,8 +339,332 @@ window.addEventListener("load", function () {
         stuck.push(sel(c) + " top=" + Math.round(c.getBoundingClientRect().top));
       }
     }
+    var profileAudit = null;
+    var heroTitleAudit = null;
+    var heroTitle = document.querySelector(".hero-title");
+    if (heroTitle) {
+      var heroTitleStyle = getComputedStyle(heroTitle);
+      var heroTitleRange = document.createRange();
+      heroTitleRange.selectNodeContents(heroTitle);
+      var heroLineTops = [];
+      Array.prototype.forEach.call(heroTitleRange.getClientRects(), function (rect) {
+        var top = Math.round(rect.top * 10) / 10;
+        if (heroLineTops.indexOf(top) === -1) heroLineTops.push(top);
+      });
+      heroTitleAudit = {
+        balanced: heroTitleStyle.textWrap === "balance",
+        constrained: heroTitleStyle.maxInlineSize !== "none",
+        manualBreaks: heroTitle.querySelectorAll("br").length,
+        fits: heroTitle.scrollWidth <= heroTitle.clientWidth + 1,
+        lines: heroLineTops.length
+      };
+    }
+    var profileShell = document.querySelector(".profile-layout");
+    if (profileShell) {
+      var profileRequested = new URLSearchParams(location.search).get("profile-layout");
+      var profileRoot = document.documentElement;
+      var profileName = document.querySelector(".person-hd .pi-heading");
+      var profileHeaderIdentity = document.querySelector(".profile-header-identity");
+      var profileHeaderPortrait = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".pi-portrait-frame") : null;
+      var profileHeaderRule = document.querySelector(".person-hd .pi-rule");
+      var profileHeaderDetailsNode = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-header-details") : null;
+      var profileHeaderSummary = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-header-summary") : null;
+      var profileHeaderRole = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-role") : null;
+      var profileHeaderExpertise = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-expertise") : null;
+      var profileHeaderExpertiseLabel = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-expertise-label") : null;
+      var profileHeaderContacts = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".pi-chips") : null;
+      var profileNarrative = profileShell.querySelector(".profile-narrative");
+      var profileRecord = profileShell.querySelector(".profile-record");
+      var profileRole = profileHeaderIdentity ?
+        profileHeaderIdentity.querySelector(".profile-role") : null;
+      var profileSectionHead = profileShell.querySelector(".profile-narrative h2");
+      var profileFactLabel = profileShell.querySelector(".pf-label");
+      var profileFactValue = profileShell.querySelector(".pf-values");
+      var profileLanguageHref = document.querySelector(".lang-switch") ?
+        document.querySelector(".lang-switch").getAttribute("href") : "";
+      var profileRects = [profileHeaderPortrait, profileHeaderSummary,
+        profileHeaderContacts, profileNarrative, profileRecord]
+        .filter(Boolean).map(function (node) { return node.getBoundingClientRect(); });
+      function rectanglesOverlap(a, b) {
+        return Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+               Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
+      }
+      var profileOverlap = false;
+      if (window.innerWidth > 991.98) {
+        for (var pa = 0; pa < profileRects.length; pa++) {
+          for (var pb = pa + 1; pb < profileRects.length; pb++) {
+            if (rectanglesOverlap(profileRects[pa], profileRects[pb])) profileOverlap = true;
+          }
+        }
+      }
+      var profileMobileOrder = true;
+      if (window.innerWidth <= 991.98) {
+        if (profileName && profileHeaderSummary && profileHeaderContacts &&
+            profileHeaderPortrait && profileNarrative && profileRecord) {
+          var mobileNameRect = profileName.getBoundingClientRect();
+          var mobileSummaryRect = profileHeaderSummary.getBoundingClientRect();
+          var mobileContactsRect = profileHeaderContacts.getBoundingClientRect();
+          var mobilePortraitRect = profileHeaderPortrait.getBoundingClientRect();
+          var mobileNarrativeRect = profileNarrative.getBoundingClientRect();
+          var mobileRecordRect = profileRecord.getBoundingClientRect();
+          profileMobileOrder = mobileNameRect.bottom <= mobileSummaryRect.top + 1 &&
+            mobileSummaryRect.bottom <= mobileContactsRect.top + 1 &&
+            mobileContactsRect.bottom <= mobilePortraitRect.top + 1 &&
+            mobilePortraitRect.bottom <= mobileNarrativeRect.top + 1 &&
+            mobileNarrativeRect.bottom <= mobileRecordRect.top + 1;
+        } else {
+          profileMobileOrder = false;
+        }
+      }
+      var headerDetails = {
+        present: true,
+        desktopTwoRows: true,
+        ruleHidden: true,
+        domOrderValid: true,
+        expertiseWrapsOnNarrow: true,
+        expertiseListSemantics: true,
+        expertiseLabelAbsent: true
+      };
+      headerDetails.present = !!profileHeaderPortrait && !!profileHeaderSummary &&
+        !!profileHeaderRole && !!profileHeaderContacts;
+      headerDetails.ruleHidden = !!profileHeaderRule &&
+        getComputedStyle(profileHeaderRule).display === "none";
+      headerDetails.domOrderValid = !!profileHeaderDetailsNode && !!profileHeaderPortrait &&
+        !!(profileHeaderDetailsNode.compareDocumentPosition(profileHeaderPortrait) &
+           Node.DOCUMENT_POSITION_FOLLOWING);
+      var expertiseItems = profileHeaderExpertise ?
+        profileHeaderExpertise.querySelectorAll('[role="listitem"]') : [];
+      headerDetails.expertiseListSemantics = !profileHeaderExpertise ||
+        (profileHeaderExpertise.getAttribute("role") === "list" &&
+         expertiseItems.length >= 1);
+      headerDetails.expertiseLabelAbsent = !profileHeaderExpertiseLabel;
+      if (profileHeaderExpertise && window.innerWidth <= 991.98) {
+        var expertiseStyle = getComputedStyle(profileHeaderExpertise);
+        headerDetails.expertiseWrapsOnNarrow = expertiseStyle.flexWrap === "wrap" &&
+          expertiseStyle.minWidth === "0px" &&
+          profileHeaderExpertise.scrollWidth <= profileHeaderExpertise.clientWidth + 1;
+      }
+      if (headerDetails.present && window.innerWidth > 991.98) {
+        var headerNameRect = profileName.getBoundingClientRect();
+        var headerPortraitRect = profileHeaderPortrait.getBoundingClientRect();
+        var headerSummaryRect = profileHeaderSummary.getBoundingClientRect();
+        var headerContactsRect = profileHeaderContacts.getBoundingClientRect();
+        var headerRoleRect = profileHeaderRole.getBoundingClientRect();
+        var headerContactLinks = profileHeaderContacts.querySelectorAll(".pi-chip");
+        var contactTop = headerContactLinks.length ?
+          headerContactLinks[0].getBoundingClientRect().top : headerContactsRect.top;
+        var contactsShareRow = Array.prototype.every.call(headerContactLinks, function (link) {
+          return Math.abs(link.getBoundingClientRect().top - contactTop) <= 1;
+        });
+        var expertiseRect = profileHeaderExpertise ?
+          profileHeaderExpertise.getBoundingClientRect() : null;
+        var expertiseSharesRow = !expertiseRect ||
+          Math.min(expertiseRect.bottom, headerRoleRect.bottom) -
+            Math.max(expertiseRect.top, headerRoleRect.top) > 1;
+        headerDetails.desktopTwoRows =
+          headerSummaryRect.top >= headerNameRect.bottom - 1 &&
+          Math.abs(headerSummaryRect.left - headerNameRect.left) <= 2 &&
+          headerContactsRect.top >= headerSummaryRect.bottom - 1 &&
+          Math.abs(headerContactsRect.left - headerNameRect.left) <= 2 &&
+          headerPortraitRect.left > headerSummaryRect.left &&
+          headerPortraitRect.top <= headerSummaryRect.top &&
+          expertiseSharesRow && contactsShareRow;
+      }
+      profileAudit = {
+        requested: profileRequested || "",
+        layoutStateAbsent: !profileRoot.hasAttribute("data-profile-layout") &&
+          !profileRoot.hasAttribute("data-profile-layout-compare"),
+        switcherAbsent: !document.querySelector("[data-profile-switcher]") &&
+          !document.querySelector("[data-profile-layout-choice]"),
+        controllerAbsent: !document.querySelector('script[src*="profile-layout.js"]'),
+        regionCounts: {
+          identity: profileShell.querySelectorAll(".profile-identity").length,
+          headerIdentity: document.querySelectorAll(".profile-header-identity").length,
+          narrative: profileShell.querySelectorAll(".profile-narrative").length,
+          record: profileShell.querySelectorAll(".profile-record").length
+        },
+        identityLocationValid: !!profileHeaderIdentity &&
+          getComputedStyle(profileHeaderIdentity).display !== "none" &&
+          !!profileHeaderIdentity.closest(".person-hd"),
+        headerPortraitWidth: profileHeaderIdentity ?
+          profileHeaderIdentity.querySelector(".pi-portrait-frame").getBoundingClientRect().width : 0,
+        headerIdentityInsideHeader: !!profileHeaderIdentity &&
+          !!profileHeaderIdentity.closest(".person-hd"),
+        headerDetails: headerDetails,
+        nameFont: profileName ? parseFloat(getComputedStyle(profileName).fontSize) : 0,
+        expectedNameFont: tokenSize("--fs-3xl"),
+        roleFont: profileRole ? parseFloat(getComputedStyle(profileRole).fontSize) : 0,
+        expectedRoleFont: tokenSize("--fs-lg"),
+        narrativeFont: profileNarrative ?
+          parseFloat(getComputedStyle(profileNarrative).fontSize) : 0,
+        expectedNarrativeFont: tokenSize("--fs-md"),
+        sectionHeadFont: profileSectionHead ?
+          parseFloat(getComputedStyle(profileSectionHead).fontSize) : 0,
+        expectedSectionHeadFont: tokenSize("--fs-xl"),
+        factLabelFont: profileFactLabel ?
+          parseFloat(getComputedStyle(profileFactLabel).fontSize) : 0,
+        expectedFactLabelFont: tokenSize("--fs-xs"),
+        factValueFont: profileFactValue ?
+          parseFloat(getComputedStyle(profileFactValue).fontSize) : 0,
+        expectedFactValueFont: tokenSize("--fs-sm"),
+        languageHref: profileLanguageHref,
+        mobileOrder: profileMobileOrder,
+        overlaps: profileOverlap
+      };
+    }
+    var partnerAudit = null;
+    var partnerRoot = document.getElementById("partners");
+    if (partnerRoot) {
+      var partnerViewports = partnerRoot.querySelectorAll(".pt-viewport");
+      var partnerBands = partnerRoot.querySelectorAll(".pt-band");
+      var partnerRows = partnerRoot.querySelectorAll(".pt-row");
+      var partnerLogos = partnerRoot.querySelectorAll(".pt-logo");
+      var partnerLabels = [];
+      var namedControls = true, describedControls = true;
+      var shortcutControls = true, tabbableControls = true, groupedControls = true;
+      for (var pv = 0; pv < partnerViewports.length; pv++) {
+        var partnerViewport = partnerViewports[pv];
+        var partnerLabel = partnerViewport.getAttribute("aria-label") || "";
+        var partnerDescription = partnerViewport.getAttribute("aria-describedby") || "";
+        partnerLabels.push(partnerLabel);
+        namedControls = namedControls && !!partnerLabel;
+        describedControls = describedControls && !!partnerDescription &&
+          !!document.getElementById(partnerDescription);
+        shortcutControls = shortcutControls &&
+          partnerViewport.getAttribute("aria-keyshortcuts") === "ArrowLeft ArrowRight";
+        tabbableControls = tabbableControls && partnerViewport.tabIndex === 0;
+        groupedControls = groupedControls && partnerViewport.getAttribute("role") === "group";
+      }
+      var duplicateRowsHidden = partnerRows.length === partnerBands.length * 2;
+      var rowWidthsMatch = true;
+      for (var pb = 0; pb < partnerBands.length; pb++) {
+        var bandRows = partnerBands[pb].querySelectorAll(".pt-row");
+        duplicateRowsHidden = duplicateRowsHidden && bandRows.length === 2 &&
+          !bandRows[0].hasAttribute("aria-hidden") &&
+          bandRows[1].getAttribute("aria-hidden") === "true";
+        if (bandRows.length === 2) {
+          rowWidthsMatch = rowWidthsMatch &&
+            Math.abs(bandRows[0].getBoundingClientRect().width -
+                     bandRows[1].getBoundingClientRect().width) <= 1;
+        }
+      }
+      var logosUnframed = true, logosLoaded = true, filtersPresent = true;
+      var logoPointerEventsRestored = true;
+      for (var pl = 0; pl < partnerLogos.length; pl++) {
+        var logo = partnerLogos[pl];
+        var logoFrame = logo.closest(".pt-logo-frame");
+        logosUnframed = logosUnframed && !logoFrame;
+        logosLoaded = logosLoaded && logo.complete && logo.naturalWidth > 0;
+        filtersPresent = filtersPresent && getComputedStyle(logo).filter !== "none";
+        logoPointerEventsRestored = logoPointerEventsRestored &&
+          getComputedStyle(logo).pointerEvents === "auto";
+      }
+      var partnerKeyboard = { tested: false, passed: false, motionPaused: false };
+      var partnerMotion = { expected: false, moving: false, resumesAfterDrag: false };
+      var partnerFocus = { borderless: false, lineCue: false };
+      if (window.__partners && window.__partners.bands &&
+          window.__partners.bands.length === 2 && partnerViewports.length === 2) {
+        partnerMotion.expected = !!window.LabMotion &&
+          typeof window.LabMotion.isRunning === "function" &&
+          window.LabMotion.isRunning();
+        partnerMotion.moving = !partnerMotion.expected ||
+          window.__partners.bands.every(function (band) {
+            return band.speed !== 0 && band.pos !== 0 &&
+              band.track.style.transform && band.track.style.transform !== "none";
+          });
+        partnerKeyboard.tested = true;
+        partnerKeyboard.motionPaused = !!window.LabMotion &&
+          typeof window.LabMotion.isRunning === "function" &&
+          !window.LabMotion.isRunning();
+        var firstBand = window.__partners.bands[0];
+        var secondBand = window.__partners.bands[1];
+        var firstState = {
+          nudge: firstBand.nudge, pos: firstBand.pos, base: firstBand.base,
+          baseTime: firstBand.baseTime, transform: firstBand.track.style.transform
+        };
+        var secondState = {
+          nudge: secondBand.nudge, pos: secondBand.pos, base: secondBand.base,
+          baseTime: secondBand.baseTime, transform: secondBand.track.style.transform
+        };
+        partnerViewports[0].focus({ preventScroll: true });
+        var rightKey = new KeyboardEvent("keydown", {
+          key: "ArrowRight", bubbles: true, cancelable: true
+        });
+        document.activeElement.dispatchEvent(rightKey);
+        var firstAfterRight = firstBand.nudge;
+        var firstTransformAfterRight = firstBand.track.style.transform;
+        var secondAfterRight = secondBand.nudge;
+        var secondTransformAfterRight = secondBand.track.style.transform;
+        var firstFocused = document.activeElement === partnerViewports[0];
+        partnerViewports[1].focus({ preventScroll: true });
+        var leftKey = new KeyboardEvent("keydown", {
+          key: "ArrowLeft", bubbles: true, cancelable: true
+        });
+        document.activeElement.dispatchEvent(leftKey);
+        var viewportFocusStyle = getComputedStyle(partnerViewports[1]);
+        var bandFocusCue = getComputedStyle(partnerBands[1], "::after");
+        var viewportShadow = viewportFocusStyle.boxShadow;
+        var visibleViewportShadow = viewportShadow !== "none" &&
+          viewportShadow.indexOf("rgba(0, 0, 0, 0)") === -1 &&
+          !/0px 0px 0px 0px(?:$|,)/.test(viewportShadow);
+        partnerFocus.borderless = viewportFocusStyle.outlineStyle === "none" &&
+          !visibleViewportShadow;
+        partnerFocus.lineCue = parseFloat(bandFocusCue.height) <= 4 &&
+          bandFocusCue.backgroundColor !== "rgba(0, 0, 0, 0)";
+        partnerKeyboard.passed = rightKey.defaultPrevented && leftKey.defaultPrevented &&
+          firstFocused && document.activeElement === partnerViewports[1] &&
+          firstAfterRight > firstState.nudge && secondAfterRight === secondState.nudge &&
+          firstTransformAfterRight !== firstState.transform &&
+          secondTransformAfterRight === secondState.transform &&
+          firstBand.nudge === firstAfterRight && secondBand.nudge < secondState.nudge &&
+          firstBand.track.style.transform === firstTransformAfterRight &&
+          secondBand.track.style.transform !== secondState.transform;
+        [firstBand, secondBand].forEach(function (band, index) {
+          var state = index === 0 ? firstState : secondState;
+          band.nudge = state.nudge;
+          band.pos = state.pos;
+          band.base = state.base;
+          band.baseTime = state.baseTime;
+          band.track.style.transform = state.transform;
+        });
+        partnerMotion.resumesAfterDrag = window.__partners.bands.every(function (band) {
+          return !band.dragging && band.pointerId === null && Number.isFinite(band.baseTime);
+        });
+        partnerViewports[1].blur();
+      }
+      partnerAudit = {
+        arrowCount: partnerRoot.querySelectorAll(".pt-arrow,.pt-prev,.pt-next").length,
+        viewportCount: partnerViewports.length,
+        namedControls: namedControls,
+        uniqueLabels: new Set(partnerLabels).size === partnerViewports.length,
+        describedControls: describedControls,
+        shortcutControls: shortcutControls,
+        tabbableControls: tabbableControls,
+        groupedControls: groupedControls,
+        bandCount: partnerBands.length,
+        rowCount: partnerRows.length,
+        duplicateRowsHidden: duplicateRowsHidden,
+        rowWidthsMatch: rowWidthsMatch,
+        logoCount: partnerLogos.length,
+        logosUnframed: logosUnframed,
+        logosLoaded: logosLoaded,
+        filtersPresent: filtersPresent,
+        logoPointerEventsRestored: logoPointerEventsRestored,
+        keyboard: partnerKeyboard,
+        motion: partnerMotion,
+        focus: partnerFocus
+      };
+    }
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
+      motionStartsRunning: motionStartsRunning,
       motion: document.documentElement.classList.contains("motion-off") ? "off" : "on",
       revealTotal: claimed.length, revealStuck: stuck.slice(0, 10),
       progressBar: !!document.querySelector(".scroll-progress"),
@@ -339,9 +677,11 @@ window.addEventListener("load", function () {
       smFont: smToken, xsFont: xsToken,
       belowFloor: small, undersizedTargets: undersizedTargets.slice(0, 24),
       undersizedFunctional: undersizedFunctional.slice(0, 16),
-      unboundedReading: unboundedReading.slice(0, 12),
+      constrainedNotes: constrainedNotes.slice(0, 12),
+      unjustifiedNotes: unjustifiedNotes.slice(0, 12),
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
-      overflowing: wide.slice(0, 14)
+      overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
+      profile: profileAudit, partners: partnerAudit
     })});
   }
 });
@@ -349,7 +689,7 @@ window.addEventListener("load", function () {
 
 REPORTS = []
 MOTION = ["off"]    # set from --motion; a list so shoot() can read it
-SCROLLTO = [""]     # set from --scrollto
+SCROLLTO = [None]   # set from --scrollto
 REALTIME = [False]  # set from --realtime
 
 # page, width, theme, why this shot exists
@@ -357,7 +697,7 @@ MATRIX = [
     ("/", 492, "light", "bottom of the fluid ramp: hero at the clamp minimum, stacked buttons"),
     ("/", 768, "light", "the 991.98 block with the 767.98 block off, cards 2-up"),
     ("/", 1440, "light", "the reference shot"),
-    ("/", 1920, "light", "top of the ramp: hero at the clamp maximum, measure holding at 74ch"),
+    ("/", 1920, "light", "top of the ramp: hero at the clamp maximum, full-width notes holding"),
     ("/", 492, "dark", "dark tokens at the narrow end"),
     ("/", 1440, "dark", "dark parity: diff against the 1440 light shot, only colour should move"),
     ("/projects/", 492, "light", "filter chips and project cards at the narrow end"),
@@ -379,9 +719,36 @@ MATRIX = [
     ("/zh/", 492, "light", "CJK headline, controls and footer at the narrow end"),
     ("/zh/", 1440, "light", "CJK at the new sizes, the reason the font stack matters"),
     ("/zh/", 1440, "dark", "the fourth corner of theme times language"),
-    ("/zh/people/cc-wang/", 1440, "light", "Chinese professor page in light"),
-    ("/zh/people/cc-wang/", 1440, "dark", "biggest type, CJK and dark at once"),
 ]
+
+# Every real profile uses the selected header identity. The desktop cross-
+# product catches language- or theme-scoped regressions without retaining the
+# archived A/B/C comparison matrix.
+for language, prefix in (("English", "/"), ("Chinese", "/zh/")):
+    for person in ("cc-wang", "maysam-gholampour"):
+        for theme in ("light", "dark"):
+            MATRIX.append((
+                f"{prefix}people/{person}/",
+                1440,
+                theme,
+                f"{language} {person} selected header profile",
+            ))
+
+for language, prefix in (("English", "/"), ("Chinese", "/zh/")):
+    for person in ("cc-wang", "maysam-gholampour"):
+        MATRIX.append((
+            f"{prefix}people/{person}/",
+            492,
+            "light",
+            f"{language} {person} selected header profile on mobile",
+        ))
+
+MATRIX.append((
+    "/people/cc-wang/?profile-layout=editorial",
+    492,
+    "light",
+    "legacy profile-layout query is ignored and still renders the selected design",
+))
 
 
 def insert_head(html, snippet):
@@ -470,6 +837,18 @@ GUTTER = 24
 NARROWEST = 492
 
 
+def request_target(url, theme):
+    """Merge harness parameters into a route that may already have a query."""
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query, keep_blank_values=True))
+    query["__theme"] = theme
+    query["__motion"] = MOTION[0]
+    query["__storedmotion"] = "off"
+    if SCROLLTO[0] is not None:
+        query["__scrollto"] = "%g" % SCROLLTO[0]
+    return urlunsplit(("", "", parts.path or "/", urlencode(query), parts.fragment))
+
+
 def shoot(edge, url, width, theme, out_png, profile, height=4000, budget=9000):
     dsf = 1
     win = max(width, NARROWEST) + GUTTER
@@ -487,8 +866,7 @@ def shoot(edge, url, width, theme, out_png, profile, height=4000, budget=9000):
         # rAF never fires and a scroll-linked effect cannot be measured.
     ] + ([] if REALTIME[0] else ["--virtual-time-budget=%d" % budget]) + [
         "--screenshot=" + str(out_png),
-        "http://127.0.0.1:%d%s?__theme=%s&__motion=%s%s"
-        % (PORT, url, theme, MOTION[0], SCROLLTO[0]),
+        "http://127.0.0.1:%d%s" % (PORT, request_target(url, theme)),
     ]
     if out_png.exists():
         out_png.unlink()
@@ -522,9 +900,9 @@ def main():
                     help="shoot the page at this fraction of its scroll range, "
                          "0..1, so scroll-linked effects are visible in a still")
     ap.add_argument("--motion", default="off", choices=["on", "off"],
-                    help="seed localStorage.labMotion. Default off, which "
-                         "freezes the marquee and the slider so shots are "
-                         "diffable. Use on to test the scroll effects.")
+                    help="set the current-page LabMotion state. Default off, "
+                         "which freezes the marquee and slider so shots are "
+                         "diffable. Use on to test automatic motion.")
     ap.add_argument("--measure", action="store_true",
                     help="audit computed type ramps, the 12.8px floor, 44px "
                          "controls, reading measures and viewport overflow")
@@ -540,7 +918,7 @@ def main():
     Injector.measure = args.measure
     MOTION[0] = args.motion
     REALTIME[0] = args.realtime
-    SCROLLTO[0] = ("&__scrollto=%g" % args.scrollto) if args.scrollto else ""
+    SCROLLTO[0] = args.scrollto
     edge = find_edge()
     OUT.mkdir(parents=True, exist_ok=True)
 
@@ -567,7 +945,11 @@ def main():
     made, failed = [], []
     try:
         for i, (url, width, theme, why) in enumerate(shots):
-            slug = (url.strip("/").replace("/", "-") or "home")
+            url_parts = urlsplit(url)
+            slug = (url_parts.path.strip("/").replace("/", "-") or "home")
+            layout = dict(parse_qsl(url_parts.query)).get("profile-layout")
+            if layout:
+                slug += "-" + re.sub(r"[^a-z0-9-]+", "-", layout.lower()).strip("-")
             # NARROWEST, not `width`: below it Edge renders wider than asked,
             # and a file called _375_ that is really 492 is a lie.
             real = max(width, NARROWEST)
@@ -621,18 +1003,139 @@ def main():
             if abs(r.get("xsFont", 0) - expected_xs) > 0.05:
                 flags.append("xs %.2fpx differs from %.2fpx target"
                              % (r.get("xsFont", 0), expected_xs))
-            if r.get("unboundedReading"):
-                flags.append("%d reading block(s) exceed the measure"
-                             % len(r["unboundedReading"]))
+            if r.get("constrainedNotes"):
+                flags.append("%d note block(s) retain a max-width cap"
+                             % len(r["constrainedNotes"]))
+            if r.get("unjustifiedNotes"):
+                flags.append("%d note block(s) are not justified"
+                             % len(r["unjustifiedNotes"]))
             if r.get("narrowProjectMedia"):
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
+            profile = r.get("profile")
+            if profile:
+                if not profile.get("layoutStateAbsent"):
+                    flags.append("retired profile layout state remains on the document")
+                if not profile.get("switcherAbsent"):
+                    flags.append("retired profile switcher remains")
+                if not profile.get("controllerAbsent"):
+                    flags.append("retired profile layout controller remains")
+                counts = profile.get("regionCounts", {})
+                if counts.get("identity") != 0:
+                    flags.append("profile retains a duplicate body identity")
+                if any(counts.get(region) != 1 for region in ("narrative", "record")):
+                    flags.append("profile does not contain one narrative/record region")
+                if counts.get("headerIdentity") != 1:
+                    flags.append("profile does not contain one header identity")
+                if not profile.get("identityLocationValid"):
+                    flags.append("profile identity is not visible inside the header")
+                if profile.get("headerPortraitWidth", 9999) > 180.5:
+                    flags.append("profile portrait exceeds the 180px target")
+                if not profile.get("headerIdentityInsideHeader"):
+                    flags.append("profile identity is not inside the profile header")
+                header_details = profile.get("headerDetails", {})
+                if not header_details.get("present"):
+                    flags.append("profile role/contact rows are missing")
+                if not header_details.get("desktopTwoRows"):
+                    flags.append("profile details are not two rows beneath the name")
+                if not header_details.get("ruleHidden"):
+                    flags.append("profile title accent rule is still visible")
+                if not header_details.get("domOrderValid"):
+                    flags.append("profile DOM does not order details before portrait")
+                if not header_details.get("expertiseWrapsOnNarrow"):
+                    flags.append("profile expertise cannot wrap safely on narrow screens")
+                if not header_details.get("expertiseListSemantics"):
+                    flags.append("profile expertise lacks list semantics")
+                if not header_details.get("expertiseLabelAbsent"):
+                    flags.append("profile still displays the Expertise in label")
+                for label, actual_key, expected_key in (
+                    ("name", "nameFont", "expectedNameFont"),
+                    ("role", "roleFont", "expectedRoleFont"),
+                    ("narrative", "narrativeFont", "expectedNarrativeFont"),
+                    ("section heading", "sectionHeadFont", "expectedSectionHeadFont"),
+                    ("fact label", "factLabelFont", "expectedFactLabelFont"),
+                    ("fact value", "factValueFont", "expectedFactValueFont"),
+                ):
+                    if abs(profile.get(actual_key, 0) - profile.get(expected_key, 0)) > 0.05:
+                        flags.append("profile %s type %.2fpx differs from %.2fpx token"
+                                     % (label, profile.get(actual_key, 0),
+                                        profile.get(expected_key, 0)))
+                if not profile.get("mobileOrder", True):
+                    flags.append("profile mobile order is not name/identity/narrative/facts")
+                if profile.get("overlaps"):
+                    flags.append("profile regions overlap")
+                language_href = profile.get("languageHref", "")
+                if "profile-layout=" in language_href:
+                    flags.append("language switch preserves the retired profile layout query")
+            partners = r.get("partners")
+            if r.get("url") in ("/", "/zh/") and not partners:
+                flags.append("partner computed audit is missing from a home page")
+            elif partners:
+                if partners.get("arrowCount") != 0:
+                    flags.append("partner arrow elements remain")
+                if partners.get("viewportCount") != 2 or partners.get("bandCount") != 2:
+                    flags.append("partner strip does not expose exactly two row controls")
+                for label, key in (
+                    ("named", "namedControls"),
+                    ("uniquely named", "uniqueLabels"),
+                    ("described", "describedControls"),
+                    ("shortcut-labelled", "shortcutControls"),
+                    ("tabbable", "tabbableControls"),
+                    ("grouped", "groupedControls"),
+                ):
+                    if not partners.get(key):
+                        flags.append("partner rows are not all %s controls" % label)
+                if partners.get("rowCount") != 4 or not partners.get("duplicateRowsHidden"):
+                    flags.append("partner duplicate rows have incorrect accessibility state")
+                if not partners.get("rowWidthsMatch"):
+                    flags.append("partner duplicate-row widths do not match")
+                if partners.get("logoCount", 0) <= 0:
+                    flags.append("partner SVG logos are missing")
+                for label, key in (
+                    ("free of the reverted frames", "logosUnframed"),
+                    ("loaded", "logosLoaded"),
+                    ("using the restored filter treatment", "filtersPresent"),
+                    ("using the branch-start pointer behavior", "logoPointerEventsRestored"),
+                ):
+                    if not partners.get(key):
+                        flags.append("partner logos are not all %s" % label)
+                partner_keyboard = partners.get("keyboard", {})
+                if not partner_keyboard.get("tested"):
+                    flags.append("partner keyboard interaction was not exercised")
+                elif not partner_keyboard.get("passed"):
+                    flags.append("partner Left/Right keys did not visibly move only the focused row")
+                if r.get("motion") == "off" and not partner_keyboard.get("motionPaused"):
+                    flags.append("partner keyboard test did not run with motion paused")
+                partner_motion = partners.get("motion", {})
+                if r.get("motion") == "on" and not partner_motion.get("moving"):
+                    flags.append("partner rows do not move automatically when motion is on")
+                if not partner_motion.get("resumesAfterDrag"):
+                    flags.append("partner rows cannot resume from a completed drag state")
+                partner_focus = partners.get("focus", {})
+                if not partner_focus.get("borderless"):
+                    flags.append("partner row keyboard focus still draws a rectangle")
+                if not partner_focus.get("lineCue"):
+                    flags.append("partner row keyboard focus lacks a non-rectangular line cue")
+            hero_title = r.get("heroTitle")
+            if r.get("url") in ("/", "/zh/") and not hero_title:
+                flags.append("hero headline computed audit is missing")
+            elif hero_title:
+                if not hero_title.get("balanced"):
+                    flags.append("hero headline does not use balanced wrapping")
+                if not hero_title.get("constrained"):
+                    flags.append("hero headline has no content-independent line measure")
+                if hero_title.get("manualBreaks"):
+                    flags.append("hero headline contains manual line breaks")
+                if not hero_title.get("fits"):
+                    flags.append("hero headline overflows its text rail")
             if over > 1:
                 flags.append("page %dpx wider than the viewport" % over)
             if not r["etbook"]:
                 flags.append("ET BOOK DID NOT LOAD")
             if not r["loaded"]:
                 flags.append("body.loaded never set")
+            if not r.get("motionStartsRunning"):
+                flags.append("a stale saved pause prevents motion on a fresh page load")
             if r.get("revealStuck"):
                 flags.append("%d BLOCK(S) LEFT HIDDEN BY THE REVEAL: %s"
                              % (len(r["revealStuck"]), ", ".join(r["revealStuck"])))
@@ -655,10 +1158,22 @@ def main():
                 print("        target " + x)
             for x in r.get("undersizedFunctional", []):
                 print("        label  " + x)
-            for x in r.get("unboundedReading", []):
-                print("        measure " + x)
+            for x in r.get("constrainedNotes", []):
+                print("        width  " + x)
+            for x in r.get("unjustifiedNotes", []):
+                print("        align  " + x)
             for x in r.get("narrowProjectMedia", []):
                 print("        media  " + x)
+            if profile:
+                print("        profile requested=%s state=%s switcher=%s"
+                      % (profile.get("requested") or "(none)",
+                         "absent" if profile.get("layoutStateAbsent") else "present",
+                         "absent" if profile.get("switcherAbsent") else "present"))
+            if partners:
+                print("        partners rows=%s logos=%s keyboard=%s filters=%s"
+                      % (partners.get("viewportCount"), partners.get("logoCount"),
+                         "pass" if partners.get("keyboard", {}).get("passed") else "fail",
+                         "present" if partners.get("filtersPresent") else "missing"))
             for x in r["overflowing"]:
                 print("        wide   " + x)
             if r.get("midBar") or r.get("midHero"):
@@ -684,8 +1199,8 @@ def main():
               "stalled." % len(failed))
         return 1
     print("Profiles deleted. Nothing was written to __site/.")
-    print("Reminder: clear localStorage labMotion and labTheme in your OWN browser "
-          "if you have been testing there by hand.")
+    print("Reminder: clear localStorage labTheme in your OWN browser if you have "
+          "been testing themes there by hand.")
     return 0
 
 

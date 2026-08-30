@@ -1,6 +1,6 @@
 +++
 title = "About"
-descr = "The laboratory, what it can do for an industrial project, and how companies work with us."
+descr = "An overview of the laboratory's research capabilities, leadership and approach to industrial collaboration."
 lang = "en"
 +++
 
@@ -38,28 +38,28 @@ lang = "en"
 @@container
 @@page-narrow,prose
 
-## What a collaboration looks like
+## Collaboration process
 
-Most projects follow the same four steps. The first one is free.
+Most collaborations follow four stages. The initial consultation is provided without charge.
 
-1. **You describe the problem.** What you are cooling, what the heat load is, what is currently stopping you. One email or one meeting is enough.
-2. **We say honestly whether we can help.** If the answer is no, we say so and, where we can, point you somewhere better.
-3. **We agree a scope.** Measurement only, modeling only, or both. Timeline, deliverables and confidentiality are fixed in writing before work starts.
-4. **We deliver, and we defend the numbers.** Every measurement comes with its uncertainty. Every model is validated against data.
+1. **Problem definition.** The organization describes the system, heat load, temperature limit and current technical constraint. An email or an initial meeting is sufficient.
+2. **Capability assessment.** The laboratory determines whether its experimental and computational capabilities are appropriate. If they are not, the laboratory states that clearly and, where possible, identifies a more suitable resource.
+3. **Scope agreement.** Experimental work, modeling or a combined program is defined together with the schedule, deliverables, confidentiality terms and intellectual-property provisions.
+4. **Delivery and validation.** Measurements include documented uncertainty, and models are validated against experimental data.
 
-## Why this laboratory
+## Laboratory strengths
 
-- **About 60 researchers.** Enough people to run a serious company project without stopping the rest of the lab.
-- **Experiment and simulation under one roof.** We do not hand you a model nobody has validated.
-- **Twelve patents.** The group has taken ideas past publication and into protectable technology.
-- **Twenty-one years of industrial R&D.** Prof. Wang led research at the Industrial Technology Research Institute from 1989 to 2010 before returning to academia. This laboratory was built by somebody who has worked to industrial deadlines.
+- **Approximately 60 researchers.** The group has the capacity to conduct substantial industrial projects alongside its academic research.
+- **Integrated experimentation and simulation.** Experimental measurements and computational models are developed and validated within the same laboratory.
+- **Twelve patents.** The group's record includes twelve patented technologies.
+- **Twenty-one years of industrial R&D experience.** Professor Wang worked at the Industrial Technology Research Institute from 1989 to 2010 before joining National Chiao Tung University as a professor.
 
-## Working with a university, practically
+## Practical terms for university collaboration
 
-- **Confidentiality.** A non-disclosure agreement is normal and expected. Most of our industrial work is covered by one.
-- **Publication.** We will always ask before publishing anything from a joint project, and we accept a delay or a refusal.
-- **Intellectual property.** Terms are agreed in the contract before work begins, not afterwards.
-- **Cost.** University overheads are lower than a commercial test house, and the work is done by researchers who publish in the field.
+- **Confidentiality.** Non-disclosure agreements are standard, and most industrial work is conducted under one.
+- **Publication.** Material arising from a joint project is submitted to the partner for approval before publication; delayed publication or non-publication can be accommodated.
+- **Intellectual property.** Ownership and licensing terms are defined in the written agreement before work begins.
+- **Cost.** Project costs and university overheads are defined in the written agreement before work begins.
 @@
 @@
 @@

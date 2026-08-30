@@ -46,7 +46,7 @@ Data collection is in progress. Results are not published yet.
 
 ## Notes and publications
 
-*Add links here as they appear — a DOI, a conference paper, or a lab note.*
+No related publications or laboratory notes are currently listed.
 @@
 @@
 @@
