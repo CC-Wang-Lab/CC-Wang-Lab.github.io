@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import sys
 import tomllib
@@ -14,6 +15,45 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
 SITEMAP = SITE / "sitemap.xml"
+TEST_SETUP_ASSETS = ROOT / "_assets" / "img" / "test-setups"
+SOURCE_DIRECTORY_MARKER = "CCWANG LAB Test Setup - Aug 2026"
+
+# Recorded from the original 31-file source set during the full Task 12 audit.
+# Keeping the manifest here makes later whole-slide checks independent of the
+# user-specific source directory.
+SOURCE_SLIDE_SHA256 = {
+    "Slide1.jpg": "f15022513fe2d074739f2e617cbf83d092c76a0423a82a3c5df8d3e71d085dd7",
+    "Slide2.jpg": "347f33d70bc9d650f1f358affcf6ac9158439b978d413280ef5c2e2ef56af1a8",
+    "Slide3.jpg": "105555286644806bf06170124644c4402221dad8ab7fbfeb90d218484b83c49a",
+    "Slide4.jpg": "6c34a2de57dfd871d292d124eeb7229ab22e12e296f72c30e858eda842dc4bfc",
+    "Slide5.jpg": "0f90146f7a44623274adf05d11ae77359fc3bda5b8a92b03736c5709f1feb5d7",
+    "Slide6.jpg": "2ddc252750309a962fd89f916896248b639492f075c330c618f8b0f6c87b9f76",
+    "Slide7.jpg": "65ec71b085831a3ce8ad9164cd9b5650e31e437099c83e9e97ccb35c91306dff",
+    "Slide8.jpg": "2c5055d7fb000c86822b963482ab5183d9fc36d277da9c4d9b327c98b6095aad",
+    "Slide9.jpg": "a15e09587a5cc9ae0c63988f7bfcefa74739dcffc84f80e335a1a7c11dadef1a",
+    "Slide10.jpg": "a095af0e0d0baf3e874c7a46a4134900c8fe5a4a835809c886437ead0d44ad77",
+    "Slide11.jpg": "21b330dfe157c29f604b4abbd1a1eb0682afcb5df52ffd273b7ccdf3e874628e",
+    "Slide12.jpg": "65dbf753ee74f4ef4c8ea757c6d207c4069ab1578dad6ff696747dfb46dc29a7",
+    "Slide13.jpg": "262df83040d056cba33ef95ba07c07e8d4367a8f6676e257902c478c989a6b71",
+    "Slide14.jpg": "21a9a0fe6ed54ae279369f8f0280c61e5118adb170d68301cbe54832795f03ae",
+    "Slide15.jpg": "889c890a6bcd376b40ff20aace2c297f48e88f7e2de3e250a7d2fe6837e3051e",
+    "Slide16.jpg": "9808585acd600ae2f0ea46564e39b7b13431c6a8225da409ca0cc9f61e3d30f7",
+    "Slide17.jpg": "010b19b2fa277f98ae729e05b665f085d21a0f0bf744d1c2e365337355dad343",
+    "Slide18.jpg": "1fe9ac68088b5b3a44db7d1fae0f21cfb733d4f3b0d860d5f4c3d561e2d4d34e",
+    "Slide19.jpg": "307c627794555486e51dd808878b57820c13029ad4cd33c35a5c389bac6cc3f6",
+    "Slide20.jpg": "4b48ef52a3dda6c4634c56ff42d659923ae650cd4e3edf43948a32e4557be457",
+    "Slide21.jpg": "459cfa3e990296877cd5bba572012bed10a17148e638ffafa44d56c777dead10",
+    "Slide22.jpg": "343a2894546b817403970f2f08130950ebb5cb7059a13e24275e32e6a35a187f",
+    "Slide23.jpg": "058d6b2e0ae44afd780b511db35ebfc99c2fd8a57353e1cbe3bb5b00203365c2",
+    "Slide24.jpg": "078ffec3000c43c06d63d563767b48d0230b875a38183febc53fee125c9a204a",
+    "Slide25.jpg": "7c742483864674b3757496429d50419daede1a3635679dc2b057c3d6cb753f52",
+    "Slide26.jpg": "3eaa047e62d2805151a762889ccb3f556474f67714ace9c2e9b9df5458bdffb1",
+    "Slide27.jpg": "04c577c5084e24b89034e84ed640b38604f072abbf961d35559120196acd3732",
+    "Slide28.jpg": "6884d69ea53a47f14d340dfe9b7224ab709882a736214b77d5e03c73eda216a6",
+    "Slide29.jpg": "fe29eae639a2bdb30fd780b5d8e60d8ccada5cf66744563b5f0cf6b2bb82bdb8",
+    "Slide30.jpg": "1c4eaba1ad9e7b4521eff1b8e13c591cfa9f1f01e3d5fdca1cadaa9f1d7a6182",
+    "Slide31.jpg": "a12bf47895c47ed36e46c522cd97bcef8a6414cd7f77d7cfef9f1fd1c183e842",
+}
 
 EXPECTED = {
     "facility": {
@@ -109,6 +149,14 @@ def source_asset(image: object) -> Path | None:
     return ROOT / "_assets" / image.removeprefix("/assets/")
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def main() -> int:
     failures: list[str] = []
     sitemap = SITEMAP.read_text(encoding="utf-8") if SITEMAP.is_file() else ""
@@ -118,6 +166,40 @@ def main() -> int:
             failures.append(message)
 
     require(SITEMAP.is_file(), "missing built sitemap: __site/sitemap.xml")
+
+    expected_slide_names = {f"Slide{number}.jpg" for number in range(1, 32)}
+    require(set(SOURCE_SLIDE_SHA256) == expected_slide_names,
+            "source-slide hash manifest must contain exactly Slide1.jpg through Slide31.jpg")
+    require(len(set(SOURCE_SLIDE_SHA256.values())) == 31,
+            "source-slide hash manifest must contain 31 unique hashes")
+    require(all(re.fullmatch(r"[0-9a-f]{64}", digest)
+                for digest in SOURCE_SLIDE_SHA256.values()),
+            "source-slide hash manifest contains an invalid SHA-256 digest")
+
+    source_hashes = {
+        digest: filename for filename, digest in SOURCE_SLIDE_SHA256.items()
+    }
+    require(TEST_SETUP_ASSETS.is_dir(),
+            "missing test-setup asset directory: _assets/img/test-setups")
+    if TEST_SETUP_ASSETS.is_dir():
+        for asset in sorted(path for path in TEST_SETUP_ASSETS.rglob("*")
+                            if path.is_file()):
+            digest = sha256_file(asset)
+            source_filename = source_hashes.get(digest)
+            require(source_filename is None,
+                    f"{asset.relative_to(ROOT)} is a byte-identical complete source slide "
+                    f"({source_filename})")
+
+    if SITE.is_dir():
+        for path in sorted(SITE.rglob("*.html")):
+            html = path.read_text(encoding="utf-8")
+            relative = path.relative_to(ROOT)
+            require(re.search(r"Slide[^/\\\"']*\.jpg", html, re.IGNORECASE) is None,
+                    f"{relative}: generated HTML references a source Slide*.jpg")
+            require(SOURCE_DIRECTORY_MARKER.casefold() not in html.casefold(),
+                    f"{relative}: generated HTML exposes the source-directory text")
+            require("{{" not in html and "}}" not in html,
+                    f"{relative}: generated HTML contains an unresolved template marker")
 
     for kind, expected_records in EXPECTED.items():
         records = load_records(kind)
@@ -194,9 +276,6 @@ def main() -> int:
                         REQUIRED_PROJECT_HTML_TEXT.get(record_id, ()), start=1):
                     require(fragment in visible_text,
                             f"{route}: missing selectable source fact {fact_index}")
-                require(re.search(r"Slide[^/\\\"']*\.jpg", html, re.IGNORECASE) is None,
-                        f"{route}: generated HTML references a source Slide*.jpg")
-
     if failures:
         print("TEST SETUP IMPORT AUDIT FAILED")
         for failure in failures:

@@ -22,7 +22,7 @@ lang = "en"
 #
 # Keep this a Julia comment. An HTML comment inside the +++ block is a parse
 # error, because Franklin evaluates the whole block as Julia code.
-ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", "CLAUDE.md",
+ignore = ["node_modules/", "tmp.md", "docs/", ".claude/", ".superpowers/", "CLAUDE.md",
           "THIRD-PARTY-LICENSES.md", "_tmp/",
           "_data/", "scripts/",
           "Project.toml", "Manifest.toml", "package.json", "package-lock.json"]
