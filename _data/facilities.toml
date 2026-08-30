@@ -187,6 +187,164 @@ caption_en = "▲Simulated rack"
 caption_zh = "▲Simulated rack"
 
 [[item]]
+id       = "two-phase-cold-plate-test-platform"
+area     = "two-phase"
+image    = "/assets/img/test-setups/two-phase-cold-plate-test-platform/annotated-platform.jpg"
+layout   = "a"
+source_slides = [11]
+title_en = "Two-Phase Cold Plate Cooling Test Platform"
+title_zh = "Two-Phase Cold Plate Cooling Test Platform"
+lead_en  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions."
+lead_zh  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions."
+body_en  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions. The working fluid circulates from the tank through the pump, preheater, flow meter, test section, and condenser before returning to the tank. The system controls the flow rate, pressure, and fluid temperature while recording steady-state thermal and hydraulic data. It is used to evaluate boiling curves, critical heat flux, heat transfer coefficients, thermal resistance, pressure drop, and flow behavior."
+body_zh  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions. The working fluid circulates from the tank through the pump, preheater, flow meter, test section, and condenser before returning to the tank. The system controls the flow rate, pressure, and fluid temperature while recording steady-state thermal and hydraulic data. It is used to evaluate boiling curves, critical heat flux, heat transfer coefficients, thermal resistance, pressure drop, and flow behavior."
+
+[[item.section]]
+heading_en = "Main Function"
+heading_zh = "Main Function"
+items_en = [
+  "Evaluate two-phase cold plates",
+  "Control flow rate, pressure, and fluid temperature",
+  "Record thermal and hydraulic data at steady state",
+  "For various working fluids, up to 5 kW",
+]
+items_zh = [
+  "Evaluate two-phase cold plates",
+  "Control flow rate, pressure, and fluid temperature",
+  "Record thermal and hydraulic data at steady state",
+  "For various working fluids, up to 5 kW",
+]
+
+[[item.section]]
+heading_en = "Flow Path"
+heading_zh = "Flow Path"
+body_en = "Tank → Pump →( Preheater)→ Flow meter → Test section→ Condenser → Tank"
+body_zh = "Tank → Pump →( Preheater)→ Flow meter → Test section→ Condenser → Tank"
+
+[[item.section]]
+heading_en = "Main Function"
+heading_zh = "Main Function"
+items_en = [
+  "Boiling curve / CHF",
+  "Heat transfer coefficient (HTC)",
+  "Thermal resistance",
+  "Pressure drop",
+  "Flow visualization",
+]
+items_zh = [
+  "Boiling curve / CHF",
+  "Heat transfer coefficient (HTC)",
+  "Thermal resistance",
+  "Pressure drop",
+  "Flow visualization",
+]
+
+[[item.figure]]
+id         = "annotated-platform"
+kind       = "photo"
+image      = "/assets/img/test-setups/two-phase-cold-plate-test-platform/annotated-platform.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "flooded-evaporator-test-rig"
+area     = "two-phase"
+image    = "/assets/img/test-setups/flooded-evaporator-test-rig/system.jpg"
+layout   = "b"
+source_slides = [12]
+title_en = "Flooded evaporator for testing shell side boiling, applicable for various refrigerants"
+title_zh = "Flooded evaporator for testing shell side boiling, applicable for various refrigerants"
+lead_en  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser."
+lead_zh  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser."
+body_en  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser. Vapor flows through the upper connection line to the condenser before returning to the evaporator as liquid. A water bath regulates the condensation rate to maintain stable saturation pressure and temperature. The visualized evaporator includes a quartz sight-glass window, cartridge heaters, embedded thermocouples, and differential-pressure transducers. The system evaluates smooth, micro-porous-coated, and enhanced-fin surfaces under different single-tube and tube-bundle arrangements."
+body_zh  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser. Vapor flows through the upper connection line to the condenser before returning to the evaporator as liquid. A water bath regulates the condensation rate to maintain stable saturation pressure and temperature. The visualized evaporator includes a quartz sight-glass window, cartridge heaters, embedded thermocouples, and differential-pressure transducers. The system evaluates smooth, micro-porous-coated, and enhanced-fin surfaces under different single-tube and tube-bundle arrangements."
+
+[[item.figure]]
+id         = "system"
+kind       = "photo"
+image      = "/assets/img/test-setups/flooded-evaporator-test-rig/system.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "evaporator-close-up"
+kind       = "photo"
+image      = "/assets/img/test-setups/flooded-evaporator-test-rig/evaporator-close-up.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "boiler-surface-test-rig"
+area     = "two-phase"
+image    = "/assets/img/test-setups/boiler-surface-test-rig/test-rig.jpg"
+layout   = "c"
+source_slides = [13]
+title_en = "Experiment Setup for boiler surface"
+title_zh = "Experiment Setup for boiler surface"
+lead_en  = "Different surface enhancement"
+lead_zh  = "Different surface enhancement"
+body_en  = ""
+body_zh  = ""
+
+[[item.section]]
+heading_en = "Different surface enhancement"
+heading_zh = "Different surface enhancement"
+items_en = [
+  "Single & Double-layer sintering (copper-nickel alloy)",
+  "Additive manufacturing (copper-chrome alloy)",
+  "Acid etching (copper)",
+  "Metalized diamond particles (diamond-copper)",
+]
+items_zh = [
+  "Single & Double-layer sintering (copper-nickel alloy)",
+  "Additive manufacturing (copper-chrome alloy)",
+  "Acid etching (copper)",
+  "Metalized diamond particles (diamond-copper)",
+]
+
+[[item.figure]]
+id         = "sintered"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/sintered.jpg"
+caption_en = "Sintered"
+caption_zh = "Sintered"
+
+[[item.figure]]
+id         = "additively-manufactured"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/additively-manufactured.jpg"
+caption_en = "Additively manufactured"
+caption_zh = "Additively manufactured"
+
+[[item.figure]]
+id         = "diamond"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/diamond.jpg"
+caption_en = "Diamond"
+caption_zh = "Diamond"
+
+[[item.figure]]
+id         = "acid-etched"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/acid-etched.jpg"
+caption_en = "Acid etched"
+caption_zh = "Acid etched"
+
+[[item.figure]]
+id         = "test-rig"
+kind       = "photo"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/test-rig.jpg"
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "test-schematic"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/test-schematic.png"
+caption_en = ""
+caption_zh = ""
+
+[[item]]
 id       = "placeholder-facility-1"
 placeholder = true
 area     = "two-phase"

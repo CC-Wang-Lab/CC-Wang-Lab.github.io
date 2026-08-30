@@ -153,8 +153,8 @@ def main() -> int:
         require(TITLE in page.normalized_text(), "Facilities card title changed")
         require(f'src="{INDEX_IMAGE}"' in source,
                 "Facilities card does not use the cabinet diagram")
-        require(len(page.matching("card-media-img--contain")) == 1,
-                "Facilities card must show the complete diagram without cropping")
+        require(len(page.matching("card-media-img--contain")) >= 1,
+                "Facilities cards must include a complete diagram without cropping")
         require(LEGACY_SLIDE not in source,
                 "Facilities card still displays the complete slide")
 

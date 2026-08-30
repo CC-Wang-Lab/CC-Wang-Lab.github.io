@@ -20,6 +20,9 @@ EXPECTED = {
         "thermal-fin-natural-convection-chamber": ([7], "a", "heat-exchangers", 1),
         "air-cooler-wind-tunnel": ([8], "b", "electronics-cooling", 1),
         "data-center-air-cooling-facility": ([9, 10], "c", "data-center", 7),
+        "two-phase-cold-plate-test-platform": ([11], "a", "two-phase", 1),
+        "flooded-evaporator-test-rig": ([12], "b", "two-phase", 2),
+        "boiler-surface-test-rig": ([13], "c", "two-phase", 6),
     },
     "project": {},
 }
