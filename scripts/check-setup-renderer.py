@@ -123,6 +123,24 @@ def parse(path: Path) -> tuple[str, Page]:
     return source, page
 
 
+def configured_site_origin() -> tuple[str, str]:
+    config = (ROOT / "config.md").read_text(encoding="utf-8")
+    match = re.search(r'^website_url\s*=\s*"([^"]+)"', config, re.MULTILINE)
+    if match is None:
+        raise RuntimeError("config.md must define website_url")
+    parts = urlsplit(match.group(1))
+    if parts.scheme.lower() not in ("http", "https") or not parts.netloc:
+        raise RuntimeError("config.md website_url must be an absolute http(s) URL")
+    return parts.scheme.lower(), parts.netloc.lower()
+
+
+CANONICAL_ORIGIN = configured_site_origin()
+
+
+def contains_exact_href(hrefs, expected: str) -> bool:
+    return expected in hrefs
+
+
 def normalize_internal_path(value: str) -> str | None:
     parts = urlsplit(value.replace("\\", "/"))
     if parts.scheme or parts.netloc or not parts.path.startswith("/"):
@@ -136,7 +154,14 @@ def normalize_internal_path(value: str) -> str | None:
 def sitemap_routes(sitemap: str) -> set[str]:
     routes: set[str] = set()
     for loc in re.findall(r"<loc>(.*?)</loc>", sitemap, re.DOTALL):
-        route = normalize_internal_path(urlsplit(loc.replace("\\", "/")).path)
+        parts = urlsplit(loc.replace("\\", "/"))
+        if parts.scheme:
+            if (parts.scheme.lower() not in ("http", "https") or
+                    (parts.scheme.lower(), parts.netloc.lower()) != CANONICAL_ORIGIN):
+                continue
+        elif parts.netloc:
+            continue
+        route = normalize_internal_path(parts.path)
         if route is not None:
             routes.add(route)
     return routes
@@ -152,9 +177,17 @@ def normalization_regression_failures() -> list[str]:
     for label, raw, expected in cases:
         if normalize_internal_path(raw) != expected:
             failures.append(f"path normalization regression: {label}")
+    canonical = "/facilities/falling-film-cooling-system/"
+    if contains_exact_href((canonical + "index.html", canonical + "?source=slide"), canonical):
+        failures.append("exact canonical link regression: normalized variant accepted")
+    if not contains_exact_href((canonical,), canonical):
+        failures.append("exact canonical link regression: exact href rejected")
     sitemap = "<loc>https://cc-wang-lab.github.io\\facilities\\falling-film-cooling-c\\index.html</loc>"
     if "/facilities/falling-film-cooling-c/" not in sitemap_routes(sitemap):
         failures.append("path normalization regression: Windows sitemap output")
+    external = "<loc>https://evil.example/facilities/falling-film-cooling-system/index.html</loc><loc>https://evil.example/facilities/falling-film-cooling-a/index.html</loc>"
+    if sitemap_routes(external):
+        failures.append("sitemap origin regression: external authority was treated as internal")
     return failures
 
 
@@ -384,8 +417,7 @@ def main() -> int:
         require(path.is_file(), f"missing facilities listing route: {relative}")
         if path.is_file():
             _, page = parse(path)
-            links = {normalize_internal_path(href) for href in page.links}
-            require(expected_href in links,
+            require(contains_exact_href(page.links, expected_href),
                     f"/{relative.removesuffix('index.html')}: missing canonical facility link {expected_href}")
 
     for relative in CARVERA_ROUTES:
