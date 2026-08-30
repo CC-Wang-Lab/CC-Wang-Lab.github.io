@@ -1656,6 +1656,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   transform: scale(1);
   transition: transform 0.4s ease-out;
 }
+.card-media-img--contain {
+  padding: clamp(0.65rem, 0.474rem + 0.751vw, 1.15rem);
+  background: #fff;
+}
+.card-media-img--contain > img { object-fit: contain; }
 
 .card-media-body {
   display: block;
@@ -2094,11 +2099,202 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   margin-top: 0.6rem;
 }
 
+/* Shared setup-study layouts. Each record selects spatial hierarchy A, B, or C. */
+.setup-study-hd .card-badge { margin-bottom: 0.6rem; }
+.setup-study {
+  display: grid;
+  align-items: start;
+  gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+}
+.setup-study-copy {
+  grid-area: copy;
+  min-width: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+}
+.setup-study-copy p {
+  margin: 0;
+  text-align: justify;
+}
+.setup-study-figures {
+  grid-area: figures;
+  display: grid;
+  align-items: start;
+  gap: clamp(1.25rem, 0.986rem + 1.127vw, 2rem);
+  min-width: 0;
+}
+.setup-study-figure {
+  margin: 0;
+  min-width: 0;
+}
+.setup-study-figure-media {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--lab-shadow);
+}
+.setup-study-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.setup-study-figure--photo .setup-study-figure-media {
+  background: var(--lab-surface-2);
+}
+.setup-study-figure--photo img {
+  width: 100%;
+  aspect-ratio: 166 / 224;
+  object-fit: cover;
+}
+.setup-study-figure--diagram .setup-study-figure-media {
+  min-height: 11rem;
+  padding: clamp(0.55rem, 0.374rem + 0.751vw, 1.05rem);
+}
+.setup-study-figure figcaption {
+  margin-top: 0.55rem;
+  color: var(--lab-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-tight);
+}
+.setup-study--a {
+  grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.75fr);
+  grid-template-areas: "figures copy";
+}
+.setup-study--a .setup-study-figures {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.setup-study--a .setup-study-figure--diagram {
+  grid-column: 1 / -1;
+}
+.setup-study--b {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "copy"
+    "figures";
+}
+.setup-study--b .setup-study-copy {
+  max-width: var(--measure);
+}
+.setup-study--b .setup-study-figures {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.setup-study--b .setup-study-figure--cabinet {
+  grid-column: 1 / 3;
+  grid-row: 1;
+}
+.setup-study--b .setup-study-figure--dimensions {
+  grid-column: 3 / 5;
+  grid-row: 1;
+}
+.setup-study--b .setup-study-figure--100w {
+  grid-column: 2 / 3;
+  grid-row: 2;
+}
+.setup-study--b .setup-study-figure--500w {
+  grid-column: 3 / 4;
+  grid-row: 2;
+}
+.setup-study--c {
+  grid-template-columns: minmax(17rem, 0.76fr) minmax(0, 1.24fr);
+  grid-template-areas: "copy figures";
+}
+.setup-study--c .setup-study-figures {
+  grid-template-columns: minmax(7.5rem, 0.62fr) minmax(0, 1.38fr);
+}
+.setup-study--c .setup-study-figure--100w {
+  grid-column: 1;
+  grid-row: 1;
+}
+.setup-study--c .setup-study-figure--500w {
+  grid-column: 1;
+  grid-row: 2;
+}
+.setup-study--c .setup-study-figure--cabinet {
+  grid-column: 2;
+  grid-row: 1;
+}
+.setup-study--c .setup-study-figure--dimensions {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.facility-design-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.facility-design-card {
+  display: grid;
+  align-content: start;
+  min-height: var(--control-min);
+  overflow: hidden;
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--lab-surface);
+  color: inherit;
+  box-shadow: var(--lab-shadow);
+}
+.facility-design-card:hover {
+  border-color: var(--lab-accent);
+  color: var(--lab-accent);
+  text-decoration: none;
+}
+.facility-design-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.facility-design-card--contain img {
+  padding: clamp(0.65rem, 0.474rem + 0.751vw, 1.15rem);
+  background: #fff;
+  object-fit: contain;
+}
+.facility-design-card > span {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+.facility-design-card strong { font-size: var(--fs-lg); }
+.facility-design-card > span > span {
+  color: var(--lab-muted);
+  font-size: var(--fs-sm);
+}
+
 @media (max-width: 991.98px) {
   .ns-prev { left: -0.5rem; }
   .ns-next { right: -0.5rem; }
   .ns-nav { gap: 1.25rem; }
   .ns-nav-line { width: 6rem; }
+  .setup-study--a,
+  .setup-study--b,
+  .setup-study--c {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "copy"
+      "figures";
+  }
+  .setup-study--a .setup-study-figures,
+  .setup-study--b .setup-study-figures,
+  .setup-study--c .setup-study-figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .setup-study--a .setup-study-figure,
+  .setup-study--b .setup-study-figure,
+  .setup-study--c .setup-study-figure {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .setup-study--a .setup-study-figure--diagram,
+  .setup-study--b .setup-study-figure--diagram,
+  .setup-study--c .setup-study-figure--diagram {
+    grid-column: 1 / -1;
+  }
+  .facility-design-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 767.98px) {
   /* The container is full-bleed on phones, so the card would touch both edges

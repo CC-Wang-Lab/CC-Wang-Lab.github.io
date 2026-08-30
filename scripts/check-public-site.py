@@ -78,10 +78,8 @@ def main() -> int:
     failures: list[str] = []
     empty_routes = {
         "/news/": ("news", "No laboratory news is currently available."),
-        "/facilities/": ("facilities", "Facility records have not yet been published."),
         "/people/alumni/": ("alumni", "No alumni records are currently published."),
         "/zh/news/": ("news", "目前尚無實驗室最新消息。"),
-        "/zh/facilities/": ("facilities", "實驗設備資料尚未公開。"),
         "/zh/people/alumni/": ("alumni", "目前尚未公開歷屆成員資料。"),
     }
     for route, (kind, message) in empty_routes.items():
@@ -94,7 +92,10 @@ def main() -> int:
         )
         expect(message in html, f"{route} does not contain its localized empty-state copy", failures)
 
-    for route in ("/people/", "/projects/", "/zh/people/", "/zh/projects/"):
+    for route in (
+        "/people/", "/projects/", "/facilities/",
+        "/zh/people/", "/zh/projects/", "/zh/facilities/",
+    ):
         expect(not has_noindex(page(route)), f"{route} has public records but is noindexed", failures)
 
     hidden_routes = []

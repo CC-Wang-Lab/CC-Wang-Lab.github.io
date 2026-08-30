@@ -869,8 +869,8 @@ end
 #  Facilities — the equipment underneath the capabilities.
 #
 #  The SAME card as a project card, on purpose: image, research area, title,
-#  one line of scope. A facility has no page of its own to open, so the card is
-#  a static <div> and not a link, exactly like a research area with no project.
+#  one line of scope. Each public facility has one canonical detail page, so
+#  the card is an ordinary link.
 # ---------------------------------------------------------------------------
 
 """
@@ -885,26 +885,129 @@ function hfun_facilities()
     isempty(facilities) && return empty_state("facilities")
     cards = String[]
     for f in facilities
+        href = prefix() * "/facilities/" * String(f["id"]) * "/"
         badge = haskey(f, "area") ? """
             <span class="card-badge">$(esc(pick(area_by_id(String(f["area"]), "facilities.toml"), "title")))</span>""" : ""
         img = esc(get(f, "image", "/assets/img/projects/placeholder.svg"))
+        image_fit = lowercase(String(get(f, "image_fit", "cover")))
+        image_fit in ("cover", "contain") ||
+            error("facilities.toml: image_fit for '$(f["id"])' must be cover or contain")
+        image_class = image_fit == "contain" ? " card-media-img--contain" : ""
         push!(cards, """
       <div class="col-md-6 col-lg-4">
-        <div class="card-media is-static" id="$(esc(f["id"]))">
-          <span class="card-media-img">
+        <a class="card-media" id="$(esc(f["id"]))" href="$(esc(href))">
+          <span class="card-media-img$(image_class)">
             <img src="$(img)" alt="" loading="lazy">
           </span>
           <span class="card-media-body">$(badge)
             <span class="card-title">$(esc(pick(f, "title")))</span>
             <span class="card-scope">$(esc(pick(f, "lead")))</span>
           </span>
-        </div>
+        </a>
       </div>""")
     end
     return """<div class="row g-4">\n$(join(cards, "\n"))\n</div>"""
 end
 
 facility_items() = public_rows(data("facilities")["item"])
+
+function facility_by_id(id::AbstractString)
+    hit = filter(f -> get(f, "id", "") == id, facility_items())
+    isempty(hit) && error("no public facility with id '$(id)' in facilities.toml")
+    return first(hit)
+end
+
+function setup_layout(record::AbstractDict, src::AbstractString)
+    layout = lowercase(String(get(record, "layout", "")))
+    layout in ("a", "b", "c") ||
+        error("$src: layout for '$(record["id"])' must be a, b or c")
+    return layout
+end
+
+function render_setup_sections(record::AbstractDict)
+    blocks = String[]
+    for section in get(record, "section", Any[])
+        heading = strip(pick(section, "heading"))
+        body = strip(pick(section, "body"))
+        items = get(section, "items_" * lang(), get(section, "items_en", Any[]))
+        heading_html = isempty(heading) ? "" : "<h2>$(esc(heading))</h2>"
+        body_html = isempty(body) ? "" : "<p>$(esc(body))</p>"
+        items_html = isempty(items) ? "" :
+            "<ul>" * join(["<li>$(esc(item))</li>" for item in items]) * "</ul>"
+        push!(blocks, "<section>$(heading_html)$(body_html)$(items_html)</section>")
+    end
+    return join(blocks, "\n")
+end
+
+function render_setup_figure(figure::AbstractDict)::String
+    figure_id = esc(String(figure["id"]))
+    kind = esc(String(get(figure, "kind", "figure")))
+    image = esc(String(figure["image"]))
+    caption = esc(pick(figure, "caption"))
+    caption_html = isempty(caption) ? "" : "\n        <figcaption>$(caption)</figcaption>"
+    return """
+      <figure class="setup-study-figure setup-study-figure--$(figure_id) setup-study-figure--$(kind)">
+        <div class="setup-study-figure-media">
+          <img src="$(image)" alt="" loading="lazy" decoding="async">
+        </div>$(caption_html)
+      </figure>"""
+end
+
+function render_setup_page(record::AbstractDict, kind::AbstractString)::String
+    src = kind == "facility" ? "facilities.toml" : "projects.toml"
+    layout = setup_layout(record, src)
+    figures = get(record, "figure", Any[])
+    isempty(figures) && error("$src: '$(record["id"])' needs at least one figure")
+    back_path = kind == "facility" ? "/facilities/" : "/projects/"
+    back_html = kind == "facility" ?
+        "&larr; " * esc(ui("nav", "facilities")) : esc(ui("projects", "back"))
+    area = area_by_id(String(record["area"]), src)
+    title = esc(pick(record, "title"))
+    figure_html = join([render_setup_figure(figure) for figure in figures], "\n")
+    return """
+<header class="page-hd setup-study-hd"><div class="container">
+  <p class="project-crumb"><a href="$(prefix())$(back_path)">$(back_html)</a></p>
+  <span class="card-badge">$(esc(pick(area, "title")))</span>
+  <h1>$(title)</h1>
+</div></header>
+<div class="page-body setup-study-page"><div class="container">
+  <article class="setup-study setup-study--$(layout)">
+    <div class="setup-study-copy prose">
+      <p>$(esc(pick(record, "body")))</p>
+      $(render_setup_sections(record))
+    </div>
+    <div class="setup-study-figures">$(figure_html)</div>
+  </article>
+</div></div>"""
+end
+
+"""`{{facility_page}}` — one shared facility record in layout A, B or C."""
+function hfun_facility_page()::String
+    id = locvar(:facility)
+    id === nothing && error("this page needs `facility = \"<id>\"` in its front matter")
+    return render_setup_page(facility_by_id(String(id)), "facility")
+end
+
+"""`{{facility_designs}}` — temporary links to the three facility layouts."""
+function hfun_facility_designs()
+    facility = facility_by_id("falling-film-cooling-system")
+    title = esc(pick(facility, "title"))
+    image = esc(String(facility["image"]))
+    image_fit = lowercase(String(get(facility, "image_fit", "cover")))
+    image_class = image_fit == "contain" ? " facility-design-card--contain" : ""
+    cards = String[]
+    for variant in ("a", "b", "c")
+        upper = uppercase(variant)
+        push!(cards, """
+    <a class="facility-design-card$(image_class)" href="/facilities/falling-film-cooling-$(variant)/">
+      <img src="$(image)" alt="">
+      <span><strong>Layout $(upper)</strong><span>$(title)</span></span>
+    </a>""")
+    end
+    return """<div class="facility-design-grid">
+$(join(cards, "\n"))
+</div>"""
+end
 
 # ---------------------------------------------------------------------------
 #  Team

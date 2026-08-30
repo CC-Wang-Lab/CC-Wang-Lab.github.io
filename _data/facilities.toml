@@ -4,15 +4,58 @@
 # languages. The card is the same one the Projects page uses: image, research
 # area, title, one line of scope. Nobody writes HTML for a facility.
 #
-# ALL SIX ENTRIES BELOW ARE PLACEHOLDERS. Replace them before launch.
+# Entries marked `placeholder = true` remain hidden until replaced.
 #
 # FIELDS
 #   id     required   the anchor, /facilities/#<id>
 #   area   optional   an id from research.toml. Draws the label above the
 #                     title, in both languages. A wrong id STOPS the build.
 #   image  optional   a photo. Left out, the card shows the shared placeholder.
+#   image_fit optional `cover` (default) or `contain` for technical drawings
 #   title  required   what the thing is called
 #   lead   required   one or two sentences: what it measures, and for whom
+
+[[item]]
+id       = "falling-film-cooling-system"
+area     = "two-phase"
+image    = "/assets/img/facilities/falling-film-cooling-cabinet.png"
+image_fit = "contain"
+layout   = "c"
+source_slides = [2]
+title_en = "Two-phase falling-film cooling system"
+title_zh = "Two-phase falling-film cooling system"
+lead_en  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop."
+lead_zh  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop."
+body_en  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop. Experiments were conducted using a simulated heat source measuring 44 mm × 34 mm × 1 mm. The degree of subcooling was maintained at 10°C, while flow rates of 500, 700, and 900 g/min were tested to investigate the effects of flow rate and heat-sink design on the heat transfer coefficient and temperature distribution. At the same flow rate, increasing the power input expanded the two-phase boiling region and increased the overall heat transfer coefficient. At the same power input, a higher flow rate provided better heat transfer performance."
+body_zh  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop. Experiments were conducted using a simulated heat source measuring 44 mm × 34 mm × 1 mm. The degree of subcooling was maintained at 10°C, while flow rates of 500, 700, and 900 g/min were tested to investigate the effects of flow rate and heat-sink design on the heat transfer coefficient and temperature distribution. At the same flow rate, increasing the power input expanded the two-phase boiling region and increased the overall heat transfer coefficient. At the same power input, a higher flow rate provided better heat transfer performance."
+
+[[item.figure]]
+id         = "100w"
+kind       = "photo"
+image      = "/assets/img/facilities/falling-film-cooling-100w.jpg"
+caption_en = "Fig. Falling film (100 W)"
+caption_zh = "Fig. Falling film (100 W)"
+
+[[item.figure]]
+id         = "500w"
+kind       = "photo"
+image      = "/assets/img/facilities/falling-film-cooling-500w.jpg"
+caption_en = "Fig. Falling film (500 W)"
+caption_zh = "Fig. Falling film (500 W)"
+
+[[item.figure]]
+id         = "cabinet"
+kind       = "diagram"
+image      = "/assets/img/facilities/falling-film-cooling-cabinet.png"
+caption_en = "Fig. Perspective view of the experimental cabinet"
+caption_zh = "Fig. Perspective view of the experimental cabinet"
+
+[[item.figure]]
+id         = "dimensions"
+kind       = "diagram"
+image      = "/assets/img/facilities/falling-film-cooling-dimensions.png"
+caption_en = "Fig. Experimental cabinet interior dimensions"
+caption_zh = "Fig. Experimental cabinet interior dimensions"
 
 [[item]]
 id       = "placeholder-facility-1"
