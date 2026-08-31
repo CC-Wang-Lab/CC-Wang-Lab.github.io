@@ -1060,21 +1060,95 @@ function render_notes(record::AbstractDict)::String
 $(render_setup_sections(record))</div>"""
 end
 
-"""Notes beside one figure. Side by side from 992px up, stacked below it."""
-function render_split(record::AbstractDict, id::AbstractString)::String
-    # A portrait hero is capped at 40rem tall, so it is narrow, and a column
-    # sized for a landscape photograph leaves it floating in the middle of
-    # white space. Measured on thermal-fin-natural-convection-chamber: 360px
-    # of photograph inside a 733px column. A tall hero gets a column that
-    # hugs it instead, and the words take everything else.
-    figure = figure_by_id(record, id)
-    tall = Int(figure["w"]) < Int(figure["h"]) ? " setup-split--tall" : ""
+"""One text block named inside a split: `notes`, `lead` or `sec:<n>`."""
+function render_split_text(record::AbstractDict, token::AbstractString)::String
+    token == "notes" && return render_notes(record)
+    token == "lead" && return render_lead(record)
+    startswith(token, "sec:") &&
+        return render_section(record, parse(Int, token[5:end]))
+    error("record '$(record["id"])': unknown text block $(repr(token)) in a split")
+end
+
+"""
+The solved column ratio for this record, in the page's language, or `nothing`.
+
+    split_en = [430, 734]
+
+means: the words want 430px and the pictures 734px. At those two widths the
+two columns end at the same height. They are WIDTHS, not a ratio, and that is
+deliberate: see the block comment on `.setup-split` in style.css. A ratio
+balances at one container width; two fixed widths balance at every width they
+both fit at, and the block stacks by itself when they stop fitting.
+
+WHY THIS IS STORED AND NOT COMPUTED. The notes are not one paragraph. A record
+carries an `h2` at 37.6px over a 41.36px line, list items that are one line
+whatever the column width, and a `figcaption` that re-wraps as the column
+narrows. `ceil(N * c / w) * L` describes none of that, so the height was read
+off a browser and the answer cannot be recovered in Julia at build time.
+
+IT IS THEREFORE A COPY OF A FACT AND CAN GO STALE. Nothing else needs to guard
+it: `shoot.py --measure` re-measures both column heights on every detail page,
+and a stale ratio is exactly a pair of columns that no longer end level. One
+mechanism, not two. It cannot run in CI, which has no browser, so the sweep is
+a local gate to run before a merge.
+
+ONE VALUE PER LANGUAGE. Today `split_en` and `split_zh` are identical, because
+every record's Chinese prose is still a copy of its English. Measured on all 26
+pages, the English and Chinese height curves match to the pixel. The day a
+native speaker writes the Chinese for real, they will not: Chinese sets far
+more compactly, and a split solved on English would stop ending level on the
+Chinese page, where only a Chinese reader would ever see it.
+"""
+function split_ratio(record::AbstractDict)
+    v = pick(record, "split")
+    (v === nothing || v == "") && return nothing
+    (v isa AbstractVector && length(v) == 2) ||
+        error("record '$(record["id"])': `split_$(lang())` must be two " *
+              "numbers, [words, pictures]; run scripts/solve-split.py")
+    return (Float64(v[1]), Float64(v[2]))
+end
+
+"""
+Words beside pictures. Side by side from 992px up, stacked below it.
+
+The pictures are sized so that the two columns end at the same height, which
+is what the ratio above carries. Where the record has no solved ratio the
+block falls back to the 5/7 split it has always used, so a page that has not
+been measured still renders.
+"""
+function render_split(record::AbstractDict, texts::Vector{String},
+                      ids::Vector{String})::String
+    isempty(ids) && error("record '$(record["id"])': a split needs a figure id")
+    solved = split_ratio(record)
+    if solved === nothing
+        # A portrait hero is capped at 40rem tall, so it is narrow, and a
+        # column sized for a landscape photograph leaves it floating in the
+        # middle of white space. Measured on
+        # thermal-fin-natural-convection-chamber: 360px of photograph inside a
+        # 733px column. A tall hero gets a column that hugs it instead.
+        figure = figure_by_id(record, ids[1])
+        mod = (length(ids) == 1 && Int(figure["w"]) < Int(figure["h"])) ?
+              " setup-split--tall" : ""
+        style = ""
+    else
+        words_px, pics_px = solved
+        mod = " setup-split--solved"
+        style = string(" style=\"--sp-words:", fmt_num(words_px),
+                       "px;--sp-pics:", fmt_num(pics_px), "px\"")
+    end
+    words = join([render_split_text(record, t) for t in texts], "\n")
     return """
-<div class="setup-split$(tall)">
-$(render_notes(record))
-$(render_fig_row(record, String[id]))
+<div class="setup-split$(mod)"$(style)>
+<div class="setup-split-words">
+$(words)
+</div>
+$(render_fig_row(record, ids))
 </div>"""
 end
+
+"""Trim a float for a style attribute without ever printing `1.0e3`."""
+fmt_num(x::Real) = (r = round(float(x), digits = 3);
+                    isinteger(r) ? string(Int(r)) : string(r))
 
 """Crumb, area badge and title. Shared by the composed and the a/b/c path."""
 function setup_header_html(record::AbstractDict, kind::AbstractString)::String
@@ -1117,6 +1191,21 @@ function setup_blocks(record::AbstractDict)
             # "notes" stands for the lead AND every section, so it counts as
             # placing whatever the record actually has. A record with no lead
             # is not made to say so.
+            #
+            # But a record with NEITHER a lead nor a section has nothing for
+            # "notes" to stand for, and every check below still passes: zero
+            # leads wanted, zero placed. `render_notes` then emits an empty
+            # `.setup-notes` div, which is a flex child of `.setup-rows` and
+            # still costs its 40px gap. The page gains a hole above the
+            # pictures that no gate can see.
+            #
+            # Found on fabrication-and-microscopy-equipment, 2026-08-31, when
+            # its ten-character body was deleted as redundant against three
+            # captions that already said the same words.
+            (has_lead || n_sections > 0) ||
+                error("record '$(record["id"])': `blocks` names \"notes\", but the " *
+                      "record has no lead and no sections. An empty notes block " *
+                      "still costs its own gap; remove \"notes\" from the page.")
             lead_blocks += has_lead ? 1 : 0
             section_blocks .+= 1
             push!(parsed, ("notes", String[]))
@@ -1130,14 +1219,48 @@ function setup_blocks(record::AbstractDict)
                 error("record '$(record["id"])': $(repr(text)) but it has $(n_sections) section(s)")
             section_blocks[n] += 1
             push!(parsed, ("sec", String[string(n)]))
-        elseif startswith(text, "split:")
-            lead_blocks += has_lead ? 1 : 0
-            section_blocks .+= 1
-            ids = String.(split(strip(text[7:end])))
-            length(ids) == 1 ||
-                error("record '$(record["id"])': split takes exactly one figure id, got $(repr(text))")
+        elseif startswith(text, "split")
+            #   split:<id> <id> ...          every word of the record, beside them
+            #   split(lead sec:1):<id> ...   only those text blocks, beside them
+            #
+            # The second form exists because eight records open on `lead` plus
+            # `sec:1` and keep `sec:2` further down the page. For those the top
+            # block is the lead AND section one, and `notes` would wrongly drag
+            # every later section into it.
+            m = match(r"^split(?:\(([^()]*)\))?:(.*)$", text)
+            m === nothing &&
+                error("record '$(record["id"])': $(repr(text)) is not a split; write " *
+                      "split:<figure-id> ... or split(lead sec:1):<figure-id> ...")
+            spec = m.captures[1] === nothing ? "notes" : strip(String(m.captures[1]))
+            texts = String.(split(spec))
+            isempty(texts) &&
+                error("record '$(record["id"])': $(repr(text)) names no text to " *
+                      "put beside the pictures")
+            for t in texts
+                if t == "notes"
+                    lead_blocks += has_lead ? 1 : 0
+                    section_blocks .+= 1
+                elseif t == "lead"
+                    lead_blocks += 1
+                elseif startswith(t, "sec:")
+                    n = tryparse(Int, t[5:end])
+                    n === nothing &&
+                        error("record '$(record["id"])': $(repr(t)) needs a section number")
+                    1 <= n <= n_sections ||
+                        error("record '$(record["id"])': $(repr(t)) but it has $(n_sections) section(s)")
+                    section_blocks[n] += 1
+                else
+                    error("record '$(record["id"])': $(repr(t)) cannot go in a split; " *
+                          "use notes, lead or sec:<n>")
+                end
+            end
+            ids = String.(split(strip(String(m.captures[2]))))
+            isempty(ids) &&
+                error("record '$(record["id"])': $(repr(text)) needs at least one figure id")
             append!(used, ids)
-            push!(parsed, ("split", ids))
+            # The payload is the text spec first, then every figure id. One
+            # vector, because that is what `parsed` holds for every other block.
+            push!(parsed, ("split", vcat([join(texts, " ")], ids)))
         elseif startswith(text, "row:")
             ids = String.(split(strip(text[5:end])))
             isempty(ids) && error("record '$(record["id"])': empty row block")
@@ -1184,7 +1307,7 @@ function render_setup_rows(record::AbstractDict, kind::AbstractString, blocks)::
         elseif name == "sec"
             push!(parts, render_section(record, parse(Int, ids[1])))
         elseif name == "split"
-            push!(parts, render_split(record, ids[1]))
+            push!(parts, render_split(record, String.(split(ids[1])), ids[2:end]))
         else
             push!(parts, render_fig_row(record, ids))
         end

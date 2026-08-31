@@ -3,8 +3,7 @@ title = "Hybrid Vapor Chamber–Heat Pipe Module for Thermal Management of Gamin
 project = "gaming-laptop-hybrid-vapor-chamber"
 lang = "en"
 blocks = [
-  "notes",
-  "row:upper-experimental-system lower-experimental-system",
+  "split:upper-experimental-system lower-experimental-system",
 ]
 +++
 

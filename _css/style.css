@@ -2344,19 +2344,99 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   above a single capped picture with the rest of the line empty either side.
   5/12 of 1320px is about 63 characters, which is a good measure.
 */
+/*
+  FLEX, NOT GRID, AND THE REASON IS THE WHOLE POINT OF THE BLOCK.
+
+  A solved split holds two FIXED widths: the words at the width that gives a
+  readable measure, and the pictures at the width that makes them exactly as
+  tall as those words. Fixed is what makes it balance.
+
+  A ratio does not. The first build of this emitted
+  `grid-template-columns: minmax(0, 430fr) minmax(0, 802fr)`, which holds the
+  RATIO at every width and therefore holds the balance at exactly one. Measured
+  on gaming-laptop-hybrid-vapor-chamber, where the columns are level to 0.4px
+  at 1440:
+
+      viewport   1440    1400    1366    1280    1200    1024
+      apart       0.4    31.5    99.6    66.5    63.7   170.2   px
+
+  Fixed bases plus `flex-wrap` fix both halves of that at once. While the two
+  fit on one line they keep their solved widths, so the block is level at EVERY
+  width it is side by side at. When they no longer fit, the line breaks and the
+  block stacks. The width it stacks at falls out of the record's own numbers,
+  so no breakpoint has to be chosen, stored, or kept in step with the data.
+*/
 .setup-split {
-  display: grid;
-  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  /* The pictures are usually a little narrower than the space left over. This
+     puts that spare width in the GUTTER, so both columns reach the page
+     margins. Pushed to one side instead it leaves a ragged edge that reads as
+     a mistake. On gaming-laptop the spare is 68px and the gutter becomes 132. */
+  justify-content: space-between;
+  align-items: flex-start;
   gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
 }
-@media (min-width: 992px) {
-  .setup-split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
-  /* A tall hero: `auto` sizes the track to the row's own max-width, which is
-     the capped width of that one picture, so the photograph sits flush right
-     and the words take the rest. 5fr/7fr would leave it adrift in the middle
-     of a column built for a landscape photograph. */
-  .setup-split--tall { grid-template-columns: minmax(0, 1fr) auto; }
+/* The words of a split are ONE column, and a split may hold the lead plus one
+   section rather than the whole notes, so they need a wrapper to be one child
+   between them. */
+/* STACKED IS THE DEFAULT, and every rule below is a min-width that overrides
+   it. Written this way round because a stacked column must fill the width it
+   has: an item that keeps a 430px flex-basis on a line of its own leaves 500px
+   of a 936px container empty, which is what the first build did. */
+.setup-split-words {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+  /* THE SAME RHYTHM AS `.setup-rows`, and it is not decoration. A split may
+     hold a lead paragraph AND a section, which are two `.setup-notes` blocks.
+     Everywhere else on the page those two are flex children of `.setup-rows`
+     and that gap separates them; the first heading inside a block carries
+     `margin-top: 0`, so with no gap here the paragraph and the heading under
+     it TOUCH. Measured on chip-package-lid-thermal-spreading: the words came
+     out 272px instead of 312px, exactly one 40px gap short, and the block
+     read as one run-on column. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--fig-row-gap);
 }
+.setup-split > .fig-row { flex: 1 1 100%; max-width: 100%; }
+
+@media (min-width: 992px) {
+  /* Side by side, in the 5/7 proportion this block has always used. A solved
+     record uses it too, between 992px and 1399px, where the container is
+     narrower than the width its numbers were solved at. The columns are not
+     level there, and that is the right trade: measured on gaming-laptop the
+     5/7 split is about 18px out at 1200px, against 500px of empty column if
+     it stacked instead. */
+  .setup-split-words { flex: 5 1 20rem; }
+  .setup-split > .fig-row { flex: 7 1 20rem; }
+  /* A tall hero with no solved split: `auto` sizes the row to its own
+     max-width, which is the capped width of that one picture, so the
+     photograph sits flush right and the words take the rest. */
+  .setup-split--tall > .fig-row { flex: 0 1 auto; }
+}
+
+@media (min-width: 1400px) {
+  /* THE SOLVED WIDTHS, and only here. 1400px is where the container reaches
+     the 1296px content width every split was solved at, so this is exactly
+     the range where those two numbers are true. Below it the record falls
+     back to 5/7 above rather than pretending to a balance it does not have.
+
+     flex-grow AND flex-shrink are both 0. Growing spends the spare width on
+     the pictures and breaks the level bottom edge the widths were solved for.
+     Measured when only the shorthand's grow was overridden: the row came out
+     802px instead of 734px and the block sat 28px out of level, while the
+     markup still reported the right numbers. */
+  .setup-split--solved > .setup-split-words { flex: 0 0 var(--sp-words); }
+  .setup-split--solved > .fig-row { flex: 0 0 var(--sp-pics); }
+}
+/* The measure inside a split is set by the solved column width, so the
+   newspaper columns that hold the measure elsewhere must not fire in here.
+   carvera-desktop-cnc solves to a 590px column, which is wider than the 34rem
+   `column-width` above, so one paragraph would break into two columns inside
+   a block built to have exactly one. */
+.setup-split .setup-notes { column-width: auto; }
 
 @media (max-width: 991.98px) {
   .ns-prev { left: -0.5rem; }

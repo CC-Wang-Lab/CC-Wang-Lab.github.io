@@ -36,7 +36,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SOURCES = (("facilities.toml", "item", "facilities", "facility_page"),
            ("projects.toml", "project", "projects", "project_setup_page"))
-BLOCK = re.compile(r'^\s*"(notes|lead|sec:\d+|split:[a-z0-9-]+|row:[a-z0-9 -]+)",?\s*$')
+# `split` takes several figure ids now, and may name which text goes beside
+# them: `split(lead sec:1):a b`. The bare `split:a b` form still means the whole
+# of the record's words. Eight records open on a lead plus one section and keep
+# later sections further down the page, and for those `notes` would wrongly
+# drag every later section into the top block.
+BLOCK = re.compile(
+    r'^\s*"(notes'
+    r'|lead'
+    r'|sec:\d+'
+    r'|split(?:\((?:notes|lead|sec:\d+)(?: (?:notes|lead|sec:\d+))*\))?:[a-z0-9 -]+'
+    r'|row:[a-z0-9 -]+)",?\s*$')
 
 
 def hfun_names() -> set[str]:
@@ -101,8 +111,36 @@ def main() -> int:
             for entry in blocks:
                 if not BLOCK.match(f'"{entry}"'):
                     failures.append(f"{rid}: block {entry!r} is not one the renderer knows")
-            if not any(b.startswith(("row:", "split:")) for b in blocks):
+            # `split(` as well as `split:`: the parenthesised form names
+            # which text goes beside the pictures, and it carries figure
+            # ids exactly the same way. Matching only "split:" reported
+            # a page with pictures as having none.
+            if not any(b.startswith(("row:", "split:", "split(")) for b in blocks):
                 failures.append(f"{rid}: `blocks` places no pictures")
+
+            # 2b. every `sec:N` the page names must exist in the record.
+            #
+            # The build already refuses this, but only when it reaches that
+            # page, and the message names the record rather than the file. It
+            # is here because deleting a section from _data/ is a normal edit
+            # that leaves the page behind, and the two files are far apart.
+            # Caught on immersion-cooling-microchannel-lid, 2026-08-31, after
+            # its two sections were merged into the lead: the page still asked
+            # for sec:1 and sec:2 and the whole build stopped.
+            have = len(record.get("section", []))
+            for entry in blocks:
+                for n in re.findall(r"sec:(\d+)", entry):
+                    if not 1 <= int(n) <= have:
+                        failures.append(
+                            f"{rid}: blocks name sec:{n}, but the record has "
+                            f"{have} section(s)")
+            # ...and a record whose words were deleted must not still say
+            # "notes", which renders an empty block that still costs its gap.
+            if not str(record.get("body_en", "")).strip() and have == 0:
+                if any(b == "notes" for b in blocks):
+                    failures.append(
+                        f"{rid}: blocks name \"notes\", but the record has no "
+                        f"lead and no sections; drop it from the page")
 
             # 3. the one hfun the page calls has to exist. Franklin substitutes
             #    an empty string for an unknown name and only logs a warning, so

@@ -3,8 +3,7 @@ title = "Experiment on Pulsating heat pipe and sintered heat pipe – Especially
 project = "heat-pipes-freezing-conditions"
 lang = "zh"
 blocks = [
-  "notes",
-  "row:freezing-chamber heat-pipe-apparatus",
+  "split:freezing-chamber heat-pipe-apparatus",
 ]
 +++
 

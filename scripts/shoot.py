@@ -907,8 +907,64 @@ window.addEventListener("load", function () {
       });
     }
 
+    /* ------------------------------------------------------------------
+       THE SPLIT BLOCKS, AND WHETHER THEY STILL END LEVEL.
+
+       A solved split carries two widths measured offline by
+       scripts/solve-split.py: the words at a readable measure, and the
+       pictures at the width that makes them exactly as tall. That is a COPY
+       of a fact about the record's prose, so editing one sentence in _data/
+       makes it wrong, and nothing in Julia can tell.
+
+       This is the check that catches it. No second mechanism is needed,
+       because a stale split IS a pair of columns that no longer end level.
+       The tolerance is one line height: the words step by whole lines, so
+       they can never match to better than that, and the measured residual on
+       a fresh solve is under 1px, which leaves 29px of headroom before an
+       edit trips it.
+
+       SKIPPED WHEN STACKED. Below 992px the two children sit one above the
+       other and there are no two heights to compare. Comparing anyway fails
+       every phone width in the sweep. The test is where the two boxes START,
+       not a breakpoint: a breakpoint written here would be a second copy of
+       the one in the stylesheet.
+       ------------------------------------------------------------------ */
+    var splitAudit = [];
+    var splitNodes = document.querySelectorAll(".setup-split");
+    for (var sp = 0; sp < splitNodes.length; sp++) {
+      var splitNode = splitNodes[sp];
+      var splitWords = splitNode.querySelector(".setup-split-words");
+      var splitRow = splitNode.querySelector(".fig-row");
+      if (!splitWords || !splitRow) {
+        splitAudit.push({ sel: sel(splitNode), broken: "missing a child" });
+        continue;
+      }
+      var sw = splitWords.getBoundingClientRect();
+      var sr = splitRow.getBoundingClientRect();
+      var sideBySide = Math.abs(sw.top - sr.top) < 5;
+      /* IN FORCE, not merely stored. The solved widths only apply from 1400px
+         up, where the container reaches the 1296px they were solved at; below
+         that the block falls back to a proportion nobody solved for and is
+         not expected to be level. Asked as "is the rendered width the stored
+         width", read off the element, so the 1400px breakpoint is not copied
+         out of the stylesheet into here where it could drift. */
+      var want = parseFloat(getComputedStyle(splitNode)
+                              .getPropertyValue("--sp-words"));
+      var inForce = !isNaN(want) && Math.abs(sw.width - want) < 1;
+      splitAudit.push({
+        sel: sel(splitNode),
+        solved: splitNode.classList.contains("setup-split--solved"),
+        inForce: inForce, wantWords: isNaN(want) ? null : want,
+        sideBySide: sideBySide,
+        wordsPx: +sw.width.toFixed(1), wordsH: +sw.height.toFixed(1),
+        picsPx: +sr.width.toFixed(1), picsH: +sr.height.toFixed(1),
+        apart: sideBySide ? +(sw.height - sr.height).toFixed(1) : null
+      });
+    }
+
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
+      splitAudit: splitAudit,
       motionStartsRunning: motionStartsRunning,
       motion: document.documentElement.classList.contains("motion-off") ? "off" : "on",
       revealTotal: claimed.length, revealStuck: stuck.slice(0, 10),
@@ -1093,6 +1149,10 @@ GUTTER = 24
 # except the very narrow phone layout, which has to be checked by hand in
 # devtools. Measured 2026-08-19.
 NARROWEST = 492
+# One line height: --lh-normal 1.55 x --fs-md 19.2px at 1440, measured. The
+# words of a split step by whole lines, so the two columns can never match to
+# better than this, and a fresh solve lands under 1px.
+SPLIT_TOLERANCE = 29.76
 
 
 def request_target(url, theme):
@@ -1263,7 +1323,12 @@ def main():
     ap.add_argument("--sweep", choices=["setup"],
                     help="replace the regression matrix with every public "
                          "facility and project detail route, read from _data/")
-    ap.add_argument("--widths", default="320,390,1440",
+    # 1200 is not decoration. Between 992 and 1399 a solved split falls back to
+    # the 5/7 proportion, which nobody solved for, so its balance there is
+    # accidental and could be far out on a record nobody has looked at. It is
+    # in the DEFAULT rather than passed by hand because a width somebody has to
+    # remember is not a test.
+    ap.add_argument("--widths", default="320,390,1200,1440",
                     help="comma-separated widths for --sweep")
     ap.add_argument("--no-shots", action="store_true",
                     help="run the audit probe but write no PNG. Measurement "
@@ -1420,6 +1485,28 @@ def main():
                 if row.get("upscaled"):
                     flags.append("row %d: %s painted above natural width"
                                  % (i, "; ".join(row["upscaled"])))
+            # A solved split must still end level. One line height of
+            # tolerance, because the words step by whole lines and can never
+            # match closer than that; a fresh solve lands under 1px.
+            for i, sp in enumerate(r.get("splitAudit") or (), start=1):
+                if sp.get("broken"):
+                    flags.append("split %d: %s" % (i, sp["broken"]))
+                    continue
+                # Only where the solved widths are actually in force. Below
+                # 1400px the block falls back to a proportion nobody solved
+                # for, so it is not expected to be level there and calling it
+                # "stale" would be a lie. Measured on air-cooler-wind-tunnel,
+                # which is level to 0.05px at 1440 and 37.8px out at 1200.
+                if (not sp.get("solved") or not sp.get("sideBySide")
+                        or not sp.get("inForce")):
+                    continue
+                if abs(sp.get("apart") or 0) > SPLIT_TOLERANCE:
+                    flags.append(
+                        "split %d: the columns are %.1fpx out of level "
+                        "(words %.0fx%.0f, pictures %.0fx%.0f). The stored "
+                        "split_<lang> is stale: re-run scripts/solve-split.py"
+                        % (i, sp["apart"], sp["wordsPx"], sp["wordsH"],
+                           sp["picsPx"], sp["picsH"]))
             setup_images = r.get("setupImages")
             expected_image_count = sum(row.get("n", 0) for row in fig_rows or ())
             if expected_image_count:

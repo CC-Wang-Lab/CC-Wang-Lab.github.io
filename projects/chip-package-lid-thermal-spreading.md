@@ -3,9 +3,7 @@ title = "Experimental Investigation on Thermal Spreading of Chip Package Lids â€
 project = "chip-package-lid-thermal-spreading"
 lang = "en"
 blocks = [
-  "lead",
-  "sec:1",
-  "row:diamond-copper-composite pure-copper-plate",
+  "split(lead sec:1):diamond-copper-composite pure-copper-plate",
   "sec:2",
   "row:vapor-chamber-schematic vapor-chamber-sample",
   "sec:3",

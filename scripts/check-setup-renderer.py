@@ -287,6 +287,14 @@ def renderer_contract_failures() -> list[str]:
         failures.append("the setup notes must break a long word; "
                         "TUNNEL+Environmental pushed the page 82px wider than a "
                         "320px screen")
+    # ...but NOT inside a split, where the column width is the solved one.
+    # carvera-desktop-cnc solves to a 590px column, wider than the 34rem above,
+    # so one paragraph would break into two columns inside a block whose whole
+    # purpose is to be a single readable column beside its pictures.
+    if not re.search(r"column-width\s*:\s*auto", rule(".setup-split .setup-notes")):
+        failures.append("a split's notes must switch the newspaper columns off "
+                        "with column-width: auto; a solved column wider than "
+                        "34rem would otherwise split into two")
 
     # 2. A row is justified by ASPECT RATIO, and capped on the row.
     #

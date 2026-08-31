@@ -29,6 +29,12 @@ lead_zh  = "This experimental system evaluates an additively manufactured hybrid
 body_en  = "This experimental system evaluates an additively manufactured hybrid vapor chamber–heat pipe module for the thermal management of gaming laptops. Heat is transferred from the heating block to the test specimen and then conducted through the heat pipes to the fins on both sides. Forced-convection cooling is provided by airflow conditioned through a wind tunnel. An infrared thermal camera positioned below the specimen measures the surface temperature distribution to evaluate temperature uniformity and heat transfer performance."
 body_zh  = "This experimental system evaluates an additively manufactured hybrid vapor chamber–heat pipe module for the thermal management of gaming laptops. Heat is transferred from the heating block to the test specimen and then conducted through the heat pipes to the fins on both sides. Forced-convection cooling is provided by airflow conditioned through a wind tunnel. An infrared thermal camera positioned below the specimen measures the surface temperature distribution to evaluate temperature uniformity and heat transfer performance."
 
+# Solved by scripts/solve-split.py, never written by hand.
+# [words, pictures] in px. At these two widths the two columns end at
+# the same height. Widths, not a ratio: see .setup-split in style.css.
+split_en = [430, 734]
+split_zh = [430, 734]
+
 [[project.figure]]
 id         = "upper-experimental-system"
 kind       = "photo"
@@ -242,24 +248,24 @@ title_en = "Immersion Cooling Microchannel Lid Cold Plate"
 title_zh = "Immersion Cooling Microchannel Lid Cold Plate"
 lead_en  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
 lead_zh  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
-body_en  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
-body_zh  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material."
+body_en  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material. An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
+body_zh  = "This technology introduces microchannels within the CPU package's IHS, enabling the IHS itself to serve directly as a cold block, thereby eliminating the need for TIM2 interface material. An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
 
-[[project.section]]
-heading_en = ""
-heading_zh = ""
-body_en    = "An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
-body_zh    = "An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
-items_en   = []
-items_zh   = []
+# [[project.section]]
+# heading_en = ""
+# heading_zh = ""
+# body_en    = "An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
+# body_zh    = "An impingement inlet design is adopted, featuring a central channel along the centerline of the heat sink to ensure uniform fluid distribution into each fin channel."
+# items_en   = []
+# items_zh   = []
 
-[[project.section]]
-heading_en = "Cold Plate and Microchannel Lid Cold Plate (Axial thermal resistance analysis)"
-heading_zh = "Cold Plate and Microchannel Lid Cold Plate (Axial thermal resistance analysis)"
-body_en    = ""
-body_zh    = ""
-items_en   = []
-items_zh   = []
+# [[project.section]]
+# heading_en = "Cold Plate and Microchannel Lid Cold Plate (Axial thermal resistance analysis)"
+# heading_zh = "Cold Plate and Microchannel Lid Cold Plate (Axial thermal resistance analysis)"
+# body_en    = ""
+# body_zh    = ""
+# items_en   = []
+# items_zh   = []
 
 [[project.figure]]
 id         = "annotated-apparatus"
@@ -356,8 +362,8 @@ title_en = "2U Server Experimental Platform and Multi-Agent Control"
 title_zh = "2U Server Experimental Platform and Multi-Agent Control"
 lead_en  = "2U Server Experimental Platform With Multi-Agent Control"
 lead_zh  = "2U Server Experimental Platform With Multi-Agent Control"
-body_en  = "Air flow"
-body_zh  = "Air flow"
+# body_en  = "Air flow"   # deleted 2026-08-31: two words alone on the page
+# body_zh  = "Air flow"   # deleted 2026-08-31: two words alone on the page
 
 [[project.section]]
 heading_en = "Experimental System Architecture"
@@ -368,7 +374,6 @@ items_en   = [
   "Inlet",
   "Thermal Spreader",
   "Heat Sink",
-  "T",
   "Heat Sink",
   "Fan",
   "Outlet",
@@ -382,7 +387,6 @@ items_zh   = [
   "Inlet",
   "Thermal Spreader",
   "Heat Sink",
-  "T",
   "Heat Sink",
   "Fan",
   "Outlet",

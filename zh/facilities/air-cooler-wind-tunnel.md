@@ -3,8 +3,7 @@ title = "Wind tunnel for air-cooler heat sink with Vapor chamber/heat pipe/pulsa
 facility = "air-cooler-wind-tunnel"
 lang = "zh"
 blocks = [
-  "notes",
-  "row:wind-tunnel",
+  "split:wind-tunnel",
 ]
 +++
 
