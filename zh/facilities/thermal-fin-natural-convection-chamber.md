@@ -3,8 +3,7 @@ title = "Investigation of thermal fins under natural convection -  for thermosyp
 facility = "thermal-fin-natural-convection-chamber"
 lang = "zh"
 blocks = [
-  "notes",
-  "row:chamber",
+  "split:chamber",
 ]
 +++
 

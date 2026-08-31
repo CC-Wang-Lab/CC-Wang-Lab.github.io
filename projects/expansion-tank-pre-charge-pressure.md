@@ -4,7 +4,8 @@ project = "expansion-tank-pre-charge-pressure"
 lang = "en"
 blocks = [
   "sec:1",
-  "row:setup system-diagram",
+  "row:setup",
+  "row:system-diagram",
   "sec:2",
   "row:expansion-tank chiller",
   "sec:3",

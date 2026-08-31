@@ -2334,7 +2334,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 @media (min-width: 992px) {
   .setup-split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
-  .setup-split .setup-notes { max-width: none; }
+  /* A tall hero: `auto` sizes the track to the row's own max-width, which is
+     the capped width of that one picture, so the photograph sits flush right
+     and the words take the rest. 5fr/7fr would leave it adrift in the middle
+     of a column built for a landscape photograph. */
+  .setup-split--tall { grid-template-columns: minmax(0, 1fr) auto; }
 }
 
 @media (max-width: 991.98px) {

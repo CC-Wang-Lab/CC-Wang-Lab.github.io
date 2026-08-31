@@ -1062,8 +1062,15 @@ end
 
 """Notes beside one figure. Side by side from 992px up, stacked below it."""
 function render_split(record::AbstractDict, id::AbstractString)::String
+    # A portrait hero is capped at 40rem tall, so it is narrow, and a column
+    # sized for a landscape photograph leaves it floating in the middle of
+    # white space. Measured on thermal-fin-natural-convection-chamber: 360px
+    # of photograph inside a 733px column. A tall hero gets a column that
+    # hugs it instead, and the words take everything else.
+    figure = figure_by_id(record, id)
+    tall = Int(figure["w"]) < Int(figure["h"]) ? " setup-split--tall" : ""
     return """
-<div class="setup-split">
+<div class="setup-split$(tall)">
 $(render_notes(record))
 $(render_fig_row(record, String[id]))
 </div>"""
