@@ -178,9 +178,9 @@ looked up from the ids, so they can never disagree with the People page.
 
 ## Add an imported facility or project
 
-Imported records use the shared A/B/C setup layouts. Keep the source wording and captions exactly
-as supplied; do not upload a complete slide when its individual figures can be used. This is one
-complete facility record for `_data/facilities.toml`:
+A record holds the WORDS and the PICTURES. Its page holds the LAYOUT. Keep the source wording
+and captions exactly as supplied, and do not upload a complete slide when its individual figures
+can be used. This is one complete facility record for `_data/facilities.toml`:
 
 ```toml
 [[item]]
@@ -188,7 +188,6 @@ id            = "example-cold-plate-rig"
 area          = "two-phase"                 # an id from research.toml
 image         = "/assets/img/test-setups/example-cold-plate-rig/diagram.png"
 image_fit     = "contain"                   # "cover" (default) or "contain" for drawings
-layout        = "b"                         # exactly "a", "b", or "c"
 source_slides = [31, 32]                     # source-slide numbers; not displayed
 title_en      = "Example cold-plate test rig"
 title_zh      = "範例冷板測試平台"
@@ -215,9 +214,73 @@ items_zh   = [
 id         = "rig-diagram"
 kind       = "diagram"
 image      = "/assets/img/test-setups/example-cold-plate-rig/diagram.png"
+w          = 1600                          # written by scripts/add-figure-sizes.py
+h          = 904                           # never type these by hand
 caption_en = ""                            # allowed only when the source gives no caption
 caption_zh = ""
 ```
+
+**Run `python scripts/add-figure-sizes.py` after adding any figure.** It reads the picture and
+writes `w` and `h` into the row. The build needs them before it opens any file: they set the
+shape of the row and they go on the `<img>` so nothing on the page jumps as the pictures arrive.
+`python scripts/check-test-setup-import.py` fails if they stop matching the files.
+
+### Then compose the page
+
+The record has no layout in it. Each page lays itself out, in its own front matter, and the two
+language files must say exactly the same thing:
+
+```
++++
+title    = "Example cold-plate test rig"
+facility = "example-cold-plate-rig"
+lang     = "en"
+blocks = [
+  "notes",
+  "row:rig-photo rig-diagram",
+  "row:flow-schematic",
+]
++++
+
+~~~
+{{facility_page}}
+~~~
+```
+
+Five kinds of block, and the order you write them is the order the page shows them:
+
+| Block | What it puts on the page |
+|---|---|
+| `notes` | everything the record says: the lead paragraph and all its sections |
+| `lead` | the lead paragraph on its own |
+| `sec:2` | section 2 on its own, so its heading can sit right above the pictures it names |
+| `row:a b c` | one row of pictures, by figure id |
+| `split:a` | the words beside one picture, side by side on a laptop and stacked on a phone |
+
+**A row lands every picture in it at the same height.** Widths come from each picture's shape, so
+two pictures in a row fill the line with nothing cropped and no ragged bottom edge. Put pictures
+that belong together in one row: a comparison set, a rig and its close-up, a photograph and the
+drawing of the same thing.
+
+**Rules the build enforces, so a mistake stops it rather than reaching the site:**
+
+1. Every figure in the record appears in exactly one block. None dropped, none used twice.
+2. The lead and every section are placed exactly once, by `notes` or by `lead` and `sec:n`.
+3. A figure id that the record has not got is an error.
+4. `python scripts/check-setup-pages.py` fails if the English and Chinese pages differ by
+   anything other than their `lang` line.
+
+**How to pick the rows.** Look at the pictures.
+
+- One idea to a row.
+- Two or four to a row reads best; three is fine when the three belong together.
+- A wide schematic covered in small labels goes in a row of its own.
+- Aim for a row about 340 to 480px tall for photographs, 250 to 340px for a set of micrographs.
+- Overview first, then the system, then the parts, then the results.
+
+`python scripts/shoot.py --emulate --sweep setup --widths 320,390,1440 --measure` renders every
+detail page at three real widths and prints each row's heights, so a row that is not landing
+level says so.
 
 `[[item.section]]` and its structured `source-url` item are optional: use them only when the
 source provides a section or a real `https://` source URL. Every figure belongs under the record
@@ -225,7 +288,7 @@ as `[[item.figure]]`; use `[[project.section]]` and `[[project.figure]]` for a p
 Put its images in `_assets/img/test-setups/<id>/` and use the matching `/assets/...` path in the
 record. Empty captions are permitted only when the source supplies none.
 
-Projects use the same `layout`, `source_slides`, sections, and figures. An imported
+Projects use the same `source_slides`, sections, and figures. An imported
 project may omit `student` when the source does not identify a lab member. If you provide
 `student`, it must exactly match an existing `id` in `_data/team.toml`; never infer or invent a
 byline.

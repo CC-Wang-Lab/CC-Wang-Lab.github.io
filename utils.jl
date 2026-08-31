@@ -917,13 +917,6 @@ function facility_by_id(id::AbstractString)
     return first(hit)
 end
 
-function setup_layout(record::AbstractDict, src::AbstractString)
-    layout = lowercase(String(get(record, "layout", "")))
-    layout in ("a", "b", "c") ||
-        error("$src: layout for '$(record["id"])' must be a, b or c")
-    return layout
-end
-
 function render_setup_item(item)::String
     item isa AbstractDict || return "<li>$(esc(string(item)))</li>"
 
@@ -958,106 +951,259 @@ function render_setup_sections(record::AbstractDict)
     return join(blocks, "\n")
 end
 
-"""
-Optional `span` on a `[[figure]]` row. The only value is `"full"`, which gives
-that figure the whole width of the figure track. Any number of figures in one
-record may ask for it.
+# ---------------------------------------------------------------------------
+#  Per-page composition: JUSTIFIED ROWS
+#
+#  A shared three-layout renderer cannot lay out these pages, because the thing
+#  that decides the layout is what the pictures ARE. One record is four
+#  micrographs of one comparison set; the next is a rack photograph beside a
+#  dot grid 497px wide and 1600px tall. No stylesheet can tell those apart.
+#
+#  So each page composes itself, in its own front matter:
+#
+#      blocks = [
+#        "row:test-rig",
+#        "notes",
+#        "row:sintered additively-manufactured",
+#        "row:diamond acid-etched",
+#      ]
+#
+#  WHY FRONT MATTER AND NOT `{{figrow a b}}` IN THE BODY, which is what the
+#  approved plan said. An unknown hfun name does not throw. Franklin logs a
+#  warning and substitutes an empty string, so `{{figrpw a b}}` builds green
+#  with two pictures missing and no `{{ }}` left in the HTML for a gate to
+#  grep. That is the same silent-no-op class of fault that put 25 of 26
+#  records into the wrong grid, and it is the fault this whole pass exists to
+#  remove. A front-matter list cannot misspell a function name, because there
+#  is no function name in it, and every id in it is checked below.
+#
+#  THE ARITHMETIC. Each figure is a flex item with `flex: aspect 1 0`. With a
+#  zero basis the free space is shared out in proportion to flex-grow, so
+#
+#      width_i = (W - gaps) * a_i / sum(a)     and     height_i = width_i / a_i
+#              = (W - gaps) / sum(a)           the SAME for every item.
+#
+#  The row therefore fills its container exactly, with nothing cropped and no
+#  ragged bottom edge, whatever shapes are in it.
+#
+#  THE CAP. An image must never be painted wider than its own pixels. Slot
+#  width is a_i * h, so the no-upscale condition a_i * h <= w_i reduces to
+#  h <= h_i: the row height cap is min(natural height) over the row. It is
+#  emitted as `--nat-h` and applied to the row's max-width, never to the
+#  image's max-height. Capping the image letterboxes it inside a slot that is
+#  still the old size, which breaks the equal-height property the row is for.
+# ---------------------------------------------------------------------------
 
-It lives in the DATA and not in the CSS because only somebody looking at the
-picture can know that one of them is a wide schematic whose labels cannot be
-read at a quarter of the row. The stylesheet knows the number of figures and
-the space available; it cannot know that.
-
-`"full"` is the only value on purpose. `span 2` was rejected: on a phone the
-track collapses to one column, and a two-column span there creates an implicit
-second column and pushes the page wider than the screen.
-"""
-function setup_figure_span(figure::AbstractDict, id::AbstractString)::String
-    span = strip(lowercase(String(get(figure, "span", ""))))
-    isempty(span) && return ""
-    span == "full" ||
-        error("figure '$(id)': span must be \"full\", got $(repr(span))")
-    return " setup-study-figure--span-full"
+function figure_by_id(record::AbstractDict, id::AbstractString)
+    hit = filter(f -> String(get(f, "id", "")) == id, get(record, "figure", Any[]))
+    isempty(hit) && error("record '$(record["id"])' has no figure '$(id)'")
+    return first(hit)
 end
 
-function render_setup_figure(figure::AbstractDict)::String
-    figure_id = esc(String(figure["id"]))
+"""One figure inside a justified row."""
+function render_fig(figure::AbstractDict)::String
     kind = esc(String(get(figure, "kind", "figure")))
     image = esc(String(figure["image"]))
-    # Intrinsic size, copied off the file by scripts/add-figure-sizes.py and
-    # checked against disk by check-test-setup-import.py. It is required, not
-    # optional: without it the browser cannot reserve the box, so everything
-    # below a picture jumps down the moment that picture arrives.
     haskey(figure, "w") && haskey(figure, "h") ||
         error("figure '$(figure["id"])' has no w/h; run scripts/add-figure-sizes.py")
-    fig_w = Int(figure["w"])
-    fig_h = Int(figure["h"])
-    span_class = setup_figure_span(figure, String(figure["id"]))
+    w = Int(figure["w"])
+    h = Int(figure["h"])
     caption = esc(pick(figure, "caption"))
-    caption_html = isempty(caption) ? "" : "\n        <figcaption>$(caption)</figcaption>"
+    caption_html = isempty(caption) ? "" : "\n    <figcaption>$(caption)</figcaption>"
+    # --ar-w and --ar-h are the raw integers, never a rounded ratio. Three or
+    # more items in one row accumulate the rounding error, and the row then
+    # misses its container by a pixel or two at the right-hand edge.
     return """
-      <figure class="setup-study-figure setup-study-figure--$(figure_id) setup-study-figure--$(kind)$(span_class)">
-        <div class="setup-study-figure-media">
-          <img src="$(image)" alt="" width="$(fig_w)" height="$(fig_h)" loading="lazy" decoding="async">
-        </div>$(caption_html)
-      </figure>"""
+  <figure class="fig fig--$(kind)" style="--ar-w:$(w);--ar-h:$(h);--nat-w:$(w)px">
+    <a class="fig-media" href="$(image)" aria-label="$(esc(ui("figure", "zoom")))"><img src="$(image)" alt="" width="$(w)" height="$(h)" loading="lazy" decoding="async"><span class="fig-zoom" aria-hidden="true"></span></a>$(caption_html)
+  </figure>"""
 end
 
-function render_setup_page(record::AbstractDict, kind::AbstractString)::String
+"""One justified row of figures, from a list of figure ids."""
+function render_fig_row(record::AbstractDict, ids::Vector{String})::String
+    isempty(ids) && error("record '$(record["id"])': a row needs at least one figure id")
+    figures = [figure_by_id(record, id) for id in ids]
+    n = length(figures)
+    sum_ar = sum(Int(f["w"]) / Int(f["h"]) for f in figures)
+    nat_h = minimum(Int(f["h"]) for f in figures)
+    body = join([render_fig(f) for f in figures], "\n")
+    return """
+<div class="fig-row fig-row--n$(n)" style="--sum-ar:$(round(sum_ar, digits=6));--nat-h:$(nat_h)px;--n:$(n)">
+$(body)
+</div>"""
+end
+
+"""The record's lead paragraph, on its own."""
+function render_lead(record::AbstractDict)::String
+    lead = esc(pick(record, "body"))
+    # Not unconditional. Five records have an empty body_en, and an empty <p>
+    # still occupies a line box plus its own bottom margin, so those pages
+    # opened on a blank gap nobody could see the cause of.
+    isempty(strip(lead)) && return ""
+    return """<div class="setup-notes prose"><p>$(lead)</p></div>"""
+end
+
+"""One section of the record's words, by its 1-based position."""
+function render_section(record::AbstractDict, n::Int)::String
+    sections = get(record, "section", Any[])
+    1 <= n <= length(sections) ||
+        error("record '$(record["id"])': sec:$(n) asked for, but it has $(length(sections)) section(s)")
+    one = Dict{String,Any}("section" => Any[sections[n]])
+    return """<div class="setup-notes prose">$(render_setup_sections(one))</div>"""
+end
+
+"""The record's words: the lead paragraph and every section under it."""
+function render_notes(record::AbstractDict)::String
+    lead = esc(pick(record, "body"))
+    lead_html = isempty(strip(lead)) ? "" : "<p>$(lead)</p>"
+    return """<div class="setup-notes prose">$(lead_html)
+$(render_setup_sections(record))</div>"""
+end
+
+"""Notes beside one figure. Side by side from 992px up, stacked below it."""
+function render_split(record::AbstractDict, id::AbstractString)::String
+    return """
+<div class="setup-split">
+$(render_notes(record))
+$(render_fig_row(record, String[id]))
+</div>"""
+end
+
+"""Crumb, area badge and title. Shared by the composed and the a/b/c path."""
+function setup_header_html(record::AbstractDict, kind::AbstractString)::String
     src = kind == "facility" ? "facilities.toml" : "projects.toml"
-    layout = setup_layout(record, src)
-    figures = get(record, "figure", Any[])
-    isempty(figures) && error("$src: '$(record["id"])' needs at least one figure")
-    figure_count_class = length(figures) == 1 ? " setup-study--single-figure" : ""
     back_path = kind == "facility" ? "/facilities/" : "/projects/"
     back_html = kind == "facility" ?
         "&larr; " * esc(ui("nav", "facilities")) : esc(ui("projects", "back"))
     area = area_by_id(String(record["area"]), src)
-    title = esc(pick(record, "title"))
-    figure_html = join([render_setup_figure(figure) for figure in figures], "\n")
     return """
 <header class="page-hd setup-study-hd"><div class="container">
   <p class="project-crumb"><a href="$(prefix())$(back_path)">$(back_html)</a></p>
   <span class="card-badge">$(esc(pick(area, "title")))</span>
-  <h1>$(title)</h1>
-</div></header>
+  <h1>$(esc(pick(record, "title")))</h1>
+</div></header>"""
+end
+
+"""
+Read `blocks` from the front matter and check it against the record.
+
+Every one of these fires on a real mistake somebody can make while composing:
+a figure left out, a figure used twice, an id that does not exist, notes put
+on a record that has none, or a record with words and nowhere to put them.
+"""
+function setup_blocks(record::AbstractDict)
+    raw = locvar(:blocks)
+    raw === nothing && return nothing
+    raw isa AbstractVector ||
+        error("`blocks` in the front matter must be a list of strings")
+
+    n_sections = length(get(record, "section", Any[]))
+    has_lead = !isempty(strip(pick(record, "body")))
+
+    parsed = Tuple{String,Vector{String}}[]
+    used = String[]
+    lead_blocks = 0
+    section_blocks = zeros(Int, n_sections)
+    for entry in raw
+        text = strip(String(entry))
+        if text == "notes"
+            # "notes" stands for the lead AND every section, so it counts as
+            # placing whatever the record actually has. A record with no lead
+            # is not made to say so.
+            lead_blocks += has_lead ? 1 : 0
+            section_blocks .+= 1
+            push!(parsed, ("notes", String[]))
+        elseif text == "lead"
+            lead_blocks += 1
+            push!(parsed, ("lead", String[]))
+        elseif startswith(text, "sec:")
+            n = tryparse(Int, strip(text[5:end]))
+            n === nothing && error("record '$(record["id"])': $(repr(text)) needs a section number")
+            1 <= n <= n_sections ||
+                error("record '$(record["id"])': $(repr(text)) but it has $(n_sections) section(s)")
+            section_blocks[n] += 1
+            push!(parsed, ("sec", String[string(n)]))
+        elseif startswith(text, "split:")
+            lead_blocks += has_lead ? 1 : 0
+            section_blocks .+= 1
+            ids = String.(split(strip(text[7:end])))
+            length(ids) == 1 ||
+                error("record '$(record["id"])': split takes exactly one figure id, got $(repr(text))")
+            append!(used, ids)
+            push!(parsed, ("split", ids))
+        elseif startswith(text, "row:")
+            ids = String.(split(strip(text[5:end])))
+            isempty(ids) && error("record '$(record["id"])': empty row block")
+            append!(used, ids)
+            push!(parsed, ("row", ids))
+        else
+            error("record '$(record["id"])': unknown block $(repr(text)); use " *
+                  "notes, lead, sec:<n>, split:<figure-id> or row:<figure-id> ...")
+        end
+    end
+
+    all_ids = [String(f["id"]) for f in get(record, "figure", Any[])]
+    for id in used
+        id in all_ids ||
+            error("record '$(record["id"])': a block names figure '$(id)', which it has not got")
+    end
+    for id in all_ids
+        count(==(id), used) == 1 ||
+            error("record '$(record["id"])': figure '$(id)' appears $(count(==(id), used)) times in blocks; it must appear exactly once")
+    end
+    # Every piece of the record's words is placed exactly once. A lead left
+    # out, a section named twice, or a heading placed on a record that has no
+    # such section all stop the build here rather than quietly disappearing.
+    want_lead = has_lead ? 1 : 0
+    lead_blocks == want_lead ||
+        error("record '$(record["id"])': the lead paragraph is placed $(lead_blocks) time(s), " *
+              "and it must be placed $(want_lead)")
+    for (n, count) in enumerate(section_blocks)
+        count == 1 ||
+            error("record '$(record["id"])': section $(n) is placed $(count) time(s) in blocks; " *
+                  "it must be placed exactly once")
+    end
+    return parsed
+end
+
+"""A composed page: header, then the blocks in the order the page asked for."""
+function render_setup_rows(record::AbstractDict, kind::AbstractString, blocks)::String
+    parts = String[]
+    for (name, ids) in blocks
+        if name == "notes"
+            push!(parts, render_notes(record))
+        elseif name == "lead"
+            push!(parts, render_lead(record))
+        elseif name == "sec"
+            push!(parts, render_section(record, parse(Int, ids[1])))
+        elseif name == "split"
+            push!(parts, render_split(record, ids[1]))
+        else
+            push!(parts, render_fig_row(record, ids))
+        end
+    end
+    # The first picture is the LCP element on nearly every one of these pages
+    # once the notes stop filling a column beside it, and every <img> the site
+    # emits is lazy. A lazy LCP image is half a second of empty box.
+    body = replace(join(parts, "\n"), "loading=\"lazy\"" => "loading=\"eager\" fetchpriority=\"high\"", count = 1)
+    return """
+$(setup_header_html(record, kind))
 <div class="page-body setup-study-page"><div class="container">
-  <article class="setup-study setup-study--$(layout)$(figure_count_class)">
-    <div class="setup-study-copy prose">
-      <p>$(esc(pick(record, "body")))</p>
-      $(render_setup_sections(record))
-    </div>
-    <div class="setup-study-figures">$(figure_html)</div>
-  </article>
+  <div class="setup-rows">
+$(body)
+  </div>
 </div></div>"""
 end
 
-"""`{{facility_page}}` — one shared facility record in layout A, B or C."""
+"""`{{facility_page}}` — one facility, composed by its own page."""
 function hfun_facility_page()::String
     id = locvar(:facility)
     id === nothing && error("this page needs `facility = \"<id>\"` in its front matter")
-    return render_setup_page(facility_by_id(String(id)), "facility")
-end
-
-"""`{{facility_designs}}` — temporary links to the three facility layouts."""
-function hfun_facility_designs()
-    facility = facility_by_id("falling-film-cooling-system")
-    title = esc(pick(facility, "title"))
-    image = esc(String(facility["image"]))
-    image_fit = lowercase(String(get(facility, "image_fit", "cover")))
-    image_class = image_fit == "contain" ? " facility-design-card--contain" : ""
-    cards = String[]
-    for variant in ("a", "b", "c")
-        upper = uppercase(variant)
-        push!(cards, """
-    <a class="facility-design-card$(image_class)" href="/facilities/falling-film-cooling-$(variant)/">
-      <img src="$(image)" alt="">
-      <span><strong>Layout $(upper)</strong><span>$(title)</span></span>
-    </a>""")
-    end
-    return """<div class="facility-design-grid">
-$(join(cards, "\n"))
-</div>"""
+    record = facility_by_id(String(id))
+    blocks = setup_blocks(record)
+    blocks === nothing &&
+        error("facilities/$(id).md has no `blocks`; every detail page composes itself")
+    return render_setup_rows(record, "facility", blocks)
 end
 
 # ---------------------------------------------------------------------------
@@ -1126,13 +1272,17 @@ function project_person(project)
     return is_public(person) ? person : nothing
 end
 
-"""`{{project_setup_page}}` — one shared imported-project record in layout A, B or C."""
+"""`{{project_setup_page}}` — one imported project, composed by its own page."""
 function hfun_project_setup_page()::String
     id = locvar(:project)
     id === nothing && error("this page needs `project = \"<id>\"` in its front matter")
     hit = filter(p -> p["id"] == String(id), projects())
     isempty(hit) && error("no project with id '$(id)' in projects.toml")
-    return render_setup_page(first(hit), "project")
+    record = first(hit)
+    blocks = setup_blocks(record)
+    blocks === nothing &&
+        error("projects/$(id).md has no `blocks`; every detail page composes itself")
+    return render_setup_rows(record, "project", blocks)
 end
 
 """

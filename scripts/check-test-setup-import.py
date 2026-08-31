@@ -60,34 +60,34 @@ SOURCE_SLIDE_SHA256 = {
 
 EXPECTED = {
     "facility": {
-        "falling-film-cooling-system": ([2], "c", "two-phase", 4),
-        "thermal-fin-natural-convection-chamber": ([7], "a", "heat-exchangers", 1),
-        "air-cooler-wind-tunnel": ([8], "b", "electronics-cooling", 1),
-        "data-center-air-cooling-facility": ([9, 10], "c", "data-center", 7),
-        "two-phase-cold-plate-test-platform": ([11], "a", "two-phase", 1),
-        "flooded-evaporator-test-rig": ([12], "b", "two-phase", 2),
-        "boiler-surface-test-rig": ([13], "c", "two-phase", 6),
-        "three-kilowatt-cold-plate-test-facility": ([15], "a", "two-phase", 2),
-        "vapor-compression-cooling-system": ([16], "b", "hvacr", 2),
-        "refrigerant-lubricant-boiling-system": ([17], "c", "two-phase", 3),
-        "liquid-desiccant-air-conditioning-system": ([18], "a", "hvacr", 3),
-        "carvera-desktop-cnc": ([28], "b", "electronics-cooling", 1),
-        "fabrication-and-microscopy-equipment": ([29], "c", "electronics-cooling", 3),
-        "amca-wind-tunnel": ([30], "a", "heat-exchangers", 1),
+        "falling-film-cooling-system": ([2], "two-phase", 4),
+        "thermal-fin-natural-convection-chamber": ([7], "heat-exchangers", 1),
+        "air-cooler-wind-tunnel": ([8], "electronics-cooling", 1),
+        "data-center-air-cooling-facility": ([9, 10], "data-center", 7),
+        "two-phase-cold-plate-test-platform": ([11], "two-phase", 1),
+        "flooded-evaporator-test-rig": ([12], "two-phase", 2),
+        "boiler-surface-test-rig": ([13], "two-phase", 6),
+        "three-kilowatt-cold-plate-test-facility": ([15], "two-phase", 2),
+        "vapor-compression-cooling-system": ([16], "hvacr", 2),
+        "refrigerant-lubricant-boiling-system": ([17], "two-phase", 3),
+        "liquid-desiccant-air-conditioning-system": ([18], "hvacr", 3),
+        "carvera-desktop-cnc": ([28], "electronics-cooling", 1),
+        "fabrication-and-microscopy-equipment": ([29], "electronics-cooling", 3),
+        "amca-wind-tunnel": ([30], "heat-exchangers", 1),
     },
     "project": {
-        "gaming-laptop-hybrid-vapor-chamber": ([3], "a", "electronics-cooling", 2),
-        "two-phase-closed-loop-thermosyphon": ([4], "b", "two-phase", 3),
-        "chip-package-lid-thermal-spreading": ([5, 6], "c", "electronics-cooling", 7),
-        "heat-pipes-freezing-conditions": ([14], "a", "two-phase", 2),
-        "immersion-cooling-microchannel-lid": ([19], "b", "electronics-cooling", 3),
-        "oil-immersion-heat-transfer-enhancement": ([20], "c", "electronics-cooling", 5),
-        "multi-agent-server-cooling-control": ([21, 22], "a", "ai-thermal", 5),
-        "pulsating-jet-impingement": ([23], "b", "electronics-cooling", 2),
-        "expansion-tank-pre-charge-pressure": ([24], "c", "hvacr", 4),
-        "embedded-microfluidic-interlayer-cooling": ([25], "a", "electronics-cooling", 4),
-        "supercritical-co2-chiller": ([26], "b", "hvacr", 2),
-        "thermosyphon-working-fluid-filling-ratio": ([27], "c", "two-phase", 1),
+        "gaming-laptop-hybrid-vapor-chamber": ([3], "electronics-cooling", 2),
+        "two-phase-closed-loop-thermosyphon": ([4], "two-phase", 3),
+        "chip-package-lid-thermal-spreading": ([5, 6], "electronics-cooling", 7),
+        "heat-pipes-freezing-conditions": ([14], "two-phase", 2),
+        "immersion-cooling-microchannel-lid": ([19], "electronics-cooling", 3),
+        "oil-immersion-heat-transfer-enhancement": ([20], "electronics-cooling", 5),
+        "multi-agent-server-cooling-control": ([21, 22], "ai-thermal", 5),
+        "pulsating-jet-impingement": ([23], "electronics-cooling", 2),
+        "expansion-tank-pre-charge-pressure": ([24], "hvacr", 4),
+        "embedded-microfluidic-interlayer-cooling": ([25], "electronics-cooling", 4),
+        "supercritical-co2-chiller": ([26], "hvacr", 2),
+        "thermosyphon-working-fluid-filling-ratio": ([27], "two-phase", 1),
     },
 }
 
@@ -222,11 +222,16 @@ def main() -> int:
                 f"found {len(imported_records)}")
         require(set(imported_records) == set(expected_records),
                 f"{kind} imported record IDs do not match the literal manifest")
-        layouts = Counter(record.get("layout") for record in imported_records.values())
-        require(dict(sorted(layouts.items())) == EXPECTED_LAYOUTS[kind],
-                f"{kind} layout counts: expected {EXPECTED_LAYOUTS[kind]!r}, "
-                f"found {dict(sorted(layouts.items()))!r}")
-        for record_id, (slides, layout, area, figure_count) in expected_records.items():
+        # Layouts a, b and c are retired. Every detail page composes itself in
+        # its own front matter, so a leftover `layout` key would be a fact
+        # nothing reads, and the first person to trust it would be wrong.
+        stale = sorted(rid for rid, record in imported_records.items()
+                       if "layout" in record or
+                       any("span" in figure for figure in record.get("figure", [])
+                           if isinstance(figure, dict)))
+        require(not stale,
+                f"{kind}: retired layout/span keys still in the data: {stale}")
+        for record_id, (slides, area, figure_count) in expected_records.items():
             record = records.get(record_id)
             if record is None:
                 failures.append(f"missing {kind} record: {record_id}")
@@ -234,8 +239,6 @@ def main() -> int:
 
             require(record.get("source_slides") == slides,
                     f"{kind} {record_id}: expected source_slides {slides!r}")
-            require(record.get("layout") == layout,
-                    f"{kind} {record_id}: expected layout {layout!r}")
             require(record.get("area") == area,
                     f"{kind} {record_id}: expected area {area!r}")
             figures = record.get("figure", [])
@@ -301,8 +304,10 @@ def main() -> int:
                 html = path.read_text(encoding="utf-8")
                 page = Page()
                 page.feed(html)
-                require(page.has_class(f"setup-study--{layout}"),
-                        f"{route}: expected setup-study--{layout}")
+                require(page.has_class("setup-rows"),
+                        f"{route}: expected a composed setup-rows block")
+                require(page.has_class("fig-row"),
+                        f"{route}: expected at least one justified figure row")
                 visible_text = " ".join(" ".join(page.text_parts).split())
                 for fact_index, fragment in enumerate(
                         REQUIRED_PROJECT_HTML_TEXT.get(record_id, ()), start=1):

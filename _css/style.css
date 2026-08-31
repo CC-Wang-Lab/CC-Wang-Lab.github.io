@@ -2100,104 +2100,90 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   margin-top: 0.6rem;
 }
 
-/* Shared setup-study layouts. Each record selects spatial hierarchy A, B, or C. */
+/* Detail pages: the header, then whatever the page composed. */
 .setup-study-hd .card-badge { margin-bottom: 0.6rem; }
-.setup-study {
-  display: grid;
-  align-items: start;
-  gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+/* Measured at 390px on 2026-08-31: amca-wind-tunnel was 405px wide, because
+   `AMCA WIND TUNNEL+Environmental Control Room` has no space at the `+` and
+   the line breaker treats it as one word. The notes already carried this
+   rule; the title did not, and the title is where the long token is. */
+.setup-study-hd h1 { overflow-wrap: break-word; }
+/* =========================================================================
+   JUSTIFIED FIGURE ROWS  —  the per-page composition vocabulary
+
+   A row is a flex line in which each figure carries `flex: aspect 1 0`. With
+   a zero basis the free space is shared out in proportion to flex-grow, so
+
+       width_i = (W - gaps) * a_i / sum(a)
+       height_i = width_i / a_i = (W - gaps) / sum(a)
+
+   and that second expression has no `i` in it: every figure in the row lands
+   at exactly the same height, whatever shapes are in the row, with nothing
+   cropped and no ragged bottom edge. This is the Flickr justified gallery,
+   done with no JavaScript and no measurement pass.
+
+   THE ROW IS CAPPED BY ITS MAX-WIDTH, NEVER BY THE IMAGE'S MAX-HEIGHT.
+   An image must never be painted wider than its own pixels. Slot width is
+   a_i x h, so the no-upscale condition a_i x h <= w_i reduces to h <= h_i,
+   and the largest safe row height is min(natural height) over the row. The
+   renderer emits that as --nat-h. Because h = (W - gaps) / sum(a), capping h
+   IS capping W, which is why the cap lands on the row.
+
+   A max-height on the <img> would look like it does the same job and does
+   not: it shrinks the picture inside a slot that is still the old width, so
+   the row goes ragged again and gains a letterbox.
+
+   --ar-w and --ar-h are the raw pixel integers, not a rounded ratio. Three
+   or more items accumulate the rounding error and the row then misses the
+   right-hand edge of its container.
+   ========================================================================= */
+.setup-rows {
+  --fig-gap: clamp(1rem, 0.736rem + 1.127vw, 1.75rem);
+  /* 2.5rem, not the 3.25rem the rest of the page uses between blocks. At
+     52px the four micrographs of boiler-surface-test-rig read as two
+     unrelated pairs; at 40px they read as one comparison set, and the
+     rig photograph below them is still clearly a different thing. */
+  --fig-row-gap: clamp(1.5rem, 1.148rem + 1.502vw, 2.5rem);
+  /* The tallest a row may be, and it is the number that decides how big
+     everything on these pages looks. 32rem was tried first and was too tight:
+     it holds the row of four tall rack pictures on
+     data-center-air-cooling-facility to 891px inside a 1320px container, so a
+     third of the line is left empty. 40rem gives it 1096px and still keeps a
+     lone portrait photograph inside a laptop viewport. */
+  --fig-max-h: 40rem;
+  /* A safety net, not a design value. A row that pairs a 0.30 dot grid with
+     a 2.9 wide photograph gives the grid 9% of the line, and no composition
+     should ever do that. If one does, the floor stops the picture vanishing;
+     the row loses its equal heights, which is the visible signal that the
+     grouping was wrong. */
+  --fig-floor: 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--fig-row-gap);
 }
-.setup-study-copy {
-  grid-area: copy;
-  min-width: 0;
-  /* No cap, on purpose, and this is the site's own rule rather than an
-     exception to it. Every other note block on the site runs the full width of
-     whatever holds it, and `scripts/shoot.py --measure` fails a note that
-     carries a second max-width.
-
-     `--measure` used to sit here. In layouts a and c the copy already lives in
-     a grid column narrower than 74ch, so the cap could never bind. In layout b
-     the copy IS the full container, so the cap was the only thing acting, and
-     what it did was leave the right half of the page empty. Measured at 1440
-     on 2026-08-31: copy 700px inside a 1320px row. */
-  font-size: var(--fs-md);
-  line-height: var(--lh-normal);
-  /* A record title carries strings like TUNNEL+Environmental with no space to
-     break at. At 320px that one word made the page 402px wide and pushed the
-     menu button off the screen. Widening the test rather than special-casing
-     the record. */
-  overflow-wrap: break-word;
+.fig-row {
+  --h-cap: min(var(--fig-max-h), var(--nat-h));
+  display: flex;
+  gap: var(--fig-gap);
+  align-items: flex-start;
+  width: 100%;
+  max-width: calc(var(--h-cap) * var(--sum-ar) + (var(--n) - 1) * var(--fig-gap));
+  margin-inline: auto;
 }
-.setup-study-copy p {
-  /* Not `margin: 0`. A record with a lead AND a section body renders two
-     paragraphs, and with no gap they read as one block: on
-     immersion-cooling-microchannel-lid the second sentence began on the line
-     under the first with nothing between them. */
-  margin: 0 0 1rem;
-  text-align: justify;
-}
-.setup-study-copy p:last-child { margin-bottom: 0; }
-
-/*
-  THE FIGURE TRACK IS SIZED BY THE SPACE AVAILABLE, NEVER BY FIGURE ID.
-
-  What was here before placed figures with rules keyed on four literal ids:
-  cabinet, dimensions, 100w and 500w. Exactly ONE record in the whole site
-  carries those ids, `falling-film-cooling-system`, and it is layout c - so the
-  entire layout-b ruleset matched nothing at all, and 25 of the 26 records fell
-  through to auto-placement in a track built for a different record.
-
-  Measured at 1440 on 2026-08-31, before this change:
-    - all 8 layout-b records put their 1 to 3 figures into a 4-column track,
-      leaving between 25% and 75% of the row empty
-    - layout c alternated a 0.62fr and a 1.38fr column by source order, so
-      boiler-surface-test-rig showed four micrographs OF ONE COMPARISON SET at
-      two different sizes
-    - at 320px a two-up row gave each photo 136px
-
-  auto-fit fixes all three at once. It collapses tracks nothing lands in, so an
-  empty cell in a full row is no longer possible; the minmax floor decides the
-  column count from the width available, so 320px gets exactly one column; and
-  no rule mentions a figure id, so a new record needs no new CSS.
-
-  `min(100%, ...)` is not decoration. A bare `minmax(17rem, 1fr)` overflows any
-  container narrower than 17rem, which is every phone.
-*/
-.setup-study-figures {
-  grid-area: figures;
-  display: grid;
-  align-items: start;
-  gap: clamp(1.25rem, 0.986rem + 1.127vw, 2rem);
-  min-width: 0;
-  --fig-min: 17rem;
-  /* The tallest a single figure may be. A grid row is as tall as its tallest
-     item, so one very tall crop drags a whole row with it. 32rem is about half
-     a laptop screen. */
-  --fig-max-h: 32rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--fig-min)), 1fr));
-}
-/*
-  One figure per record may ask for the whole row, through `span = "full"` on
-  its [[figure]] row in _data/. That is the only emphasis mechanism, and it is
-  in the DATA because only a person looking at the picture can know that one of
-  them is a wide schematic whose labels are unreadable at a quarter width.
-
-  It replaced `.setup-study-figure--diagram { grid-column: 1 / -1 }`, which
-  keyed off `kind`. That rule read well until a record arrived where five of
-  six figures were kind = "diagram": boiler-surface-test-rig then stacked four
-  micrographs full width in four near-empty boxes.
-
-  `1 / -1` and not `span 2`: at one column a `span 2` creates an implicit
-  second column and pushes the page wider than the phone.
-*/
-.setup-study-figure--span-full { grid-column: 1 / -1; }
-.setup-study-figure {
+.fig {
+  flex: calc(var(--ar-w) / var(--ar-h)) 1 0;
+  min-width: min(var(--fig-floor), 100%);
   margin: 0;
-  min-width: 0;
 }
-.setup-study-figure-media {
-  display: grid;
-  place-items: center;
+.fig-media {
+  display: block;
+  position: relative;
+  cursor: zoom-in;
+  /* The box, not the image, carries the shape. That is what makes the row
+     heights equal before a single byte of any picture has arrived, and it is
+     also what stops the page reflowing as they land. */
+  aspect-ratio: var(--ar-w) / var(--ar-h);
+  max-width: var(--nat-w);
+  margin-inline: auto;
   overflow: hidden;
   border: var(--rule);
   border-radius: var(--radius-md);
@@ -2205,110 +2191,150 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   box-shadow: var(--lab-shadow);
 }
 /*
-  max-width, never width. Two faults come from the same line.
-
-  `width: 100%` on a photo forced every image to fill its track, so an 82px
-  crop was painted at 388px and a 129px one at 503px. Measured 2026-08-31:
-  17 figures were being enlarged, five of them by more than 2x. The source
-  assets are 3x larger now, so almost all of them fill the track on their own
-  merit; the ones that cannot are shown at the size they really are instead of
-  being smeared across the column.
-
-  max-height caps a runaway row. Row height is set by the tallest item, and
-  these crops range from 8:1 to 1:4. On data-center-air-cooling-facility a
-  497x1600 dot grid made a row 1100px tall and left the photograph beside it
-  floating over 700px of nothing.
-
-  Nothing is cropped by either rule. Both scale the whole picture down and
-  preserve its aspect, which is what the height:auto / width:auto pair is for.
+  The corner mark. Hidden until hover where there is a pointer to hover with,
+  and always shown on a touch screen, which has no hover to discover it with.
+  It is two strokes of a border, so it costs no image and no font.
 */
-.setup-study-figure img {
+.fig-zoom {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid var(--lab-muted);
+  border-radius: 0.15rem;
+  background: color-mix(in srgb, var(--lab-surface-1) 82%, transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  pointer-events: none;
+}
+.fig-zoom::after {
+  content: "";
+  position: absolute;
+  inset: 0.24rem 0.14rem;
+  border-left: 2px solid var(--lab-muted);
+  border-bottom: 2px solid var(--lab-muted);
+  transform: rotate(-45deg);
+}
+.fig-media:hover .fig-zoom,
+.fig-media:focus-visible .fig-zoom { opacity: 1; }
+@media (hover: none) {
+  .fig-zoom { opacity: 1; }
+}
+.fig-media img {
   display: block;
-  max-width: 100%;
-  max-height: var(--fig-max-h);
-  width: auto;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  /* `contain` and an exact aspect-ratio box are the same picture. It is here
+     as a guard: if a figure's recorded w/h ever drifts from the file, the
+     image letterboxes instead of stretching, and the gate catches it. */
+  object-fit: contain;
 }
-.setup-study-figure--photo .setup-study-figure-media {
-  background: var(--lab-surface-2);
-}
-.setup-study-figure--diagram .setup-study-figure-media {
-  min-height: 11rem;
+.fig--photo .fig-media { background: var(--lab-surface-2); }
+.fig--diagram .fig-media {
   padding: clamp(0.55rem, 0.374rem + 0.751vw, 1.05rem);
 }
-.setup-study-figure figcaption {
+.fig figcaption {
   margin-top: 0.55rem;
   color: var(--lab-muted);
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   line-height: var(--lh-tight);
 }
-.setup-study--a {
-  grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.75fr);
-  grid-template-areas: "figures copy";
-}
-/* One figure gets the NARROW column and the notes get the wide one.
-   Kept from commit c88a2e5, which fixed an empty media track, and it is still
-   the right split for a different reason: the figure column is sized for a row
-   of several pictures, so a lone picture stretched across it dwarfs the page
-   while the notes wrap at half the width they should. */
-@media (min-width: 992px) {
-  .setup-study--a.setup-study--single-figure {
-    grid-template-columns: minmax(17rem, 0.75fr) minmax(0, 1.45fr);
+
+/*
+  A row never re-justifies on a second line. It either stays on one line or
+  becomes a grid.
+
+  Wrapping and justifying are the same mechanism fighting: exact widths need
+  `flex-basis: 0`, and a line only breaks when an item cannot shrink further,
+  which needs a basis. Anything that forces a wrap therefore un-justifies the
+  line it wrapped, and the result is a row that is exactly right above the
+  breakpoint and subtly wrong below it.
+
+  So a row of three or more becomes two even columns on a tablet. For a
+  comparison set - four micrographs of one sample, which is the case this is
+  for - every item has the same shape, so equal widths ARE equal heights and
+  nothing is lost.
+*/
+@media (max-width: 991.98px) {
+  .fig-row:not(.fig-row--n1):not(.fig-row--n2) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: none;
   }
 }
-.setup-study--b {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "copy"
-    "figures";
-}
-.setup-study--c {
-  grid-template-columns: minmax(17rem, 0.76fr) minmax(0, 1.24fr);
-  grid-template-areas: "copy figures";
+@media (max-width: 575.98px) {
+  /* Both selectors, and the second one is not redundant. The tablet rule
+     above is `.fig-row:not(.fig-row--n1):not(.fig-row--n2)`, three classes
+     against this one, and specificity beats source order inside the same
+     cascade layer. Without the longer selector repeated here, a row of four
+     stayed two-up at 320px and gave each picture 150px. Measured on
+     data-center-air-cooling-facility. */
+  .fig-row,
+  .fig-row:not(.fig-row--n1):not(.fig-row--n2) {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
 }
 
-.facility-design-grid {
+/*
+  Notes.
+
+  Full width at 1320px is about 160 characters a line, and 160 characters is
+  not a measure anybody reads twice. The site's own rule is that a note block
+  fills whatever holds it, so the holder is what narrows here, and the text
+  still fills it edge to edge.
+
+  The rule that block came from was written against layout b, where the copy
+  WAS the container and a cap left the right half of the page empty. Nothing
+  sits beside these notes, so there is no empty half to create.
+*/
+.setup-notes {
+  /* 58ch, measured, not 72ch guessed. `ch` is the width of a ZERO, and ET
+     Book's zero is 9.39px where its average character is 7.9px, so a 72ch
+     box held 85 to 90 characters a line across the 26 records. 58ch measures
+     66 to 72, which is the measure this is aiming at.
+
+     scripts/shoot.py --measure reports `cpl` per block, so this number can be
+     checked rather than argued about. */
+  max-width: 58ch;
+  min-width: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  /* A record title carries strings like TUNNEL+Environmental with no space to
+     break at, which at 320px pushed the page 82px wider than the screen. */
+  overflow-wrap: break-word;
+}
+.setup-notes p {
+  margin: 0 0 1rem;
+  text-align: justify;
+}
+/* A source URL is one unbreakable token, so it cannot start on the line that
+   introduces it, and a justified line with nothing after it to fill the gap
+   stretches four words across the whole column. Measured on
+   carvera-desktop-cnc: `Link to detailed information:` was spread over 494px
+   with the URL alone on the next line.
+
+   `anywhere` and not `break-word`: break-word only breaks a word that will
+   not fit on a line by ITSELF, which a 40-character URL always does. */
+.setup-notes a { overflow-wrap: anywhere; }
+.setup-notes p:last-child { margin-bottom: 0; }
+
+/*
+  Notes beside one photograph, for a record whose words would otherwise sit
+  above a single capped picture with the rest of the line empty either side.
+  5/12 of 1320px is about 63 characters, which is a good measure.
+*/
+.setup-split {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  align-items: start;
+  gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
 }
-.facility-design-card {
-  display: grid;
-  align-content: start;
-  min-height: var(--control-min);
-  overflow: hidden;
-  border: var(--rule);
-  border-radius: var(--radius-md);
-  background: var(--lab-surface);
-  color: inherit;
-  box-shadow: var(--lab-shadow);
-}
-.facility-design-card:hover {
-  border-color: var(--lab-accent);
-  color: var(--lab-accent);
-  text-decoration: none;
-}
-.facility-design-card img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-}
-.facility-design-card--contain img {
-  padding: clamp(0.65rem, 0.474rem + 0.751vw, 1.15rem);
-  background: #fff;
-  object-fit: contain;
-}
-.facility-design-card > span {
-  display: grid;
-  gap: 0.35rem;
-  padding: 1rem;
-}
-.facility-design-card strong { font-size: var(--fs-lg); }
-.facility-design-card > span > span {
-  color: var(--lab-muted);
-  font-size: var(--fs-sm);
+@media (min-width: 992px) {
+  .setup-split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .setup-split .setup-notes { max-width: none; }
 }
 
 @media (max-width: 991.98px) {
@@ -2316,20 +2342,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .ns-next { right: -0.5rem; }
   .ns-nav { gap: 1.25rem; }
   .ns-nav-line { width: 6rem; }
-  .setup-study--a,
-  .setup-study--b,
-  .setup-study--c {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "copy"
-      "figures";
-  }
-  /* Nothing here re-declares the figure track any more. The auto-fit rule up
-     at .setup-study-figures already collapses to one column below about 19rem
-     of usable width, which is every phone, and it does it from the width
-     actually available rather than from a breakpoint guess. The blocks that
-     used to sit here forced two columns at 320px and gave each photo 136px. */
-  .facility-design-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 767.98px) {
   /* The container is full-bleed on phones, so the card would touch both edges

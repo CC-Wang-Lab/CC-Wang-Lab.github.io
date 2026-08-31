@@ -273,6 +273,7 @@ window.addEventListener("load", function () {
     var noteTextSelector = [
       ".page-hd p:not(.profile-header-summary)", ".section-head p", ".page-narrow p", ".pi-body p",
       ".pub-theme p", ".pub-theme li", ".profile-narrative p",
+      ".setup-notes p", ".setup-notes li",
       ".form-col > p", ".pg-scope", ".project-body > p:not(:has(img, picture, video))",
       ".project-body > :is(ul, ol) > li", ".project-body > blockquote"
     ].join(",");
@@ -666,36 +667,8 @@ window.addEventListener("load", function () {
         focus: partnerFocus
       };
     }
-    var setupSingleFigureAudit = null;
-    var setupStudy = document.querySelector(".setup-study--single-figure");
-    if (setupStudy) {
-      var setupFigures = setupStudy.querySelectorAll(".setup-study-figure");
-      var setupCopy = setupStudy.querySelector(".setup-study-copy");
-      if (setupFigures.length === 1 && setupCopy) {
-        var setupStudyRect = setupStudy.getBoundingClientRect();
-        var setupFigureRect = setupFigures[0].getBoundingClientRect();
-        var setupCopyRect = setupCopy.getBoundingClientRect();
-        var setupExpectedGap = parseFloat(getComputedStyle(setupStudy).columnGap) || 0;
-        var figureBeforeCopy = setupFigureRect.right <= setupCopyRect.left;
-        var copyBeforeFigure = setupCopyRect.right <= setupFigureRect.left;
-        var setupActualGap = figureBeforeCopy ?
-          setupCopyRect.left - setupFigureRect.right :
-          copyBeforeFigure ? setupFigureRect.left - setupCopyRect.right :
-          -Math.min(setupFigureRect.right - setupCopyRect.left,
-                    setupCopyRect.right - setupFigureRect.left);
-        setupSingleFigureAudit = {
-          desktopSideBySide: window.innerWidth > 991.98 &&
-            setupStudy.classList.contains("setup-study--a"),
-          actualGap: setupActualGap,
-          expectedGap: setupExpectedGap,
-          mobileStacked: setupCopyRect.bottom <= setupFigureRect.top + 1,
-          mobileCopyFullWidth: Math.abs(setupCopyRect.width - setupStudyRect.width) <= 1,
-          mobileFigureFullWidth: Math.abs(setupFigureRect.width - setupStudyRect.width) <= 1
-        };
-      }
-    }
     var setupImages = Array.prototype.slice.call(
-      document.querySelectorAll(".setup-study-figure img"));
+      document.querySelectorAll(".fig-media img"));
     await Promise.all(setupImages.map(function (setupImage) {
       if (setupImage.complete) return Promise.resolve();
       return new Promise(function (resolve) {
@@ -764,7 +737,7 @@ window.addEventListener("load", function () {
         paintedHeight > setupImageRect.height + 1;
       var clippedByAncestor = false;
       for (var clipNode = setupImage.parentElement;
-           clipNode && clipNode !== setupImage.closest(".setup-study-figure");
+           clipNode && clipNode !== setupImage.closest(".fig");
            clipNode = clipNode.parentElement) {
         var clipStyle = getComputedStyle(clipNode);
         if (!/(hidden|clip|scroll|auto)/.test(
@@ -874,43 +847,64 @@ window.addEventListener("load", function () {
        for. That is the only way to see a four-column track holding two
        figures, which reads as a broken row and cannot be found by grepping.
        ------------------------------------------------------------------ */
-    var setupGrid = null;
-    var studyEl = document.querySelector(".setup-study");
-    if (studyEl) {
-      var figuresBox = studyEl.querySelector(".setup-study-figures");
-      var copyBox = studyEl.querySelector(".setup-study-copy");
-      var figuresRect = figuresBox.getBoundingClientRect();
-      var colTracks = getComputedStyle(figuresBox).gridTemplateColumns
-        .split(" ").filter(function (v) { return v && v !== "none"; });
-      var figNodes = figuresBox.querySelectorAll(".setup-study-figure");
-      var rowTops = {}, figList = [];
-      for (var fg = 0; fg < figNodes.length; fg++) {
-        var figNode = figNodes[fg];
-        var figImg = figNode.querySelector("img");
-        var figRect = (figImg || figNode).getBoundingClientRect();
-        rowTops[Math.round(figNode.getBoundingClientRect().top)] = 1;
-        figList.push({
-          id: (figNode.className.match(/setup-study-figure--([a-z0-9-]+)/) || [])[1] || "?",
-          w: +figRect.width.toFixed(1), h: +figRect.height.toFixed(1),
-          natW: figImg ? figImg.naturalWidth : 0,
-          natH: figImg ? figImg.naturalHeight : 0,
-          x: Math.round(figNode.getBoundingClientRect().left - figuresRect.left),
-          y: Math.round(figNode.getBoundingClientRect().top - figuresRect.top),
-          spanPx: Math.round(figNode.getBoundingClientRect().width)
+    /* ------------------------------------------------------------------
+       THE ROW AUDIT.
+
+       A justified row gives every picture in it `flex: aspect 1 0`, so the
+       widths come out proportional to aspect and every height is the same
+       number. Two things can go wrong and neither is visible in a
+       screenshot at a glance:
+
+         heightSpread  the heights are NOT equal. Some rule has overridden
+                       the computed size, and the row is a plain flex line
+                       wearing the class of a justified one. A min-height on
+                       a figure did exactly this and was removed.
+
+         upscaled      a picture is painted wider than its own pixels. The
+                       cap that prevents it lives on the ROW's max-width,
+                       computed from the smallest natural height in the row,
+                       and one wrong figure size in _data/ would break it
+                       silently.
+       ------------------------------------------------------------------ */
+    var figRows = [];
+    var rowNodes = document.querySelectorAll(".fig-row");
+    for (var rw = 0; rw < rowNodes.length; rw++) {
+      var rowNode = rowNodes[rw];
+      var rowRect = rowNode.getBoundingClientRect();
+      var items = rowNode.querySelectorAll(".fig");
+      var heights = [], upscaled = [], itemList = [];
+      for (var it = 0; it < items.length; it++) {
+        var itemImg = items[it].querySelector("img");
+        if (!itemImg) continue;
+        var itemRect = itemImg.getBoundingClientRect();
+        if (!itemRect.width || !itemImg.naturalWidth) continue;
+        /* The spread is measured on the MEDIA BOX, not on the image inside
+           it. A diagram's box carries padding so its drawing does not touch
+           the frame, which makes its image 33.6px shorter than a photograph
+           beside it at 1440 while the two boxes are exactly level. Measuring
+           the image reported a 33.59px spread on seven pages that were in
+           fact perfectly justified. The box is what the eye lines up. */
+        var itemBox = items[it].querySelector(".fig-media");
+        heights.push((itemBox || itemImg).getBoundingClientRect().height);
+        if (itemRect.width > itemImg.naturalWidth * 1.05) {
+          upscaled.push((itemImg.getAttribute("src") || "?").split("/").pop() +
+            " " + Math.round(itemRect.width) + "px of " + itemImg.naturalWidth);
+        }
+        itemList.push({
+          src: (itemImg.getAttribute("src") || "?").split("/").pop(),
+          w: +itemRect.width.toFixed(1), h: +itemRect.height.toFixed(1),
+          natW: itemImg.naturalWidth
         });
       }
-      setupGrid = {
-        layout: (studyEl.className.match(/setup-study--([abc])(?!\w)/) || [])[1] || "?",
-        single: /setup-study--single-figure/.test(studyEl.className),
-        cols: colTracks.length,
-        colPx: colTracks.map(function (v) { return Math.round(parseFloat(v)); }),
-        rows: Object.keys(rowTops).length,
-        copyPx: copyBox ? +copyBox.getBoundingClientRect().width.toFixed(1) : 0,
-        figuresPx: +figuresRect.width.toFixed(1),
-        stacked: copyBox ?
-          copyBox.getBoundingClientRect().bottom <= figuresRect.top + 1 : null,
-        figs: figList
-      };
+      figRows.push({
+        n: items.length,
+        stacked: getComputedStyle(rowNode).display !== "flex",
+        rowPx: +rowRect.width.toFixed(1),
+        spread: heights.length ?
+          +(Math.max.apply(null, heights) - Math.min.apply(null, heights)).toFixed(2) : 0,
+        upscaled: upscaled,
+        figs: itemList
+      });
     }
 
     fetch("/__report", { method: "POST", body: JSON.stringify({
@@ -933,9 +927,8 @@ window.addEventListener("load", function () {
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
       overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
       profile: profileAudit, partners: partnerAudit,
-      setupSingleFigure: setupSingleFigureAudit,
       setupImages: setupImageAudit,
-      justifyAudit: justifyAudit, setupGrid: setupGrid
+      justifyAudit: justifyAudit, figRows: figRows
     })});
   }
 });
@@ -1413,44 +1406,28 @@ def main():
             if r.get("narrowProjectMedia"):
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
-            setup_single = r.get("setupSingleFigure")
-            mobile_single_routes = {
-                "/facilities/thermal-fin-natural-convection-chamber/",
-                "/facilities/air-cooler-wind-tunnel/",
-                "/projects/thermosyphon-working-fluid-filling-ratio/",
-            }
-            expects_setup_single = (
-                (r.get("url") == "/facilities/thermal-fin-natural-convection-chamber/"
-                 and r.get("w") == 1440)
-                or (r.get("url") in mobile_single_routes and r.get("w") == 492)
-            )
-            if expects_setup_single and not setup_single:
-                flags.append("single-figure layout audit did not run")
-            elif setup_single and setup_single.get("desktopSideBySide"):
-                if abs(setup_single.get("actualGap", 0) -
-                       setup_single.get("expectedGap", 0)) > 2:
-                    flags.append("single-figure desktop gap %.1fpx differs from %.1fpx"
-                                 % (setup_single.get("actualGap", 0),
-                                    setup_single.get("expectedGap", 0)))
-            elif setup_single and r.get("w", 9999) <= 991.98 and not all((
-                    setup_single.get("mobileStacked"),
-                    setup_single.get("mobileCopyFullWidth"),
-                    setup_single.get("mobileFigureFullWidth"))):
-                flags.append("single-figure layout does not retain its full-width mobile stack")
-            expected_setup_images = {
-                ("/projects/two-phase-closed-loop-thermosyphon/", 1440): 3,
-                ("/facilities/thermal-fin-natural-convection-chamber/", 1440): 1,
-                ("/facilities/thermal-fin-natural-convection-chamber/", 492): 1,
-                ("/facilities/air-cooler-wind-tunnel/", 492): 1,
-                ("/projects/thermosyphon-working-fluid-filling-ratio/", 492): 1,
-            }
-            expected_image_count = expected_setup_images.get((r.get("url"), r.get("w")))
+            # Every page must have composed at least one row, and every row
+            # must hold its two invariants. `spread` above 1px means the
+            # heights are not equal, which means the justification is not
+            # working however plausible the row looks.
+            fig_rows = r.get("figRows")
+            if not fig_rows:
+                flags.append("no justified figure row on the page")
+            for i, row in enumerate(fig_rows or (), start=1):
+                if not row.get("stacked") and row.get("spread", 0) > 1:
+                    flags.append("row %d of %d: heights differ by %.2fpx; the row is "
+                                 "not justified" % (i, len(fig_rows), row["spread"]))
+                if row.get("upscaled"):
+                    flags.append("row %d: %s painted above natural width"
+                                 % (i, "; ".join(row["upscaled"])))
             setup_images = r.get("setupImages")
-            if expected_image_count is not None:
+            expected_image_count = sum(row.get("n", 0) for row in fig_rows or ())
+            if expected_image_count:
                 if not setup_images:
                     flags.append("setup image audit did not run")
                 elif setup_images.get("total") != expected_image_count:
-                    flags.append("setup image count %s differs from expected %s"
+                    flags.append("setup image count %s differs from the %s figures "
+                                 "the rows contain"
                                  % (setup_images.get("total"), expected_image_count))
                 elif setup_images.get("loaded") != expected_image_count:
                     flags.append("only %s/%s setup images loaded"
@@ -1610,10 +1587,12 @@ def main():
                 print("        align  " + x)
             for x in r.get("narrowProjectMedia", []):
                 print("        media  " + x)
-            if setup_single:
-                print("        setup  actual/expected gap = %.1f/%.1fpx"
-                      % (setup_single.get("actualGap", 0),
-                         setup_single.get("expectedGap", 0)))
+            for i, row in enumerate(r.get("figRows") or (), start=1):
+                print("        row %d  n=%s %s%.0fpx spread=%.2f  %s"
+                      % (i, row.get("n"), "stacked " if row.get("stacked") else "",
+                         row.get("rowPx", 0), row.get("spread", 0),
+                         " ".join("%s %.0f/%s" % (f["src"], f["w"], f["natW"])
+                                  for f in row.get("figs", []))))
             if setup_images and setup_images.get("total"):
                 print("        images loaded/total = %s/%s"
                       % (setup_images.get("loaded"), setup_images.get("total")))

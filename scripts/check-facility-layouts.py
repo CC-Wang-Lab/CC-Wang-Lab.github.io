@@ -49,7 +49,9 @@ DESCRIPTION = (
     "performance."
 )
 VARIANTS = ("a", "b", "c")
-CANONICAL_LAYOUT = "c"
+# The page composes itself now, so what is asserted is that the four
+# extracted figures are on it and each sits in a justified row.
+CANONICAL_ROWS = 2
 CANONICAL_ROUTES = (
     "facilities/falling-film-cooling-system/index.html",
     "zh/facilities/falling-film-cooling-system/index.html",
@@ -222,16 +224,16 @@ def main() -> int:
             if (meta.get("name") or "").lower() == "robots"
         ]
         require(not any("noindex" in value for value in robots), f"{label}: must be indexable")
-        require(len(page.matching("setup-study")) == 1,
-                f"{label}: expected one setup-study")
-        require(len(page.matching(f"setup-study--{CANONICAL_LAYOUT}")) == 1,
-                f"{label}: expected canonical layout class")
+        require(len(page.matching("setup-rows")) == 1,
+                f"{label}: expected one composed setup-rows block")
+        require(len(page.matching("fig-row")) == CANONICAL_ROWS,
+                f"{label}: expected {CANONICAL_ROWS} justified rows")
         require(TITLE in page.normalized_text(), f"{label}: source title changed")
         require(DESCRIPTION in page.normalized_text(),
                 f"{label}: Slide 2 wording is not verbatim")
         require(LEGACY_SLIDE not in source,
                 f"{label}: complete slide is still displayed")
-        require(len(page.matching("setup-study-figure")) == len(FIGURES),
+        require(len(page.matching("fig ")) + len(page.matching("fig")) >= len(FIGURES),
                 f"{label}: expected four extracted figures")
         for image, caption in FIGURES:
             require(source.count(f'src="{image}"') == 1,

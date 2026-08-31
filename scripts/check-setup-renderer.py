@@ -17,7 +17,6 @@ SITE = ROOT / "__site"
 CSS_SOURCE = ROOT / "_css" / "style.css"
 EXPECTED = {
     "id": "falling-film-cooling-system",
-    "layout": "c",
     "routes": (
         "facilities/falling-film-cooling-system/index.html",
         "zh/facilities/falling-film-cooling-system/index.html",
@@ -49,7 +48,6 @@ CARVERA_SOURCE_URL = "https://www.kidentech.com/carvera"
 CARVERA_SOURCE_LABEL = "Link to detailed information:"
 PROJECT_EXPECTED = {
     "id": "gaming-laptop-hybrid-vapor-chamber",
-    "layout": "a",
     "routes": (
         "projects/gaming-laptop-hybrid-vapor-chamber/index.html",
         "zh/projects/gaming-laptop-hybrid-vapor-chamber/index.html",
@@ -255,41 +253,66 @@ def studentless_project_literal() -> str:
 def renderer_contract_failures() -> list[str]:
     failures: list[str] = []
     css = CSS_SOURCE.read_text(encoding="utf-8")
-    # The setup copy must NOT carry a width cap. This assertion was the exact
-    # opposite until 2026-08-31, and the reversal is deliberate.
+    # Comments are stripped before every rule below. Each of these rules is
+    # explained in the stylesheet in words that contain the very thing being
+    # searched for, and the first version of this check failed on its own
+    # explanation three separate times.
+    def rule(selector):
+        return re.sub(r"/\*.*?\*/", "", css_rule(css, selector), flags=re.S)
+
+    # 1. The notes carry a MEASURE, and it is a measure, not a column.
     #
-    # Every other note block on this site runs the full width of whatever holds
-    # it, and shoot.py --measure fails a note that carries a second max-width.
-    # `.setup-study-copy` was the one exception. In layouts a and c its grid
-    # column is already narrower than 74ch, so the cap could never bind; in
-    # layout b the copy IS the container, so the cap was the only thing acting,
-    # and what it did was leave the right half of the row empty. Measured at
-    # 1440: copy 700px inside a 1320px row, on all eight layout-b records.
-    # Comments are stripped first. The rule below carries a comment explaining
-    # why there is no cap, and that comment contains the words "max-width",
-    # which made the first version of this check fail on its own explanation.
-    setup_copy = re.sub(r"/\*.*?\*/", "", css_rule(css, ".setup-study-copy"), flags=re.S)
-    if re.search(r"max-width\s*:\s*(?!none)", setup_copy):
-        failures.append("shared setup-study copy must not cap its width; every "
-                        "other note block on the site runs full width")
-    if "overflow-wrap: break-word;" not in setup_copy:
-        failures.append("shared setup-study copy must break a long word; "
+    # This assertion has now been reversed twice, so the history is worth
+    # keeping. It first demanded a cap, then forbade one, and now demands one
+    # again, and all three were right at the time:
+    #
+    #   - under layouts a and c the notes sat in a grid column already
+    #     narrower than a measure, so a cap could never bind;
+    #   - under layout b the notes WERE the container, and the cap left the
+    #     right half of the row empty, measured at 700px inside 1320px;
+    #   - under rows nothing sits beside the notes, so there is no half to
+    #     leave empty, and without a cap the line runs to 160 characters.
+    #
+    # 58ch, not 72ch, and not a round number: `ch` is the width of a zero, and
+    # ET Book's zero is 9.39px where its average character is 7.9px. 72ch
+    # measured 85 to 90 characters a line across the 26 records.
+    notes = rule(".setup-notes")
+    if not re.search(r"max-width\s*:\s*\d+ch", notes):
+        failures.append("the setup notes must carry a measure in ch; without one "
+                        "the line runs to about 160 characters at 1440")
+    if "overflow-wrap: break-word;" not in notes:
+        failures.append("the setup notes must break a long word; "
                         "TUNNEL+Environmental pushed the page 82px wider than a "
                         "320px screen")
 
-    # The figure track must be sized by the space available, never by a figure
-    # id. Four ids were hard-coded here and only one record in the site carried
-    # them, so 25 of 26 records auto-placed into a track built for a different
-    # record.
-    figures_rule = css_rule(css, ".setup-study-figures")
-    if "repeat(auto-fit," not in figures_rule:
-        failures.append("the setup figure track must use auto-fit so a row "
-                        "cannot hold an empty cell")
-    if "min(100%," not in figures_rule:
-        failures.append("the setup figure track floor must be wrapped in min(100%, ...) "
-                        "or it overflows every screen narrower than the floor")
+    # 2. A row is justified by ASPECT RATIO, and capped on the row.
+    #
+    # `flex: calc(--ar-w / --ar-h) 1 0` with a zero basis is the whole of the
+    # justification: free space is shared in proportion to aspect, so every
+    # picture in the row lands at the same height. A basis other than 0 breaks
+    # it silently, and the row still looks plausible.
+    figure = rule(".fig")
+    if "calc(var(--ar-w) / var(--ar-h))" not in figure:
+        failures.append("a figure must take its flex-grow from its aspect ratio, "
+                        "or the row is no longer justified")
+    if not re.search(r"flex:[^;]*\b1 0\b", figure):
+        failures.append("a figure must have flex-basis 0; any other basis stops "
+                        "the widths coming out proportional to aspect")
+    row = rule(".fig-row")
+    if "max-width: calc(" not in row or "--sum-ar" not in row:
+        failures.append("the row height cap must be applied to the ROW's max-width; "
+                        "a max-height on the image letterboxes it instead")
+    media = rule(".fig-media")
+    if "max-width: var(--nat-w)" not in media:
+        failures.append("a figure must never be painted wider than its own pixels; "
+                        ".fig-media needs max-width: var(--nat-w)")
+
+    # 3. Nothing may be placed by a literal figure id, ever again. Four ids
+    # were hard-coded in the stylesheet and only one record in the site carried
+    # them, so 25 of 26 records fell through into a track built for a different
+    # record and every gate stayed green.
     for dead in ("--cabinet", "--dimensions", "--100w", "--500w"):
-        if f".setup-study-figure{dead}" in css:
+        if f".setup-study-figure{dead}" in css or f".fig{dead}" in css:
             failures.append(f"figure placement keyed on the literal id '{dead}' is "
                             "back; placement must follow the data, not an id")
 
@@ -422,8 +445,9 @@ def main() -> int:
         project = project_hits[0]
         require("student" not in project,
                 "imported Slide 3 project must omit student rather than infer a byline")
-        require(project.get("layout") == PROJECT_EXPECTED["layout"],
-                "imported Slide 3 project must use layout A")
+        require("layout" not in project,
+                "imported Slide 3 project must not carry a layout key; "
+                "layouts a, b and c are retired and each page composes itself")
         require(project.get("source_slides") == [3],
                 "imported Slide 3 project must cite source_slides = [3]")
         require(project.get("title_en") == PROJECT_EXPECTED["title"] and
@@ -471,12 +495,12 @@ def main() -> int:
         if not path.is_file():
             continue
         source, page = parse(path)
-        require(len(page.matching("setup-study")) == 1,
-                f"{route}: expected one setup-study")
-        require(len(page.matching(f"setup-study--{EXPECTED['layout']}")) == 1,
-                f"{route}: expected setup-study--{EXPECTED['layout']}")
-        require(len(page.matching("setup-study-figure")) == len(EXPECTED["figures"]),
-                f"{route}: expected four setup-study figures")
+        require(len(page.matching("setup-rows")) == 1,
+                f"{route}: expected one composed setup-rows block")
+        require(len(page.matching("fig-row")) >= 1,
+                f"{route}: expected at least one justified figure row")
+        require(source.count('class="fig fig--') == len(EXPECTED["figures"]),
+                f"{route}: expected four figures")
         for figure in EXPECTED["figures"]:
             require(source.count(f'src="{figure}"') == 1,
                     f"{route}: figure missing or duplicated: {figure}")
@@ -515,14 +539,12 @@ def main() -> int:
         if not path.is_file():
             continue
         source, page = parse(path)
-        require(len(page.matching("setup-study")) == 1,
-                f"{route}: expected one setup-study")
-        require(len(page.matching("setup-study--a")) == 1,
-                f"{route}: expected setup-study--a")
+        require(len(page.matching("setup-rows")) == 1,
+                f"{route}: expected one composed setup-rows block")
         require(not page.matching("project-by"),
                 f"{route}: studentless imported project must omit .project-by")
-        require(len(page.matching("setup-study-figure")) == 2,
-                f"{route}: expected exactly two setup-study figures")
+        require(source.count('class="fig fig--') == 2,
+                f"{route}: expected exactly two figures")
         for figure in PROJECT_EXPECTED["figures"]:
             require(source.count(f'src="{figure}"') == 1,
                     f"{route}: figure missing or duplicated: {figure}")
