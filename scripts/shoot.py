@@ -662,6 +662,21 @@ window.addEventListener("load", function () {
         focus: partnerFocus
       };
     }
+    var setupSingleFigureAudit = null;
+    var setupStudy = document.querySelector(".setup-study--a");
+    if (setupStudy && window.innerWidth > 991.98) {
+      var setupFigures = setupStudy.querySelectorAll(".setup-study-figure");
+      var setupCopy = setupStudy.querySelector(".setup-study-copy");
+      if (setupFigures.length === 1 && setupCopy) {
+        var setupFigureRect = setupFigures[0].getBoundingClientRect();
+        var setupCopyRect = setupCopy.getBoundingClientRect();
+        var setupExpectedGap = parseFloat(getComputedStyle(setupStudy).columnGap) || 0;
+        setupSingleFigureAudit = {
+          actualGap: setupCopyRect.left - setupFigureRect.right,
+          expectedGap: setupExpectedGap
+        };
+      }
+    }
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
       motionStartsRunning: motionStartsRunning,
@@ -681,7 +696,8 @@ window.addEventListener("load", function () {
       unjustifiedNotes: unjustifiedNotes.slice(0, 12),
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
       overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
-      profile: profileAudit, partners: partnerAudit
+      profile: profileAudit, partners: partnerAudit,
+      setupSingleFigure: setupSingleFigureAudit
     })});
   }
 });
@@ -706,6 +722,8 @@ MATRIX = [
     ("/projects/cpu-cooler-airflow/", 492, "light", "project prose and full-width media on mobile"),
     ("/projects/cpu-cooler-airflow/", 1440, "light", "project prose measure beside full-width media"),
     ("/projects/cpu-cooler-airflow/", 1440, "dark", "project detail theme parity"),
+    ("/facilities/thermal-fin-natural-convection-chamber/", 1440, "light",
+     "single-figure layout A must not reserve an empty media column"),
     ("/people/", 492, "light", "stacked people index and narrow footer"),
     ("/publications/", 492, "light", "smallest type at the narrowest width Edge allows"),
     ("/publications/", 1440, "light", "densest small type, the longest run of --fs-xs"),
@@ -1012,6 +1030,12 @@ def main():
             if r.get("narrowProjectMedia"):
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
+            setup_single = r.get("setupSingleFigure")
+            if setup_single and (setup_single.get("actualGap", 0) -
+                                 setup_single.get("expectedGap", 0) > 2):
+                flags.append("single-figure layout reserves %.1fpx of empty horizontal space"
+                             % (setup_single["actualGap"] -
+                                setup_single["expectedGap"]))
             profile = r.get("profile")
             if profile:
                 if not profile.get("layoutStateAbsent"):
@@ -1164,6 +1188,10 @@ def main():
                 print("        align  " + x)
             for x in r.get("narrowProjectMedia", []):
                 print("        media  " + x)
+            if setup_single:
+                print("        setup  actual/expected gap = %.1f/%.1fpx"
+                      % (setup_single.get("actualGap", 0),
+                         setup_single.get("expectedGap", 0)))
             if profile:
                 print("        profile requested=%s state=%s switcher=%s"
                       % (profile.get("requested") or "(none)",

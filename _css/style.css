@@ -2169,6 +2169,12 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .setup-study--a .setup-study-figures {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.setup-study--a:has(.setup-study-figures > .setup-study-figure:only-child) {
+  grid-template-columns: minmax(17rem, 0.75fr) minmax(0, 1.45fr);
+}
+.setup-study--a .setup-study-figures:has(> .setup-study-figure:only-child) {
+  grid-template-columns: minmax(0, 1fr);
+}
 .setup-study--a .setup-study-figure--diagram {
   grid-column: 1 / -1;
 }
