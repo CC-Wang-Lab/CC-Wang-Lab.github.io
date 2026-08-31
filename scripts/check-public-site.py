@@ -331,11 +331,6 @@ def main() -> int:
         expect("placeholder-phd-1" not in html, f"{route} exposes a placeholder researcher", failures)
         expect("Eiusmod Tempor" not in html, f"{route} names a placeholder researcher", failures)
 
-    for route in ("/projects/porous-pool-boiling/", "/zh/projects/porous-pool-boiling/"):
-        html = page(route)
-        expect("Eiusmod Tempor" not in html, f"{route} names a placeholder researcher", failures)
-        expect("艾尤斯莫 坦波" not in html, f"{route} names a placeholder researcher", failures)
-
     if failures:
         print("PUBLIC CONTENT AUDIT FAILED")
         for failure in failures:

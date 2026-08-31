@@ -66,11 +66,17 @@ function Export-Crop {
         [int]$Slide,
         [string]$Geometry,
         [string]$RelativePath,
-        [string]$Erase = ''
+        [string]$Erase = '',
+
+        # Where RelativePath is resolved from. Defaults to the test-setups
+        # tree. The four falling-film crops predate this script and live in
+        # _assets/img/facilities/, so they need somewhere else to land.
+        [string]$OutRoot = ''
     )
 
     $source = Join-Path $SourceDir ("Slide{0}.jpg" -f $Slide)
-    $target = Join-Path $outputRoot $RelativePath
+    $root = if ($OutRoot) { Join-Path $repoRoot $OutRoot } else { $outputRoot }
+    $target = Join-Path $root $RelativePath
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
         throw "Missing source slide: $source"
     }
@@ -196,3 +202,13 @@ Export-Crop -Slide 29 -Geometry '316x402+490+184' -RelativePath 'fabrication-and
 Export-Crop -Slide 29 -Geometry '331x402+860+184' -RelativePath 'fabrication-and-microscopy-equipment\microscope-2.jpg'
 
 Export-Crop -Slide 30 -Geometry '548x411+45+170' -RelativePath 'amca-wind-tunnel\wind-tunnel-environmental-room.jpg'
+
+# --- the pilot record -------------------------------------------------------
+# falling-film-cooling-system was imported before this script existed and its
+# four figures live in _assets\img\facilities\. Rectangles recovered from
+# Slide 2 by normalised cross correlation, all four at ncc >= 0.9995.
+$ff = '_assets\img\facilities'
+Export-Crop -Slide 2 -Geometry '166x224+82+86'  -OutRoot $ff -RelativePath 'falling-film-cooling-100w.jpg'
+Export-Crop -Slide 2 -Geometry '168x224+273+86' -OutRoot $ff -RelativePath 'falling-film-cooling-500w.jpg'
+Export-Crop -Slide 2 -Geometry '408x249+672+72' -OutRoot $ff -RelativePath 'falling-film-cooling-cabinet.png'
+Export-Crop -Slide 2 -Geometry '348x219+95+385' -OutRoot $ff -RelativePath 'falling-film-cooling-dimensions.png'

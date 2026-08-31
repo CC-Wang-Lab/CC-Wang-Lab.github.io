@@ -70,7 +70,6 @@ PROJECT_EXPECTED = {
         "uniformity and heat transfer performance."
     ),
 }
-MAYSAM_PROJECT = "cpu-cooler-airflow"
 
 
 class Page(HTMLParser):
@@ -381,15 +380,23 @@ def renderer_contract_failures() -> list[str]:
     if result.returncode == 0 or invalid_id not in output:
         failures.append("an explicit invalid student id must still fail through person_by_id")
 
-    existing_code = (
+    # The positive case, on a SYNTHETIC row rather than a real project. The
+    # project that used to supply it was one of the two test pages deleted on
+    # 2026-08-31. After that the only row carrying a `student` is the
+    # placeholder, which is never published, so a fixture keeps the coverage
+    # without pinning it to a page that may or may not exist.
+    with_student = studentless_project_literal().replace(
+        '"lead_zh" => "Studentless project lead")',
+        '"lead_zh" => "Studentless project lead", "student" => "maysam-gholampour")')
+    present_code = (
         'include("utils.jl"); locvar(::Symbol) = "en"; '
-        f'fixture = only(filter(p -> p["id"] == "{MAYSAM_PROJECT}", projects())); '
-        "print(project_card(fixture))"
+        f"print(project_card({with_student}))"
     )
-    result = julia_result(existing_code)
+    result = julia_result(present_code)
     output = result.stdout + result.stderr
     if result.returncode != 0 or 'class="card-by"' not in output or "Maysam Gholampour" not in output:
-        failures.append("existing Maysam project card must retain its byline")
+        failures.append("a project WITH a student must still render its byline: "
+                        + output.strip()[:200])
     return failures
 
 
@@ -519,13 +526,6 @@ def main() -> int:
         for figure in PROJECT_EXPECTED["figures"]:
             require(source.count(f'src="{figure}"') == 1,
                     f"{route}: figure missing or duplicated: {figure}")
-
-    maysam_path = SITE / "projects" / MAYSAM_PROJECT / "index.html"
-    require(maysam_path.is_file(), "missing existing Maysam project route")
-    if maysam_path.is_file():
-        source, page = parse(maysam_path)
-        require(len(page.matching("project-by")) == 1 and "Maysam Gholampour" in source,
-                "existing Maysam project page must retain its byline")
 
     if failures:
         print("SETUP RENDERER AUDIT FAILED")
