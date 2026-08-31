@@ -958,14 +958,37 @@ function render_setup_sections(record::AbstractDict)
     return join(blocks, "\n")
 end
 
+"""
+Optional `span` on a `[[figure]]` row. The only value is `"full"`, which gives
+that figure the whole width of the figure track. Any number of figures in one
+record may ask for it.
+
+It lives in the DATA and not in the CSS because only somebody looking at the
+picture can know that one of them is a wide schematic whose labels cannot be
+read at a quarter of the row. The stylesheet knows the number of figures and
+the space available; it cannot know that.
+
+`"full"` is the only value on purpose. `span 2` was rejected: on a phone the
+track collapses to one column, and a two-column span there creates an implicit
+second column and pushes the page wider than the screen.
+"""
+function setup_figure_span(figure::AbstractDict, id::AbstractString)::String
+    span = strip(lowercase(String(get(figure, "span", ""))))
+    isempty(span) && return ""
+    span == "full" ||
+        error("figure '$(id)': span must be \"full\", got $(repr(span))")
+    return " setup-study-figure--span-full"
+end
+
 function render_setup_figure(figure::AbstractDict)::String
     figure_id = esc(String(figure["id"]))
     kind = esc(String(get(figure, "kind", "figure")))
     image = esc(String(figure["image"]))
+    span_class = setup_figure_span(figure, String(figure["id"]))
     caption = esc(pick(figure, "caption"))
     caption_html = isempty(caption) ? "" : "\n        <figcaption>$(caption)</figcaption>"
     return """
-      <figure class="setup-study-figure setup-study-figure--$(figure_id) setup-study-figure--$(kind)">
+      <figure class="setup-study-figure setup-study-figure--$(figure_id) setup-study-figure--$(kind)$(span_class)">
         <div class="setup-study-figure-media">
           <img src="$(image)" alt="" loading="lazy" decoding="async">
         </div>$(caption_html)

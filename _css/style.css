@@ -2110,21 +2110,87 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .setup-study-copy {
   grid-area: copy;
   min-width: 0;
-  max-width: var(--measure);
+  /* No cap, on purpose, and this is the site's own rule rather than an
+     exception to it. Every other note block on the site runs the full width of
+     whatever holds it, and `scripts/shoot.py --measure` fails a note that
+     carries a second max-width.
+
+     `--measure` used to sit here. In layouts a and c the copy already lives in
+     a grid column narrower than 74ch, so the cap could never bind. In layout b
+     the copy IS the full container, so the cap was the only thing acting, and
+     what it did was leave the right half of the page empty. Measured at 1440
+     on 2026-08-31: copy 700px inside a 1320px row. */
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
+  /* A record title carries strings like TUNNEL+Environmental with no space to
+     break at. At 320px that one word made the page 402px wide and pushed the
+     menu button off the screen. Widening the test rather than special-casing
+     the record. */
+  overflow-wrap: break-word;
 }
 .setup-study-copy p {
-  margin: 0;
+  /* Not `margin: 0`. A record with a lead AND a section body renders two
+     paragraphs, and with no gap they read as one block: on
+     immersion-cooling-microchannel-lid the second sentence began on the line
+     under the first with nothing between them. */
+  margin: 0 0 1rem;
   text-align: justify;
 }
+.setup-study-copy p:last-child { margin-bottom: 0; }
+
+/*
+  THE FIGURE TRACK IS SIZED BY THE SPACE AVAILABLE, NEVER BY FIGURE ID.
+
+  What was here before placed figures with rules keyed on four literal ids:
+  cabinet, dimensions, 100w and 500w. Exactly ONE record in the whole site
+  carries those ids, `falling-film-cooling-system`, and it is layout c - so the
+  entire layout-b ruleset matched nothing at all, and 25 of the 26 records fell
+  through to auto-placement in a track built for a different record.
+
+  Measured at 1440 on 2026-08-31, before this change:
+    - all 8 layout-b records put their 1 to 3 figures into a 4-column track,
+      leaving between 25% and 75% of the row empty
+    - layout c alternated a 0.62fr and a 1.38fr column by source order, so
+      boiler-surface-test-rig showed four micrographs OF ONE COMPARISON SET at
+      two different sizes
+    - at 320px a two-up row gave each photo 136px
+
+  auto-fit fixes all three at once. It collapses tracks nothing lands in, so an
+  empty cell in a full row is no longer possible; the minmax floor decides the
+  column count from the width available, so 320px gets exactly one column; and
+  no rule mentions a figure id, so a new record needs no new CSS.
+
+  `min(100%, ...)` is not decoration. A bare `minmax(17rem, 1fr)` overflows any
+  container narrower than 17rem, which is every phone.
+*/
 .setup-study-figures {
   grid-area: figures;
   display: grid;
   align-items: start;
   gap: clamp(1.25rem, 0.986rem + 1.127vw, 2rem);
   min-width: 0;
+  --fig-min: 17rem;
+  /* The tallest a single figure may be. A grid row is as tall as its tallest
+     item, so one very tall crop drags a whole row with it. 32rem is about half
+     a laptop screen. */
+  --fig-max-h: 32rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--fig-min)), 1fr));
 }
+/*
+  One figure per record may ask for the whole row, through `span = "full"` on
+  its [[figure]] row in _data/. That is the only emphasis mechanism, and it is
+  in the DATA because only a person looking at the picture can know that one of
+  them is a wide schematic whose labels are unreadable at a quarter width.
+
+  It replaced `.setup-study-figure--diagram { grid-column: 1 / -1 }`, which
+  keyed off `kind`. That rule read well until a record arrived where five of
+  six figures were kind = "diagram": boiler-surface-test-rig then stacked four
+  micrographs full width in four near-empty boxes.
+
+  `1 / -1` and not `span 2`: at one column a `span 2` creates an implicit
+  second column and pushes the page wider than the phone.
+*/
+.setup-study-figure--span-full { grid-column: 1 / -1; }
 .setup-study-figure {
   margin: 0;
   min-width: 0;
@@ -2138,16 +2204,33 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   background: #fff;
   box-shadow: var(--lab-shadow);
 }
+/*
+  max-width, never width. Two faults come from the same line.
+
+  `width: 100%` on a photo forced every image to fill its track, so an 82px
+  crop was painted at 388px and a 129px one at 503px. Measured 2026-08-31:
+  17 figures were being enlarged, five of them by more than 2x. The source
+  assets are 3x larger now, so almost all of them fill the track on their own
+  merit; the ones that cannot are shown at the size they really are instead of
+  being smeared across the column.
+
+  max-height caps a runaway row. Row height is set by the tallest item, and
+  these crops range from 8:1 to 1:4. On data-center-air-cooling-facility a
+  497x1600 dot grid made a row 1100px tall and left the photograph beside it
+  floating over 700px of nothing.
+
+  Nothing is cropped by either rule. Both scale the whole picture down and
+  preserve its aspect, which is what the height:auto / width:auto pair is for.
+*/
 .setup-study-figure img {
   display: block;
   max-width: 100%;
+  max-height: var(--fig-max-h);
+  width: auto;
   height: auto;
 }
 .setup-study-figure--photo .setup-study-figure-media {
   background: var(--lab-surface-2);
-}
-.setup-study-figure--photo img {
-  width: 100%;
 }
 .setup-study-figure--diagram .setup-study-figure-media {
   min-height: 11rem;
@@ -2164,19 +2247,15 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.75fr);
   grid-template-areas: "figures copy";
 }
-.setup-study--a .setup-study-figures {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+/* One figure gets the NARROW column and the notes get the wide one.
+   Kept from commit c88a2e5, which fixed an empty media track, and it is still
+   the right split for a different reason: the figure column is sized for a row
+   of several pictures, so a lone picture stretched across it dwarfs the page
+   while the notes wrap at half the width they should. */
 @media (min-width: 992px) {
   .setup-study--a.setup-study--single-figure {
     grid-template-columns: minmax(17rem, 0.75fr) minmax(0, 1.45fr);
   }
-  .setup-study--a.setup-study--single-figure .setup-study-figures {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-.setup-study--a .setup-study-figure--diagram {
-  grid-column: 1 / -1;
 }
 .setup-study--b {
   grid-template-columns: minmax(0, 1fr);
@@ -2184,47 +2263,9 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     "copy"
     "figures";
 }
-.setup-study--b .setup-study-figures {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-.setup-study--b .setup-study-figure--cabinet {
-  grid-column: 1 / 3;
-  grid-row: 1;
-}
-.setup-study--b .setup-study-figure--dimensions {
-  grid-column: 3 / 5;
-  grid-row: 1;
-}
-.setup-study--b .setup-study-figure--100w {
-  grid-column: 2 / 3;
-  grid-row: 2;
-}
-.setup-study--b .setup-study-figure--500w {
-  grid-column: 3 / 4;
-  grid-row: 2;
-}
 .setup-study--c {
   grid-template-columns: minmax(17rem, 0.76fr) minmax(0, 1.24fr);
   grid-template-areas: "copy figures";
-}
-.setup-study--c .setup-study-figures {
-  grid-template-columns: minmax(7.5rem, 0.62fr) minmax(0, 1.38fr);
-}
-.setup-study--c .setup-study-figure--100w {
-  grid-column: 1;
-  grid-row: 1;
-}
-.setup-study--c .setup-study-figure--500w {
-  grid-column: 1;
-  grid-row: 2;
-}
-.setup-study--c .setup-study-figure--cabinet {
-  grid-column: 2;
-  grid-row: 1;
-}
-.setup-study--c .setup-study-figure--dimensions {
-  grid-column: 2;
-  grid-row: 2;
 }
 
 .facility-design-grid {
@@ -2283,25 +2324,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
       "copy"
       "figures";
   }
-  .setup-study--a .setup-study-figures,
-  .setup-study--b .setup-study-figures,
-  .setup-study--c .setup-study-figures {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .setup-study--single-figure .setup-study-figures {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .setup-study--a .setup-study-figure,
-  .setup-study--b .setup-study-figure,
-  .setup-study--c .setup-study-figure {
-    grid-column: auto;
-    grid-row: auto;
-  }
-  .setup-study--a .setup-study-figure--diagram,
-  .setup-study--b .setup-study-figure--diagram,
-  .setup-study--c .setup-study-figure--diagram {
-    grid-column: 1 / -1;
-  }
+  /* Nothing here re-declares the figure track any more. The auto-fit rule up
+     at .setup-study-figures already collapses to one column below about 19rem
+     of usable width, which is every phone, and it does it from the width
+     actually available rather than from a breakpoint guess. The blocks that
+     used to sit here forced two columns at 320px and gave each photo 136px. */
   .facility-design-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 767.98px) {

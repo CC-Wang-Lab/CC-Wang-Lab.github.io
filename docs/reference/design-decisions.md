@@ -314,6 +314,109 @@ fails the run. It caught this one on the first build. Its character class was wi
 
 ---
 
+## Why the detail-page figures are placed by space and not by name, 2026-08-31
+
+The 26 imported facility and project pages each pick a layout, `a`, `b` or `c`. The layout chose
+where the notes sat. The figures inside it were placed by rules naming four literal figure ids:
+`cabinet`, `dimensions`, `100w` and `500w`.
+
+**One record in the site carries those ids.** `falling-film-cooling-system`, and it is layout
+`c`. So the entire layout-`b` ruleset matched nothing at all, and 25 of the 26 records fell
+through to auto-placement in a track built for a different record. Every gate passed the whole
+time, because no gate could see it.
+
+Measured at 1440 px before the change:
+
+| Symptom | Records affected |
+|---|---|
+| 1 to 3 figures in a 4-column track, 25% to 75% of the row empty | **8** (every layout `b`) |
+| Narrow and wide columns alternating by source order | **7** (every other layout `c`) |
+| Four micrographs of one comparison set at two different sizes | `boiler-surface-test-rig` |
+| Each photo 136 px wide at a 320 px screen | every multi-figure record |
+
+The whole of it is now one rule with no figure id in it:
+
+```css
+grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--fig-min)), 1fr));
+```
+
+`auto-fit` collapses tracks nothing lands in, so an empty cell in a full row cannot happen.
+The floor decides the column count from the room available, so a 320 px screen gets exactly one
+column. A record added tomorrow needs no CSS.
+
+**Emphasis moved into the data**, as `span = "full"` on a `[[figure]]` row. It has to live there:
+CSS knows how many figures there are and how much room it has, and it cannot know that one of
+them is a wide schematic whose labels are unreadable at a quarter width. A person looking at the
+picture knows that. Ten figures across nine records carry it.
+
+*Rejected: keying emphasis off `kind = "diagram"`, which is what the old rule did. Five of the
+six figures on `boiler-surface-test-rig` are diagrams, so it stacked four micrographs full width
+in four near-empty boxes.*
+
+*Rejected: `span 2`. On a phone the track is one column, and a two-column span there creates an
+implicit second column and pushes the page wider than the screen. `1 / -1` is safe at any track
+count.*
+
+## Why the notes on a detail page have no width cap, 2026-08-31
+
+`.setup-study-copy` carried `max-width: var(--measure)`, the site's 74ch reading measure. It was
+the only note block on the site that did, and `scripts/shoot.py --measure` fails any other note
+that carries a second cap.
+
+In layouts `a` and `c` the copy already sits in a grid column narrower than 74ch, so the cap
+could never bind. In layout `b` the copy **is** the container, so the cap was the only thing
+acting, and what it did was hold the notes to 700 px inside a 1320 px row and leave the right
+half of the page empty. On all eight layout-`b` records.
+
+The cap is gone. `check-setup-renderer.py` now asserts its absence, and asserts
+`overflow-wrap: break-word` alongside it.
+
+## The reading measure, measured at last, 2026-08-31
+
+`style.css` names **45 characters** as the floor below which justified text opens rivers. Nothing
+had ever measured against it, because the screenshot harness could not render below 492 px.
+
+Characters per line, counted as box width over the average character width of the element's own
+text in its own computed font:
+
+| Width | Characters per justified line | Under the floor |
+|---|---|---|
+| 320 px | 36 – 43 | **every page** |
+| 360 px | 41 – 49 | 6 pages |
+| **390 px** | **45 – 53** | none |
+| 768 px | 84 – 92 | none |
+| 1440 px | 51 – 92 | none |
+
+**Justification stays on at every width**, by the site owner's decision on 2026-08-31. The number
+is recorded here so the decision has its evidence attached, and so that anyone who revisits it
+starts from a measurement instead of an impression.
+
+*The first version of this measurement was wrong and reported 20 to 30 characters. It counted
+text length over line count, which undercounts twice: an inline `<strong>` sits a fraction of a
+pixel off its line and a rounded top invented an extra line, and the last line of a paragraph is
+short so it drags the average down. Both push the number the same way, so the check was reporting
+rivers that were not there.*
+
+## Why the screenshot harness drives a debug port, 2026-08-31
+
+`scripts/shoot.py` says never to pass `--remote-debugging-port`, because that is the flag that
+makes a Chromium binary attach to an instance already running. `scripts/cdp.py` passes it anyway,
+and the warning is still true.
+
+Chromium decides "am I already running?" from a lock inside `--user-data-dir`, not from the port.
+Every launch here gets a throwaway profile named after the process id, so there is no instance to
+attach to and a real browser always starts. The port is 0, so the OS picks a free one.
+
+**What it buys is the only honest phone width this project has ever had.** Headless Edge on
+Windows will not open a window narrower than about 508 DIP: ask for 320 and it lays the page out
+at 484 and crops the screenshot to 320. The picture looks like a phone and is a lie.
+`Emulation.setDeviceMetricsOverride` sets the layout viewport instead, so 320 is 320, and the
+harness asserts `window.innerWidth` matches before it will write a file.
+
+That assertion found a defect on its first run. `amca-wind-tunnel` could not fit 320 px, because
+`TUNNEL+Environmental` in its title has no break opportunity; the browser widened the viewport to
+402 px to fit it and the menu button fell off the screen.
+
 ## Three bugs from the source site that were not copied
 
 The client's own site carries these. They are fixed here, and each fix is commented in place.

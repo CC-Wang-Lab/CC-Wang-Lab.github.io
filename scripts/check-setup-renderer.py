@@ -256,10 +256,43 @@ def studentless_project_literal() -> str:
 def renderer_contract_failures() -> list[str]:
     failures: list[str] = []
     css = CSS_SOURCE.read_text(encoding="utf-8")
-    if "--measure: 74ch;" not in css:
-        failures.append("CSS must define --measure as the 74ch narrative width")
-    if "max-width: var(--measure);" not in css_rule(css, ".setup-study-copy"):
-        failures.append("shared setup-study copy must cap narrative width at --measure")
+    # The setup copy must NOT carry a width cap. This assertion was the exact
+    # opposite until 2026-08-31, and the reversal is deliberate.
+    #
+    # Every other note block on this site runs the full width of whatever holds
+    # it, and shoot.py --measure fails a note that carries a second max-width.
+    # `.setup-study-copy` was the one exception. In layouts a and c its grid
+    # column is already narrower than 74ch, so the cap could never bind; in
+    # layout b the copy IS the container, so the cap was the only thing acting,
+    # and what it did was leave the right half of the row empty. Measured at
+    # 1440: copy 700px inside a 1320px row, on all eight layout-b records.
+    # Comments are stripped first. The rule below carries a comment explaining
+    # why there is no cap, and that comment contains the words "max-width",
+    # which made the first version of this check fail on its own explanation.
+    setup_copy = re.sub(r"/\*.*?\*/", "", css_rule(css, ".setup-study-copy"), flags=re.S)
+    if re.search(r"max-width\s*:\s*(?!none)", setup_copy):
+        failures.append("shared setup-study copy must not cap its width; every "
+                        "other note block on the site runs full width")
+    if "overflow-wrap: break-word;" not in setup_copy:
+        failures.append("shared setup-study copy must break a long word; "
+                        "TUNNEL+Environmental pushed the page 82px wider than a "
+                        "320px screen")
+
+    # The figure track must be sized by the space available, never by a figure
+    # id. Four ids were hard-coded here and only one record in the site carried
+    # them, so 25 of 26 records auto-placed into a track built for a different
+    # record.
+    figures_rule = css_rule(css, ".setup-study-figures")
+    if "repeat(auto-fit," not in figures_rule:
+        failures.append("the setup figure track must use auto-fit so a row "
+                        "cannot hold an empty cell")
+    if "min(100%," not in figures_rule:
+        failures.append("the setup figure track floor must be wrapped in min(100%, ...) "
+                        "or it overflows every screen narrower than the floor")
+    for dead in ("--cabinet", "--dimensions", "--100w", "--500w"):
+        if f".setup-study-figure{dead}" in css:
+            failures.append(f"figure placement keyed on the literal id '{dead}' is "
+                            "back; placement must follow the data, not an id")
 
     section_cases = (
         (
