@@ -95,13 +95,17 @@ EXPECTED_LAYOUTS = {
     "project": {"a": 4, "b": 4, "c": 4},
 }
 
+# The equipment lines lost their hand-typed "1. " and "2. " on 2026-08-31.
+# render_setup_sections wraps every item in a <ul>, so the browser was already
+# numbering them and the reader saw "1. 1. SMC chiller". The words are
+# unchanged; only the duplicated ordinal is gone.
 REQUIRED_PROJECT_HTML_TEXT = {
     "supercritical-co2-chiller": (
         "This test facility is used to (1) performance evaluation of CO₂ (2) provide a test cold plate system having 15 kW capacity and applicable for multiple cold plate system to examine mal-distribution issues for 2-phase cold plates subject uneven heat loading.",
         "This study primarily investigates the design of a 10 kW single-phase cold plate system using a CO₂-based chiller in conjunction with a single-phase fluorinated fluid, with the aim of testing and understanding the heat transfer capabilities of CO₂ in its supercritical state.",
         "Status: Under Construction",
-        "1. SMC chiller (HRZC010-WS)",
-        "2. 20 kW air-cooled coil (Custom-made by Icherng)",
+        "SMC chiller (HRZC010-WS)",
+        "20 kW air-cooled coil (Custom-made by Icherng)",
         "CO₂ refrigerant, Galden HT-135 fluorinated fluid",
     ),
     "thermosyphon-working-fluid-filling-ratio": (

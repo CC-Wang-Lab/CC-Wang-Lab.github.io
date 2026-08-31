@@ -139,6 +139,7 @@ items_zh = [
 
 [[item.figure]]
 id         = "facility-airflow-diagram"
+span         = "full"   # plan drawing carrying the room dimensions
 kind       = "diagram"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/facility-airflow-diagram.png"
 caption_en = ""
@@ -162,29 +163,29 @@ caption_zh = "TC measurements mesh"
 id         = "hot-wire-mesh-front"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/hot-wire-mesh-front.jpg"
-caption_en = "▲Hot-wire measurements mesh"
-caption_zh = "▲Hot-wire measurements mesh"
+caption_en = "Hot-wire measurements mesh"
+caption_zh = "Hot-wire measurements mesh"
 
 [[item.figure]]
 id         = "hot-wire-mesh-overhead"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/hot-wire-mesh-overhead.jpg"
-caption_en = "▲Hot-wire measurements mesh"
-caption_zh = "▲Hot-wire measurements mesh"
+caption_en = "Hot-wire measurements mesh"
+caption_zh = "Hot-wire measurements mesh"
 
 [[item.figure]]
 id         = "simulated-rack"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack.jpg"
-caption_en = "▲Simulated rack"
-caption_zh = "▲Simulated rack"
+caption_en = "Simulated rack"
+caption_zh = "Simulated rack"
 
 [[item.figure]]
 id         = "simulated-rack-rendering"
 kind       = "diagram"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack-rendering.png"
-caption_en = "▲Simulated rack"
-caption_zh = "▲Simulated rack"
+caption_en = "Simulated rack"
+caption_zh = "Simulated rack"
 
 [[item]]
 id       = "two-phase-cold-plate-test-platform"
@@ -339,6 +340,7 @@ caption_zh = ""
 
 [[item.figure]]
 id         = "test-schematic"
+span         = "full"   # apparatus schematic, about 30 labels
 kind       = "diagram"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/test-schematic.png"
 caption_en = ""
@@ -430,6 +432,7 @@ caption_zh = ""
 
 [[item.figure]]
 id         = "heater-diagram"
+span         = "full"   # 3.25:1 tube schematic, unreadable when narrow
 kind       = "diagram"
 image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/heater-diagram.png"
 caption_en = ""
@@ -458,6 +461,7 @@ caption_zh = "Photograph of the liquid desiccant air-conditioning system (Front 
 
 [[item.figure]]
 id         = "perspective-system-diagram"
+span         = "full"   # cutaway with ten leader lines
 kind       = "diagram"
 image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/perspective-system-diagram.png"
 caption_en = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
