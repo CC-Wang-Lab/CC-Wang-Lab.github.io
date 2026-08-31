@@ -11,6 +11,9 @@ from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from imagesize import image_size
+
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
@@ -249,6 +252,29 @@ def main() -> int:
                 for figure in figures:
                     require(figure.get("caption_en") == figure.get("caption_zh"),
                             f"{kind} {record_id}: figure captions must match")
+
+            # w/h are a COPY of what is on disk. They size a justified row and
+            # they go on the <img> so the page does not reflow as pictures
+            # arrive, and both of those are decided at build time, before any
+            # file has been opened. A copy can go stale, so it is checked here:
+            # re-crop an asset and forget this, and every row it sits in is
+            # laid out to the wrong shape with nothing to show for it.
+            if isinstance(figures, list):
+                for figure in figures:
+                    if not isinstance(figure, dict):
+                        continue
+                    asset = source_asset(figure.get("image"))
+                    if asset is None or not asset.is_file():
+                        continue                      # already reported below
+                    recorded = (figure.get("w"), figure.get("h"))
+                    require(all(isinstance(v, int) and v > 0 for v in recorded),
+                            f"{kind} {record_id}: figure {figure.get('id')!r} "
+                            f"has no w/h")
+                    if all(isinstance(v, int) for v in recorded):
+                        require(image_size(asset) == recorded,
+                                f"{kind} {record_id}: figure {figure.get('id')!r} "
+                                f"records {recorded[0]}x{recorded[1]}, file is "
+                                f"{image_size(asset)[0]}x{image_size(asset)[1]}")
 
             images = [record.get("image")]
             if isinstance(figures, list):

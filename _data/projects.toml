@@ -34,6 +34,8 @@ body_zh  = "This experimental system evaluates an additively manufactured hybrid
 id         = "upper-experimental-system"
 kind       = "photo"
 image      = "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/upper-experimental-system.jpg"
+w          = 1110
+h          = 972
 caption_en = ""
 caption_zh = ""
 
@@ -41,6 +43,8 @@ caption_zh = ""
 id         = "lower-experimental-system"
 kind       = "photo"
 image      = "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/lower-experimental-system.jpg"
+w          = 1110
+h          = 834
 caption_en = ""
 caption_zh = ""
 
@@ -62,6 +66,8 @@ body_zh  = "This visualized two-phase closed-loop thermosyphon cooling system us
 id         = "system-apparatus"
 kind       = "photo"
 image      = "/assets/img/test-setups/two-phase-closed-loop-thermosyphon/system-apparatus.jpg"
+w          = 1071
+h          = 1566
 caption_en = ""
 caption_zh = ""
 
@@ -69,6 +75,8 @@ caption_zh = ""
 id         = "glass-visualization-chamber"
 kind       = "photo"
 image      = "/assets/img/test-setups/two-phase-closed-loop-thermosyphon/glass-visualization-chamber.jpg"
+w          = 792
+h          = 798
 caption_en = ""
 caption_zh = ""
 
@@ -76,6 +84,8 @@ caption_zh = ""
 id         = "filling-ratio-levels"
 kind       = "diagram"
 image      = "/assets/img/test-setups/two-phase-closed-loop-thermosyphon/filling-ratio-levels.png"
+w          = 1086
+h          = 792
 caption_en = ""
 caption_zh = ""
 
@@ -122,6 +132,8 @@ id         = "vapor-chamber-schematic"
 span         = "full"   # dimensioned drawing
 kind       = "diagram"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/vapor-chamber-schematic.png"
+w          = 1104
+h          = 933
 caption_en = ""
 caption_zh = ""
 
@@ -129,6 +141,8 @@ caption_zh = ""
 id         = "vapor-chamber-sample"
 kind       = "photo"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/vapor-chamber-sample.jpg"
+w          = 441
+h          = 924
 caption_en = ""
 caption_zh = ""
 
@@ -136,6 +150,8 @@ caption_zh = ""
 id         = "diamond-copper-composite"
 kind       = "photo"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/diamond-copper-composite.jpg"
+w          = 837
+h          = 585
 caption_en = ""
 caption_zh = ""
 
@@ -143,6 +159,8 @@ caption_zh = ""
 id         = "pure-copper-plate"
 kind       = "photo"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/pure-copper-plate.jpg"
+w          = 582
+h          = 585
 caption_en = ""
 caption_zh = ""
 
@@ -151,6 +169,8 @@ id         = "experimental-setup"
 span         = "full"   # annotated photo, labels at the image edge
 kind       = "annotated-photo"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/experimental-setup.jpg"
+w          = 1530
+h          = 1092
 caption_en = ""
 caption_zh = ""
 
@@ -158,6 +178,8 @@ caption_zh = ""
 id         = "thermal-map-tmax-60c"
 kind       = "chart"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/thermal-map-tmax-60c.png"
+w          = 879
+h          = 813
 caption_en = ""
 caption_zh = ""
 
@@ -165,6 +187,8 @@ caption_zh = ""
 id         = "thermal-map-tmax-55-4c"
 kind       = "chart"
 image      = "/assets/img/test-setups/chip-package-lid-thermal-spreading/thermal-map-tmax-55-4c.png"
+w          = 915
+h          = 816
 caption_en = ""
 caption_zh = ""
 
@@ -200,6 +224,8 @@ items_zh   = [
 id         = "freezing-chamber"
 kind       = "photo"
 image      = "/assets/img/test-setups/heat-pipes-freezing-conditions/freezing-chamber.jpg"
+w          = 1515
+h          = 1134
 caption_en = ""
 caption_zh = ""
 
@@ -207,6 +233,8 @@ caption_zh = ""
 id         = "heat-pipe-apparatus"
 kind       = "photo"
 image      = "/assets/img/test-setups/heat-pipes-freezing-conditions/heat-pipe-apparatus.jpg"
+w          = 1600
+h          = 736
 caption_en = ""
 caption_zh = ""
 
@@ -244,6 +272,8 @@ items_zh   = []
 id         = "annotated-apparatus"
 kind       = "annotated-photo"
 image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
+w          = 1080
+h          = 1600
 caption_en = ""
 caption_zh = ""
 
@@ -251,6 +281,8 @@ caption_zh = ""
 id         = "cold-plate-axial-resistance"
 kind       = "diagram"
 image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/cold-plate-axial-resistance.png"
+w          = 1173
+h          = 714
 caption_en = ""
 caption_zh = ""
 
@@ -258,6 +290,8 @@ caption_zh = ""
 id         = "microchannel-lid-axial-resistance"
 kind       = "diagram"
 image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/microchannel-lid-axial-resistance.png"
+w          = 1197
+h          = 660
 caption_en = ""
 caption_zh = ""
 
@@ -279,6 +313,8 @@ body_zh  = ""
 id         = "immersion-tank"
 kind       = "photo"
 image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/immersion-tank.jpg"
+w          = 1059
+h          = 1461
 caption_en = "Real Immersion Tank"
 caption_zh = "Real Immersion Tank"
 
@@ -286,6 +322,8 @@ caption_zh = "Real Immersion Tank"
 id         = "bubble-enhancement"
 kind       = "figure"
 image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/bubble-enhancement.jpg"
+w          = 1446
+h          = 744
 caption_en = "Air Bubbling Generator\nBubbling Heat Enhancement"
 caption_zh = "Air Bubbling Generator\nBubbling Heat Enhancement"
 
@@ -293,6 +331,8 @@ caption_zh = "Air Bubbling Generator\nBubbling Heat Enhancement"
 id         = "multi-needle-electrode"
 kind       = "diagram"
 image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/multi-needle-electrode.png"
+w          = 1035
+h          = 690
 caption_en = "Multi Needle electrode\nEHD Heat Enhancement"
 caption_zh = "Multi Needle electrode\nEHD Heat Enhancement"
 
@@ -300,6 +340,8 @@ caption_zh = "Multi Needle electrode\nEHD Heat Enhancement"
 id         = "air-bubbling-mechanism"
 kind       = "diagram"
 image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/air-bubbling-mechanism.png"
+w          = 888
+h          = 939
 caption_en = ""
 caption_zh = ""
 
@@ -307,6 +349,8 @@ caption_zh = ""
 id         = "ehd-heat-enhancement"
 kind       = "diagram"
 image      = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/ehd-heat-enhancement.png"
+w          = 870
+h          = 954
 caption_en = ""
 caption_zh = ""
 
@@ -370,6 +414,8 @@ items_zh   = []
 id         = "server-configuration"
 kind       = "figure"
 image      = "/assets/img/test-setups/multi-agent-server-cooling-control/server-configuration.jpg"
+w          = 968
+h          = 1600
 caption_en = "Experimental Server Configuration Diagram"
 caption_zh = "Experimental Server Configuration Diagram"
 
@@ -378,6 +424,8 @@ id         = "load-profile"
 span         = "full"   # 2.07:1 chart with a time axis
 kind       = "chart"
 image      = "/assets/img/test-setups/multi-agent-server-cooling-control/load-profile.png"
+w          = 1600
+h          = 773
 caption_en = "Load Profile"
 caption_zh = "Load Profile"
 
@@ -386,6 +434,8 @@ id         = "transient-computational-workflow"
 span         = "full"   # flow chart, nine decision boxes
 kind       = "diagram"
 image      = "/assets/img/test-setups/multi-agent-server-cooling-control/transient-computational-workflow.png"
+w          = 1600
+h          = 763
 caption_en = "Transient Environment Computational Workflow"
 caption_zh = "Transient Environment Computational Workflow"
 
@@ -393,6 +443,8 @@ caption_zh = "Transient Environment Computational Workflow"
 id         = "single-fan-observation-range"
 kind       = "diagram"
 image      = "/assets/img/test-setups/multi-agent-server-cooling-control/single-fan-observation-range.png"
+w          = 1158
+h          = 1560
 caption_en = "Single-Fan Observation Range"
 caption_zh = "Single-Fan Observation Range"
 
@@ -401,6 +453,8 @@ id         = "energy-saving-equation"
 span         = "full"   # 8.04:1 equation strip, 199px tall
 kind       = "diagram"
 image      = "/assets/img/test-setups/multi-agent-server-cooling-control/energy-saving-equation.png"
+w          = 1600
+h          = 199
 caption_en = ""
 caption_zh = ""
 
@@ -438,6 +492,8 @@ items_zh   = []
 id         = "test-loop-schematic"
 kind       = "diagram"
 image      = "/assets/img/test-setups/pulsating-jet-impingement/test-loop-schematic.png"
+w          = 1600
+h          = 1452
 caption_en = ""
 caption_zh = ""
 
@@ -445,6 +501,8 @@ caption_zh = ""
 id         = "response-chart"
 kind       = "chart"
 image      = "/assets/img/test-setups/pulsating-jet-impingement/response-chart.png"
+w          = 1005
+h          = 561
 caption_en = ""
 caption_zh = ""
 
@@ -502,6 +560,8 @@ items_zh   = []
 id         = "setup"
 kind       = "photo"
 image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/setup.jpg"
+w          = 1284
+h          = 693
 caption_en = ""
 caption_zh = ""
 
@@ -510,6 +570,8 @@ id         = "system-diagram"
 span         = "full"   # P&ID with instrument tags
 kind       = "diagram"
 image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/system-diagram.png"
+w          = 1600
+h          = 1193
 caption_en = ""
 caption_zh = ""
 
@@ -517,6 +579,8 @@ caption_zh = ""
 id         = "expansion-tank"
 kind       = "photo"
 image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/expansion-tank.jpg"
+w          = 654
+h          = 486
 caption_en = ""
 caption_zh = ""
 
@@ -524,6 +588,8 @@ caption_zh = ""
 id         = "chiller"
 kind       = "photo"
 image      = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/chiller.jpg"
+w          = 447
+h          = 735
 caption_en = ""
 caption_zh = ""
 
@@ -581,6 +647,8 @@ items_zh   = []
 id         = "equipment-group"
 kind       = "photo"
 image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/equipment-group.jpg"
+w          = 681
+h          = 612
 caption_en = ""
 caption_zh = ""
 
@@ -588,6 +656,8 @@ caption_zh = ""
 id         = "working-fluid-container"
 kind       = "photo"
 image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/working-fluid-container.jpg"
+w          = 246
+h          = 462
 caption_en = ""
 caption_zh = ""
 
@@ -595,6 +665,8 @@ caption_zh = ""
 id         = "test-setup"
 kind       = "photo"
 image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/test-setup.jpg"
+w          = 1341
+h          = 1005
 caption_en = ""
 caption_zh = ""
 
@@ -602,6 +674,8 @@ caption_zh = ""
 id         = "infrared-camera"
 kind       = "photo"
 image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/infrared-camera.jpg"
+w          = 828
+h          = 612
 caption_en = ""
 caption_zh = ""
 
@@ -653,6 +727,8 @@ items_zh   = []
 id         = "co2-chiller"
 kind       = "photo"
 image      = "/assets/img/test-setups/supercritical-co2-chiller/co2-chiller.jpg"
+w          = 903
+h          = 1209
 caption_en = ""
 caption_zh = ""
 
@@ -660,6 +736,8 @@ caption_zh = ""
 id         = "test-cooler"
 kind       = "photo"
 image      = "/assets/img/test-setups/supercritical-co2-chiller/test-cooler.jpg"
+w          = 780
+h          = 804
 caption_en = ""
 caption_zh = ""
 
@@ -697,6 +775,8 @@ items_zh   = []
 id         = "test-rig"
 kind       = "photo"
 image      = "/assets/img/test-setups/thermosyphon-working-fluid-filling-ratio/test-rig.jpg"
+w          = 1600
+h          = 1194
 caption_en = ""
 caption_zh = ""
 

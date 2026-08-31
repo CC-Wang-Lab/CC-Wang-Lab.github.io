@@ -33,6 +33,8 @@ body_zh  = "This two-phase falling-film cooling system uses 3M™ Electronic Flu
 id         = "100w"
 kind       = "photo"
 image      = "/assets/img/facilities/falling-film-cooling-100w.jpg"
+w          = 498
+h          = 672
 caption_en = "Fig. Falling film (100 W)"
 caption_zh = "Fig. Falling film (100 W)"
 
@@ -40,6 +42,8 @@ caption_zh = "Fig. Falling film (100 W)"
 id         = "500w"
 kind       = "photo"
 image      = "/assets/img/facilities/falling-film-cooling-500w.jpg"
+w          = 504
+h          = 672
 caption_en = "Fig. Falling film (500 W)"
 caption_zh = "Fig. Falling film (500 W)"
 
@@ -47,6 +51,8 @@ caption_zh = "Fig. Falling film (500 W)"
 id         = "cabinet"
 kind       = "diagram"
 image      = "/assets/img/facilities/falling-film-cooling-cabinet.png"
+w          = 1224
+h          = 747
 caption_en = "Fig. Perspective view of the experimental cabinet"
 caption_zh = "Fig. Perspective view of the experimental cabinet"
 
@@ -54,6 +60,8 @@ caption_zh = "Fig. Perspective view of the experimental cabinet"
 id         = "dimensions"
 kind       = "diagram"
 image      = "/assets/img/facilities/falling-film-cooling-dimensions.png"
+w          = 1044
+h          = 657
 caption_en = "Fig. Experimental cabinet interior dimensions"
 caption_zh = "Fig. Experimental cabinet interior dimensions"
 
@@ -74,6 +82,8 @@ body_zh  = "This environmental chamber uses heaters and a proportional–integra
 id         = "chamber"
 kind       = "photo"
 image      = "/assets/img/test-setups/thermal-fin-natural-convection-chamber/chamber.jpg"
+w          = 1199
+h          = 1600
 caption_en = ""
 caption_zh = ""
 
@@ -98,6 +108,8 @@ body_zh = "Can handle up to 1 kW air-cooled system"
 id         = "wind-tunnel"
 kind       = "photo"
 image      = "/assets/img/test-setups/air-cooler-wind-tunnel/wind-tunnel.jpg"
+w          = 1600
+h          = 555
 caption_en = ""
 caption_zh = ""
 
@@ -142,6 +154,8 @@ id         = "facility-airflow-diagram"
 span         = "full"   # plan drawing carrying the room dimensions
 kind       = "diagram"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/facility-airflow-diagram.png"
+w          = 1545
+h          = 960
 caption_en = ""
 caption_zh = ""
 
@@ -149,6 +163,8 @@ caption_zh = ""
 id         = "tc-measurements-mesh"
 kind       = "diagram"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/tc-measurements-mesh.png"
+w          = 497
+h          = 1600
 caption_en = "TC measurements mesh"
 caption_zh = "TC measurements mesh"
 
@@ -156,6 +172,8 @@ caption_zh = "TC measurements mesh"
 id         = "tc-measurements-rack"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/tc-measurements-rack.jpg"
+w          = 750
+h          = 1236
 caption_en = "TC measurements mesh"
 caption_zh = "TC measurements mesh"
 
@@ -163,6 +181,8 @@ caption_zh = "TC measurements mesh"
 id         = "hot-wire-mesh-front"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/hot-wire-mesh-front.jpg"
+w          = 867
+h          = 774
 caption_en = "Hot-wire measurements mesh"
 caption_zh = "Hot-wire measurements mesh"
 
@@ -170,6 +190,8 @@ caption_zh = "Hot-wire measurements mesh"
 id         = "hot-wire-mesh-overhead"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/hot-wire-mesh-overhead.jpg"
+w          = 993
+h          = 621
 caption_en = "Hot-wire measurements mesh"
 caption_zh = "Hot-wire measurements mesh"
 
@@ -177,6 +199,8 @@ caption_zh = "Hot-wire measurements mesh"
 id         = "simulated-rack"
 kind       = "photo"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack.jpg"
+w          = 387
+h          = 1311
 caption_en = "Simulated rack"
 caption_zh = "Simulated rack"
 
@@ -184,6 +208,8 @@ caption_zh = "Simulated rack"
 id         = "simulated-rack-rendering"
 kind       = "diagram"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack-rendering.png"
+w          = 462
+h          = 1215
 caption_en = "Simulated rack"
 caption_zh = "Simulated rack"
 
@@ -244,6 +270,8 @@ items_zh = [
 id         = "annotated-platform"
 kind       = "photo"
 image      = "/assets/img/test-setups/two-phase-cold-plate-test-platform/annotated-platform.jpg"
+w          = 1600
+h          = 1144
 caption_en = ""
 caption_zh = ""
 
@@ -264,6 +292,8 @@ body_zh  = "This closed-loop external-tube pool-boiling system consists of two c
 id         = "system"
 kind       = "photo"
 image      = "/assets/img/test-setups/flooded-evaporator-test-rig/system.jpg"
+w          = 1206
+h          = 1176
 caption_en = ""
 caption_zh = ""
 
@@ -271,6 +301,8 @@ caption_zh = ""
 id         = "evaporator-close-up"
 kind       = "photo"
 image      = "/assets/img/test-setups/flooded-evaporator-test-rig/evaporator-close-up.jpg"
+w          = 1044
+h          = 1017
 caption_en = ""
 caption_zh = ""
 
@@ -307,6 +339,8 @@ items_zh = [
 id         = "sintered"
 kind       = "diagram"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/sintered.jpg"
+w          = 816
+h          = 351
 caption_en = "Sintered"
 caption_zh = "Sintered"
 
@@ -314,6 +348,8 @@ caption_zh = "Sintered"
 id         = "additively-manufactured"
 kind       = "diagram"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/additively-manufactured.jpg"
+w          = 816
+h          = 351
 caption_en = "Additively manufactured"
 caption_zh = "Additively manufactured"
 
@@ -321,6 +357,8 @@ caption_zh = "Additively manufactured"
 id         = "diamond"
 kind       = "diagram"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/diamond.jpg"
+w          = 816
+h          = 351
 caption_en = "Diamond"
 caption_zh = "Diamond"
 
@@ -328,6 +366,8 @@ caption_zh = "Diamond"
 id         = "acid-etched"
 kind       = "diagram"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/acid-etched.jpg"
+w          = 816
+h          = 351
 caption_en = "Acid etched"
 caption_zh = "Acid etched"
 
@@ -335,6 +375,8 @@ caption_zh = "Acid etched"
 id         = "test-rig"
 kind       = "photo"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/test-rig.jpg"
+w          = 801
+h          = 552
 caption_en = ""
 caption_zh = ""
 
@@ -343,6 +385,8 @@ id         = "test-schematic"
 span         = "full"   # apparatus schematic, about 30 labels
 kind       = "diagram"
 image      = "/assets/img/test-setups/boiler-surface-test-rig/test-schematic.png"
+w          = 1600
+h          = 964
 caption_en = ""
 caption_zh = ""
 
@@ -364,6 +408,8 @@ body_zh  = "The cold plate setup supports up to 3 kW of power"
 id         = "rig"
 kind       = "photo"
 image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/rig.jpg"
+w          = 1600
+h          = 1197
 caption_en = ""
 caption_zh = ""
 
@@ -371,6 +417,8 @@ caption_zh = ""
 id         = "flow-diagram"
 kind       = "diagram"
 image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
+w          = 1600
+h          = 904
 caption_en = ""
 caption_zh = ""
 
@@ -392,6 +440,8 @@ body_zh  = "This vapor-compression refrigeration cooling system uses R-134a and 
 id         = "system-overview"
 kind       = "photo"
 image      = "/assets/img/test-setups/vapor-compression-cooling-system/system-overview.jpg"
+w          = 1410
+h          = 1056
 caption_en = ""
 caption_zh = ""
 
@@ -399,6 +449,8 @@ caption_zh = ""
 id         = "cold-plate-loop"
 kind       = "photo"
 image      = "/assets/img/test-setups/vapor-compression-cooling-system/cold-plate-loop.jpg"
+w          = 1545
+h          = 1161
 caption_en = ""
 caption_zh = ""
 
@@ -420,6 +472,8 @@ body_zh  = "This external-tube refrigerant test system evaluates refrigerant boi
 id         = "apparatus"
 kind       = "photo"
 image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/apparatus.jpg"
+w          = 1185
+h          = 1029
 caption_en = ""
 caption_zh = ""
 
@@ -427,6 +481,8 @@ caption_zh = ""
 id         = "system-diagram"
 kind       = "diagram"
 image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/system-diagram.png"
+w          = 1434
+h          = 1191
 caption_en = ""
 caption_zh = ""
 
@@ -435,6 +491,8 @@ id         = "heater-diagram"
 span         = "full"   # 3.25:1 tube schematic, unreadable when narrow
 kind       = "diagram"
 image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/heater-diagram.png"
+w          = 1600
+h          = 492
 caption_en = ""
 caption_zh = ""
 
@@ -456,6 +514,8 @@ body_zh  = "This liquid-desiccant air-conditioning system integrates a vapor-com
 id         = "rig-front-view"
 kind       = "photo"
 image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/rig-front-view.jpg"
+w          = 810
+h          = 1224
 caption_en = "Photograph of the liquid desiccant air-conditioning system (Front view)"
 caption_zh = "Photograph of the liquid desiccant air-conditioning system (Front view)"
 
@@ -464,6 +524,8 @@ id         = "perspective-system-diagram"
 span         = "full"   # cutaway with ten leader lines
 kind       = "diagram"
 image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/perspective-system-diagram.png"
+w          = 1600
+h          = 840
 caption_en = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
 caption_zh = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
 
@@ -471,6 +533,8 @@ caption_zh = "Perspective view of the liquid desiccant air-conditioning system (
 id         = "process-flow-diagram"
 kind       = "diagram"
 image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/process-flow-diagram.png"
+w          = 774
+h          = 507
 caption_en = ""
 caption_zh = ""
 
@@ -510,6 +574,8 @@ items_zh = [
 id         = "cnc-machine"
 kind       = "photo"
 image      = "/assets/img/test-setups/carvera-desktop-cnc/cnc-machine.jpg"
+w          = 1600
+h          = 1133
 caption_en = ""
 caption_zh = ""
 
@@ -531,6 +597,8 @@ body_zh  = "3D Printer"
 id         = "3d-printer"
 kind       = "photo"
 image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/3d-printer.jpg"
+w          = 1134
+h          = 1206
 caption_en = "3D Printer"
 caption_zh = "3D Printer"
 
@@ -538,6 +606,8 @@ caption_zh = "3D Printer"
 id         = "microscope-1"
 kind       = "photo"
 image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/microscope-1.jpg"
+w          = 948
+h          = 1206
 caption_en = "Microscope"
 caption_zh = "Microscope"
 
@@ -545,6 +615,8 @@ caption_zh = "Microscope"
 id         = "microscope-2"
 kind       = "photo"
 image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/microscope-2.jpg"
+w          = 993
+h          = 1206
 caption_en = "Microscope"
 caption_zh = "Microscope"
 
@@ -570,6 +642,8 @@ body_zh = "The LW-4900 AMCA wind tunnel operates under controlled environmental 
 id         = "wind-tunnel-environmental-room"
 kind       = "photo"
 image      = "/assets/img/test-setups/amca-wind-tunnel/wind-tunnel-environmental-room.jpg"
+w          = 1600
+h          = 1200
 caption_en = ""
 caption_zh = ""
 

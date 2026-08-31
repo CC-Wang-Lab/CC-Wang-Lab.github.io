@@ -984,13 +984,21 @@ function render_setup_figure(figure::AbstractDict)::String
     figure_id = esc(String(figure["id"]))
     kind = esc(String(get(figure, "kind", "figure")))
     image = esc(String(figure["image"]))
+    # Intrinsic size, copied off the file by scripts/add-figure-sizes.py and
+    # checked against disk by check-test-setup-import.py. It is required, not
+    # optional: without it the browser cannot reserve the box, so everything
+    # below a picture jumps down the moment that picture arrives.
+    haskey(figure, "w") && haskey(figure, "h") ||
+        error("figure '$(figure["id"])' has no w/h; run scripts/add-figure-sizes.py")
+    fig_w = Int(figure["w"])
+    fig_h = Int(figure["h"])
     span_class = setup_figure_span(figure, String(figure["id"]))
     caption = esc(pick(figure, "caption"))
     caption_html = isempty(caption) ? "" : "\n        <figcaption>$(caption)</figcaption>"
     return """
       <figure class="setup-study-figure setup-study-figure--$(figure_id) setup-study-figure--$(kind)$(span_class)">
         <div class="setup-study-figure-media">
-          <img src="$(image)" alt="" loading="lazy" decoding="async">
+          <img src="$(image)" alt="" width="$(fig_w)" height="$(fig_h)" loading="lazy" decoding="async">
         </div>$(caption_html)
       </figure>"""
 end
