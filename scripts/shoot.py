@@ -664,17 +664,48 @@ window.addEventListener("load", function () {
     }
     var setupSingleFigureAudit = null;
     var setupStudy = document.querySelector(".setup-study--a");
-    if (setupStudy && window.innerWidth > 991.98) {
+    if (setupStudy) {
       var setupFigures = setupStudy.querySelectorAll(".setup-study-figure");
       var setupCopy = setupStudy.querySelector(".setup-study-copy");
       if (setupFigures.length === 1 && setupCopy) {
+        var setupStudyRect = setupStudy.getBoundingClientRect();
         var setupFigureRect = setupFigures[0].getBoundingClientRect();
         var setupCopyRect = setupCopy.getBoundingClientRect();
         var setupExpectedGap = parseFloat(getComputedStyle(setupStudy).columnGap) || 0;
+        var figureBeforeCopy = setupFigureRect.right <= setupCopyRect.left;
+        var copyBeforeFigure = setupCopyRect.right <= setupFigureRect.left;
+        var setupActualGap = figureBeforeCopy ?
+          setupCopyRect.left - setupFigureRect.right :
+          copyBeforeFigure ? setupFigureRect.left - setupCopyRect.right :
+          -Math.min(setupFigureRect.right - setupCopyRect.left,
+                    setupCopyRect.right - setupFigureRect.left);
         setupSingleFigureAudit = {
-          actualGap: setupCopyRect.left - setupFigureRect.right,
-          expectedGap: setupExpectedGap
+          desktop: window.innerWidth > 991.98,
+          actualGap: setupActualGap,
+          expectedGap: setupExpectedGap,
+          mobileStacked: setupCopyRect.bottom <= setupFigureRect.top + 1,
+          mobileCopyFullWidth: Math.abs(setupCopyRect.width - setupStudyRect.width) <= 1,
+          mobileFigureFullWidth: Math.abs(setupFigureRect.width - setupStudyRect.width) <= 1
         };
+      }
+    }
+    var croppedSetupImages = [];
+    var setupImages = document.querySelectorAll(".setup-study-figure img");
+    for (var si = 0; si < setupImages.length; si++) {
+      var setupImage = setupImages[si];
+      var setupImageRect = setupImage.getBoundingClientRect();
+      if (!setupImage.naturalWidth || !setupImage.naturalHeight ||
+          !setupImageRect.width || !setupImageRect.height) continue;
+      var naturalRatio = setupImage.naturalWidth / setupImage.naturalHeight;
+      var renderedRatio = setupImageRect.width / setupImageRect.height;
+      var ratioError = Math.abs(renderedRatio - naturalRatio) / naturalRatio;
+      if (ratioError > 0.01) {
+        croppedSetupImages.push(
+          (setupImage.getAttribute("src") || "(unknown image)") +
+          " natural/rendered=" + naturalRatio.toFixed(3) + "/" +
+          renderedRatio.toFixed(3) + " object-fit=" +
+          getComputedStyle(setupImage).objectFit
+        );
       }
     }
     fetch("/__report", { method: "POST", body: JSON.stringify({
@@ -697,7 +728,8 @@ window.addEventListener("load", function () {
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
       overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
       profile: profileAudit, partners: partnerAudit,
-      setupSingleFigure: setupSingleFigureAudit
+      setupSingleFigure: setupSingleFigureAudit,
+      croppedSetupImages: croppedSetupImages.slice(0, 12)
     })});
   }
 });
@@ -722,8 +754,12 @@ MATRIX = [
     ("/projects/cpu-cooler-airflow/", 492, "light", "project prose and full-width media on mobile"),
     ("/projects/cpu-cooler-airflow/", 1440, "light", "project prose measure beside full-width media"),
     ("/projects/cpu-cooler-airflow/", 1440, "dark", "project detail theme parity"),
+    ("/projects/two-phase-closed-loop-thermosyphon/", 1440, "light",
+     "imported project figures preserve their complete source image"),
     ("/facilities/thermal-fin-natural-convection-chamber/", 1440, "light",
      "single-figure layout A must not reserve an empty media column"),
+    ("/facilities/thermal-fin-natural-convection-chamber/", 492, "light",
+     "single-figure layout A must retain the mobile stack"),
     ("/people/", 492, "light", "stacked people index and narrow footer"),
     ("/publications/", 492, "light", "smallest type at the narrowest width Edge allows"),
     ("/publications/", 1440, "light", "densest small type, the longest run of --fs-xs"),
@@ -1031,11 +1067,26 @@ def main():
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
             setup_single = r.get("setupSingleFigure")
-            if setup_single and (setup_single.get("actualGap", 0) -
-                                 setup_single.get("expectedGap", 0) > 2):
-                flags.append("single-figure layout reserves %.1fpx of empty horizontal space"
-                             % (setup_single["actualGap"] -
-                                setup_single["expectedGap"]))
+            expects_setup_single = (
+                r.get("url") == "/facilities/thermal-fin-natural-convection-chamber/"
+                and r.get("w") in (492, 1440)
+            )
+            if expects_setup_single and not setup_single:
+                flags.append("single-figure layout audit did not run")
+            elif setup_single and setup_single.get("desktop"):
+                if abs(setup_single.get("actualGap", 0) -
+                       setup_single.get("expectedGap", 0)) > 2:
+                    flags.append("single-figure desktop gap %.1fpx differs from %.1fpx"
+                                 % (setup_single.get("actualGap", 0),
+                                    setup_single.get("expectedGap", 0)))
+            elif setup_single and not all((
+                    setup_single.get("mobileStacked"),
+                    setup_single.get("mobileCopyFullWidth"),
+                    setup_single.get("mobileFigureFullWidth"))):
+                flags.append("single-figure layout does not retain its full-width mobile stack")
+            if r.get("croppedSetupImages"):
+                flags.append("%d setup image(s) do not preserve their source aspect ratio"
+                             % len(r["croppedSetupImages"]))
             profile = r.get("profile")
             if profile:
                 if not profile.get("layoutStateAbsent"):
@@ -1192,6 +1243,8 @@ def main():
                 print("        setup  actual/expected gap = %.1f/%.1fpx"
                       % (setup_single.get("actualGap", 0),
                          setup_single.get("expectedGap", 0)))
+            for x in r.get("croppedSetupImages", []):
+                print("        crop   " + x)
             if profile:
                 print("        profile requested=%s state=%s switcher=%s"
                       % (profile.get("requested") or "(none)",

@@ -2148,8 +2148,6 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .setup-study-figure--photo img {
   width: 100%;
-  aspect-ratio: 166 / 224;
-  object-fit: cover;
 }
 .setup-study-figure--diagram .setup-study-figure-media {
   min-height: 11rem;
@@ -2169,11 +2167,13 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .setup-study--a .setup-study-figures {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.setup-study--a:has(.setup-study-figures > .setup-study-figure:only-child) {
-  grid-template-columns: minmax(17rem, 0.75fr) minmax(0, 1.45fr);
-}
-.setup-study--a .setup-study-figures:has(> .setup-study-figure:only-child) {
-  grid-template-columns: minmax(0, 1fr);
+@media (min-width: 992px) {
+  .setup-study--a.setup-study--single-figure {
+    grid-template-columns: minmax(17rem, 0.75fr) minmax(0, 1.45fr);
+  }
+  .setup-study--a.setup-study--single-figure .setup-study-figures {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .setup-study--a .setup-study-figure--diagram {
   grid-column: 1 / -1;
@@ -2287,6 +2287,9 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   .setup-study--b .setup-study-figures,
   .setup-study--c .setup-study-figures {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .setup-study--a.setup-study--single-figure .setup-study-figures {
+    grid-template-columns: minmax(0, 1fr);
   }
   .setup-study--a .setup-study-figure,
   .setup-study--b .setup-study-figure,

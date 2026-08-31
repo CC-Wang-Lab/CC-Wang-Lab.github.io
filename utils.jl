@@ -977,6 +977,7 @@ function render_setup_page(record::AbstractDict, kind::AbstractString)::String
     layout = setup_layout(record, src)
     figures = get(record, "figure", Any[])
     isempty(figures) && error("$src: '$(record["id"])' needs at least one figure")
+    figure_count_class = length(figures) == 1 ? " setup-study--single-figure" : ""
     back_path = kind == "facility" ? "/facilities/" : "/projects/"
     back_html = kind == "facility" ?
         "&larr; " * esc(ui("nav", "facilities")) : esc(ui("projects", "back"))
@@ -990,7 +991,7 @@ function render_setup_page(record::AbstractDict, kind::AbstractString)::String
   <h1>$(title)</h1>
 </div></header>
 <div class="page-body setup-study-page"><div class="container">
-  <article class="setup-study setup-study--$(layout)">
+  <article class="setup-study setup-study--$(layout)$(figure_count_class)">
     <div class="setup-study-copy prose">
       <p>$(esc(pick(record, "body")))</p>
       $(render_setup_sections(record))
