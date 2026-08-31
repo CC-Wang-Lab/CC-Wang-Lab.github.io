@@ -48,6 +48,7 @@ Five things here are not decoration:
    process holding a profile.
 """
 import argparse
+import base64
 import functools
 import http.server
 import json
@@ -61,6 +62,9 @@ import sys
 import threading
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cdp  # noqa: E402  (needs the line above to be importable)
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
@@ -93,7 +97,7 @@ SEED = """<script>
 })();
 </script>"""
 
-AUDIT = """<script>
+AUDIT = r"""<script>
 /* Injected by scripts/shoot.py --measure. Reports the two things a grep over
    style.css cannot see, because both are COMPUTED: the final font-size of
    every element that really renders text, and anything wider than the
@@ -791,6 +795,124 @@ window.addEventListener("load", function () {
       loaded: setupImagesLoaded,
       issues: setupImageIssues.slice(0, 12)
     };
+    /* ------------------------------------------------------------------
+       THE READING MEASURE, IN REAL CHARACTERS PER LINE.
+
+       Justification is required everywhere on this site and nothing has ever
+       checked whether the column is wide enough to carry it. style.css names
+       the floor itself, at the .foot-addr note: below about 45 characters the
+       word spaces measured 14-16px against 3-4px on the last line and a river
+       ran down the block.
+
+       Characters per line is counted from the TEXT, not guessed from a font
+       size. A Range over the contents returns one client rect per line box, so
+       distinct rect tops are the line count, and length/lines is the measure a
+       reader actually sees.
+       ------------------------------------------------------------------ */
+    var justifyAudit = [], justifyAuditSeen = {};
+    var proseNodes = document.querySelectorAll(
+      "p, li, blockquote, .card-scope, .pg-scope, .person-row-topic, .news-body");
+    for (var pj = 0; pj < proseNodes.length; pj++) {
+      var proseNode = proseNodes[pj];
+      var proseStyle = getComputedStyle(proseNode);
+      if (proseStyle.display === "none" || proseStyle.visibility === "hidden") continue;
+      if (proseStyle.textAlign !== "justify") continue;
+      var proseText = (proseNode.textContent || "").replace(/\s+/g, " ").trim();
+      if (proseText.length < 60) continue;
+      var proseRange = document.createRange();
+      proseRange.selectNodeContents(proseNode);
+      var proseRects = proseRange.getClientRects(), tops = [];
+      for (var pr = 0; pr < proseRects.length; pr++) {
+        if (proseRects[pr].width > 0) tops.push(proseRects[pr].top);
+      }
+      /* CLUSTER the tops, never round them. An inline <strong> or <a> sits a
+         fraction of a pixel off its own line, and rounding turns that into a
+         second line, which makes a wide paragraph look like a narrow one. */
+      tops.sort(function (a, b) { return a - b; });
+      var proseLines = 0, lastTop = -1e9;
+      for (var tp = 0; tp < tops.length; tp++) {
+        if (tops[tp] - lastTop > 3) { proseLines++; lastTop = tops[tp]; }
+      }
+      if (proseLines < 2) continue;
+      var proseKey = sel(proseNode);
+      if (justifyAuditSeen[proseKey]) continue;
+      justifyAuditSeen[proseKey] = 1;
+      /* The honest characters-per-line is the BOX width over the average
+         character width, not the text length over the line count. Every line
+         but the last is stretched to the box, and the last line is usually
+         short, so length/lines always reads low. The average is measured from
+         this element's own text in its own computed font. */
+      var widthProbe = document.createElement("span");
+      widthProbe.style.cssText = "position:absolute;left:-99999px;top:0;white-space:pre;";
+      widthProbe.style.fontFamily = proseStyle.fontFamily;
+      widthProbe.style.fontSize = proseStyle.fontSize;
+      widthProbe.style.fontWeight = proseStyle.fontWeight;
+      widthProbe.style.fontStyle = proseStyle.fontStyle;
+      widthProbe.style.letterSpacing = proseStyle.letterSpacing;
+      widthProbe.textContent = proseText.slice(0, 400);
+      document.body.appendChild(widthProbe);
+      var avgChar = widthProbe.getBoundingClientRect().width /
+                    Math.max(1, widthProbe.textContent.length);
+      document.body.removeChild(widthProbe);
+      var proseBox = proseNode.getBoundingClientRect().width;
+      justifyAudit.push({
+        sel: proseKey,
+        px: +proseBox.toFixed(1),
+        chars: proseText.length, lines: proseLines,
+        cpl: avgChar > 0 ? +(proseBox / avgChar).toFixed(1) : 0,
+        cplNaive: +(proseText.length / proseLines).toFixed(1),
+        avgChar: +avgChar.toFixed(2),
+        font: +parseFloat(proseStyle.fontSize).toFixed(1)
+      });
+    }
+
+    /* ------------------------------------------------------------------
+       THE SETUP GRID, AS THE BROWSER RESOLVED IT.
+
+       gridTemplateColumns comes back as used pixel values, so this reports
+       what the figure track really is rather than what the stylesheet asked
+       for. That is the only way to see a four-column track holding two
+       figures, which reads as a broken row and cannot be found by grepping.
+       ------------------------------------------------------------------ */
+    var setupGrid = null;
+    var studyEl = document.querySelector(".setup-study");
+    if (studyEl) {
+      var figuresBox = studyEl.querySelector(".setup-study-figures");
+      var copyBox = studyEl.querySelector(".setup-study-copy");
+      var figuresRect = figuresBox.getBoundingClientRect();
+      var colTracks = getComputedStyle(figuresBox).gridTemplateColumns
+        .split(" ").filter(function (v) { return v && v !== "none"; });
+      var figNodes = figuresBox.querySelectorAll(".setup-study-figure");
+      var rowTops = {}, figList = [];
+      for (var fg = 0; fg < figNodes.length; fg++) {
+        var figNode = figNodes[fg];
+        var figImg = figNode.querySelector("img");
+        var figRect = (figImg || figNode).getBoundingClientRect();
+        rowTops[Math.round(figNode.getBoundingClientRect().top)] = 1;
+        figList.push({
+          id: (figNode.className.match(/setup-study-figure--([a-z0-9-]+)/) || [])[1] || "?",
+          w: +figRect.width.toFixed(1), h: +figRect.height.toFixed(1),
+          natW: figImg ? figImg.naturalWidth : 0,
+          natH: figImg ? figImg.naturalHeight : 0,
+          x: Math.round(figNode.getBoundingClientRect().left - figuresRect.left),
+          y: Math.round(figNode.getBoundingClientRect().top - figuresRect.top),
+          spanPx: Math.round(figNode.getBoundingClientRect().width)
+        });
+      }
+      setupGrid = {
+        layout: (studyEl.className.match(/setup-study--([abc])(?!\w)/) || [])[1] || "?",
+        single: /setup-study--single-figure/.test(studyEl.className),
+        cols: colTracks.length,
+        colPx: colTracks.map(function (v) { return Math.round(parseFloat(v)); }),
+        rows: Object.keys(rowTops).length,
+        copyPx: copyBox ? +copyBox.getBoundingClientRect().width.toFixed(1) : 0,
+        figuresPx: +figuresRect.width.toFixed(1),
+        stacked: copyBox ?
+          copyBox.getBoundingClientRect().bottom <= figuresRect.top + 1 : null,
+        figs: figList
+      };
+    }
+
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
       motionStartsRunning: motionStartsRunning,
@@ -812,7 +934,8 @@ window.addEventListener("load", function () {
       overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
       profile: profileAudit, partners: partnerAudit,
       setupSingleFigure: setupSingleFigureAudit,
-      setupImages: setupImageAudit
+      setupImages: setupImageAudit,
+      justifyAudit: justifyAudit, setupGrid: setupGrid
     })});
   }
 });
@@ -822,6 +945,10 @@ REPORTS = []
 MOTION = ["off"]    # set from --motion; a list so shoot() can read it
 SCROLLTO = [None]   # set from --scrollto
 REALTIME = [False]  # set from --realtime
+EMULATE = [False]   # set from --emulate; drives shoot_cdp instead of shoot
+BROWSER = [None]    # the one reusable CDP browser, in --emulate runs only
+WIDTH_MISSES = []   # (url, asked, got) where content would not fit
+NO_SHOTS = [False]  # set from --no-shots; measure without capturing
 
 # page, width, theme, why this shot exists
 MATRIX = [
@@ -1026,6 +1153,105 @@ def shoot(edge, url, width, theme, out_png, profile, height=4000, budget=9000):
     return False
 
 
+def setup_routes():
+    """Every public facility and project detail route, read from _data/.
+
+    Generated, never listed by hand. A record added to facilities.toml or
+    projects.toml is swept on the next run with no edit here, which is the
+    same rule the rest of the site follows: the data file is the source and
+    the page grows itself.
+    """
+    import tomllib
+    routes = []
+    for name, key, base in (("facilities.toml", "item", "/facilities/"),
+                            ("projects.toml", "project", "/projects/")):
+        with open(ROOT / "_data" / name, "rb") as fh:
+            rows = tomllib.load(fh)[key]
+        for row in rows:
+            if row.get("placeholder", False):
+                continue
+            routes.append((base + row["id"] + "/", len(row.get("figure", [])),
+                           str(row.get("layout", "-"))))
+    return routes
+
+
+def setup_matrix(widths, theme="light"):
+    out = []
+    for route, figures, layout in setup_routes():
+        for w in widths:
+            out.append((route, w, theme,
+                        "layout %s, %d figure(s)" % (layout, figures)))
+    return out
+
+
+def shoot_cdp(edge, url, width, theme, out_png, profile, height=4000):
+    """Shoot at a TRUE layout width, over CDP. See scripts/cdp.py for why.
+
+    Three things differ from shoot() above, and all three are improvements:
+
+      1. The width is real. `Emulation.setDeviceMetricsOverride` sets the
+         layout viewport, so 320 is 320. shoot() cannot go below about 484 and
+         crops the difference, which is why NARROWEST exists.
+      2. There is no virtual-time budget, so requestAnimationFrame FIRES.
+         Point 4 of the module docstring says scroll-linked effects cannot be
+         measured; that is a limit of the --screenshot= flag, which shoots at
+         load and exits. Here the screenshot is a protocol call, so the page
+         can be given real time first and rAF works.
+      3. One browser serves the whole run instead of one process per shot.
+
+    The width is ASSERTED, not assumed. A harness that quietly lays out at the
+    wrong width is the exact fault this file was written to remove, so a
+    mismatch fails the shot rather than writing a mislabelled PNG.
+    """
+    browser = BROWSER[0]
+    if browser is None:
+        browser = cdp.Browser(edge, profile)
+        browser.call("Page.enable")
+        browser.call("Runtime.enable")
+        BROWSER[0] = browser
+
+    browser.call("Emulation.setDeviceMetricsOverride", {
+        "width": width, "height": height, "deviceScaleFactor": 1,
+        "mobile": width < 768, "screenWidth": width, "screenHeight": height,
+    })
+    before = len(REPORTS)
+    browser.clear_events()
+    browser.call("Page.navigate", {
+        "url": "http://127.0.0.1:%d%s" % (PORT, request_target(url, theme))})
+    browser.await_event("Page.loadEventFired", timeout=90)
+
+    seen = browser.evaluate("window.innerWidth")
+    if seen != width:
+        # This is a FINDING, not a harness fault, and the picture is the whole
+        # point of having it. A page whose content will not fit makes Chromium
+        # widen the visual viewport to show it, so innerWidth comes back larger
+        # than the device width. Refusing the shot would hide the one page that
+        # most needs looking at, so it is recorded and shot anyway.
+        WIDTH_MISSES.append((url, width, seen))
+        print("      OVERFLOW: content forced the viewport to %spx at %dpx"
+              % (seen, width))
+
+    if Injector.measure:
+        # The probe fires 2.5 s after load and POSTs to /__report. Poll for it
+        # rather than sleeping a guessed amount.
+        end = time.monotonic() + 45
+        while len(REPORTS) == before and time.monotonic() < end:
+            time.sleep(0.1)
+        if len(REPORTS) == before:
+            print("      the audit probe never reported - shot refused")
+            return False
+    else:
+        time.sleep(1.2)
+
+    if NO_SHOTS[0]:
+        return True
+    shot = browser.call("Page.captureScreenshot", {"format": "png"}, timeout=180)
+    if out_png.exists():
+        out_png.unlink()
+    out_png.write_bytes(base64.b64decode(shot["data"]))
+    return out_png.stat().st_size > 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--url")
@@ -1044,11 +1270,26 @@ def main():
                     help="set the current-page LabMotion state. Default off, "
                          "which freezes the marquee and slider so shots are "
                          "diffable. Use on to test automatic motion.")
+    ap.add_argument("--sweep", choices=["setup"],
+                    help="replace the regression matrix with every public "
+                         "facility and project detail route, read from _data/")
+    ap.add_argument("--widths", default="320,390,1440",
+                    help="comma-separated widths for --sweep")
+    ap.add_argument("--no-shots", action="store_true",
+                    help="run the audit probe but write no PNG. Measurement "
+                         "iterates far faster than full-page capture.")
+    ap.add_argument("--emulate", action="store_true",
+                    help="drive Edge over CDP and set the LAYOUT viewport, so "
+                         "widths below 492 are real instead of cropped")
     ap.add_argument("--measure", action="store_true",
                     help="audit computed type ramps, the 12.8px floor, 44px "
                          "controls, reading measures and viewport overflow")
     args = ap.parse_args()
 
+    if args.emulate and args.realtime:
+        sys.exit("--emulate already runs in real time and controls when the "
+                 "screenshot is taken, so --realtime adds nothing and its "
+                 "shoot-at-load behaviour would break the audit.")
     if args.measure and args.realtime:
         sys.exit("--measure and --realtime cannot be combined. Without the "
                  "virtual-time budget Edge screenshots at load and exits, so "
@@ -1059,6 +1300,8 @@ def main():
     Injector.measure = args.measure
     MOTION[0] = args.motion
     REALTIME[0] = args.realtime
+    EMULATE[0] = args.emulate
+    NO_SHOTS[0] = args.no_shots
     SCROLLTO[0] = args.scrollto
     edge = find_edge()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -1082,7 +1325,12 @@ def main():
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     print("serving %s on 127.0.0.1:%d (read-only, injecting)" % (SITE, PORT))
 
-    shots = ([(args.url, args.width, args.theme, "ad hoc")] if args.url else MATRIX)
+    if args.sweep == "setup":
+        shots = setup_matrix([int(w) for w in args.widths.split(",")], args.theme)
+    elif args.url:
+        shots = [(args.url, args.width, args.theme, "ad hoc")]
+    else:
+        shots = MATRIX
     made, failed = [], []
     try:
         for i, (url, width, theme, why) in enumerate(shots):
@@ -1093,15 +1341,21 @@ def main():
                 slug += "-" + re.sub(r"[^a-z0-9-]+", "-", layout.lower()).strip("-")
             # NARROWEST, not `width`: below it Edge renders wider than asked,
             # and a file called _375_ that is really 492 is a lie.
-            real = max(width, NARROWEST)
+            real = width if args.emulate else max(width, NARROWEST)
             png = OUT / ("%02d_%s_%d_%s.png" % (i, slug, real, theme))
             profile = OUT / ("profile-%02d" % i)
-            ok = shoot(edge, url, width, theme, png, profile, args.height)
-            kb = png.stat().st_size // 1024 if ok else 0
+            ok = (shoot_cdp(edge, url, width, theme, png, OUT / "profile-cdp",
+                            args.height) if args.emulate else
+                  shoot(edge, url, width, theme, png, profile, args.height))
+            kb = (png.stat().st_size // 1024
+                  if ok and png.is_file() else 0)
             print("  %s %-28s %5d %-5s %6d KB  %s"
                   % ("ok  " if ok else "FAIL", url, width, theme, kb, why))
             (made if ok else failed).append(str(png))
     finally:
+        if BROWSER[0] is not None:
+            BROWSER[0].close()
+            BROWSER[0] = None
         if args.keep_server:
             print("\nserver still running on %d. Ctrl-C to stop." % PORT)
             try:
@@ -1113,9 +1367,18 @@ def main():
         for d in OUT.glob("profile-*"):
             shutil.rmtree(d, ignore_errors=True)
 
+    if WIDTH_MISSES:
+        print("\n=== PAGES THAT WOULD NOT FIT ===")
+        for miss_url, asked, got in WIDTH_MISSES:
+            print("  %-56s asked %d, laid out %d (+%d)"
+                  % (miss_url, asked, got, got - asked))
+    if args.measure and REPORTS:
+        (OUT / "reports.json").write_text(json.dumps(REPORTS, indent=1),
+                                          encoding="utf-8")
+        print("\nwrote %s (%d report(s))" % (OUT / "reports.json", len(REPORTS)))
     if args.measure:
         print("\n=== COMPUTED AUDIT ===")
-        if len(REPORTS) < len(made):
+        if not args.no_shots and len(REPORTS) < len(made):
             print("  %d shot(s) but only %d report(s): the audit did not run on "
                   "every page, so this is NOT a clean result."
                   % (len(made), len(REPORTS)))
