@@ -86,31 +86,26 @@ def check(record: dict, src: str, fail):
                     fail(f"{where}: section[{i}].items_{lang}[{j}] starts with its "
                          f"own number inside a <ul> -- {item[:50]!r}")
 
-    # 3. A heading with nothing under it.
-    for i, sec in enumerate(record.get("section", [])):
-        for lang in LANGS:
-            heading = (sec.get(f"heading_{lang}") or "").strip()
-            body = (sec.get(f"body_{lang}") or "").strip()
-            items = sec.get(f"items_{lang}") or []
-            if heading and not body and not items:
-                fail(f"{where}: section[{i}] heading_{lang} has no body and no "
-                     f"items -- {heading[:50]!r}")
+    # 3. A heading with nothing under it is ALLOWED, and this check is gone.
+    #
+    # It fired on four headings and they were deleted. That was wrong twice
+    # over. The site owner has since said the wording must match the slide deck
+    # exactly, and these are slide labels: "Test Samples" and "Photograph of
+    # the setup" name the pictures that follow them. In the row layout a
+    # heading labels the row beneath it, which is what they were always for.
+    #
+    # What the old check was really seeing is a heading rendered in a column
+    # far away from the figures it names. That is a layout fault, and deleting
+    # the words was the wrong place to fix it.
 
-    # 4. A section heading that restates the page title.
-    for lang in LANGS:
-        title = (record.get(f"title_{lang}") or "").strip().lower()
-        if len(title) < 20:
-            continue
-        for i, sec in enumerate(record.get("section", [])):
-            heading = (sec.get(f"heading_{lang}") or "").strip().lower()
-            if not heading or len(heading) < 20:
-                continue
-            head_words = heading.split()
-            title_words = title.split()
-            n = min(len(head_words), len(title_words), 8)
-            if n >= 5 and head_words[:n] == title_words[:n]:
-                fail(f"{where}: section[{i}].heading_{lang} repeats the first "
-                     f"{n} words of the title -- {heading[:50]!r}")
+    # 4. A heading that restates the page title is ALLOWED, and this check is
+    # gone as well.
+    #
+    # chip-package-lid-thermal-spreading has a section headed "Experimental
+    # Investigation on Thermal Spreading of Chip Package Lids On Diamond-copper
+    # composite Lid", which repeats the first eight words of its own title. It
+    # reads oddly, and it is what the slide says. Wording fidelity to the deck
+    # wins; a heading that is too long for its column is a layout problem.
 
     # 5. Two figures sharing one caption, when they are NOT next to each other.
     #
@@ -136,13 +131,12 @@ def check(record: dict, src: str, fail):
                      f"not adjacent")
             seen[cap] = i
 
-    # 6. The lead is the whole body, so the index card carries the whole page.
-    for lang in LANGS:
-        lead = (record.get(f"lead_{lang}") or "").strip()
-        body = (record.get(f"body_{lang}") or "").strip()
-        if lead and lead == body and len(lead) > 300:
-            fail(f"{where}: lead_{lang} is identical to body_{lang} and is "
-                 f"{len(lead)} characters, so the index card shows the whole page")
+    # 6. lead == body is ALLOWED, and this check is gone too.
+    #
+    # It fired on four records and each lead was shortened to the body's first
+    # sentence. Same reasoning as above: the words are the slide's, and the
+    # real fault is that the index card prints all 736 of them. A card clamps
+    # its own text; it does not get to edit the source.
 
 
 def main() -> int:
