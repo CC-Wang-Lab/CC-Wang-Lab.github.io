@@ -1,7 +1,62 @@
 param(
     [Parameter(Mandatory = $true)]
-    [string]$SourceDir
+    [string]$SourceDir,
+
+    # Every -Geometry and -Erase rectangle below is in the coordinates of a
+    # 1280x720 slide export. -Scale 3 reads the same rectangles off a 3840x2160
+    # export instead, which is exactly 3.0x in both axes, so no rectangle needs
+    # re-measuring and every asset gains 3x the pixels.
+    #
+    # Verified before this parameter existed: all 69 comparable crops match the
+    # published assets at offset (0,0) on the rescaled slides.
+    [int]$Scale = 1,
+
+    # Long-edge cap in pixels, applied AFTER cropping. Without it a 3x run
+    # produces assets far larger than any layout displays, and GitHub Pages
+    # allows 100 GB of traffic a month. 0 disables the cap.
+    [int]$MaxEdge = 0,
+
+    [int]$Quality = 95
 )
+
+function Resolve-Geometry {
+    param([string]$Geometry, [int]$Factor)
+    if ($Factor -le 1) { return $Geometry }
+    if ($Geometry -notmatch '^(\d+)x(\d+)\+(\d+)\+(\d+)$') {
+        throw "Cannot scale geometry '$Geometry'"
+    }
+    return ('{0}x{1}+{2}+{3}' -f
+        ([int]$Matches[1] * $Factor), ([int]$Matches[2] * $Factor),
+        ([int]$Matches[3] * $Factor), ([int]$Matches[4] * $Factor))
+}
+
+function Resolve-Erase {
+    param([string]$Erase, [int]$Factor)
+    if ($Factor -le 1 -or -not $Erase) { return $Erase }
+    # 'rectangle X1,Y1 X2,Y2 rectangle ...' - starts scale straight, ends scale
+    # as (v + 1) * Factor - 1 so the mask covers the same area, not two pixels
+    # less of it.
+    $parts = $Erase -split '\s+'
+    $out = New-Object System.Collections.Generic.List[string]
+    for ($i = 0; $i -lt $parts.Count; $i++) {
+        if ($parts[$i] -eq 'rectangle') {
+            $start = $parts[$i + 1] -split ','
+            $end   = $parts[$i + 2] -split ','
+            $out.Add('rectangle')
+            # The extra parentheses are load-bearing. Inside a method call the
+            # comma separates ARGUMENTS, so `Add('{0},{1}' -f $a, $b)` hands the
+            # format operator one value and PowerShell throws an index error.
+            $out.Add(('{0},{1}' -f ([int]$start[0] * $Factor), ([int]$start[1] * $Factor)))
+            $out.Add(('{0},{1}' -f ((([int]$end[0] + 1) * $Factor) - 1),
+                                   ((([int]$end[1] + 1) * $Factor) - 1)))
+            $i += 2
+        }
+        elseif ($parts[$i]) {
+            throw "Unsupported -Erase token '$($parts[$i])'"
+        }
+    }
+    return ($out -join ' ')
+}
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $outputRoot = Join-Path $repoRoot '_assets\img\test-setups'
@@ -21,16 +76,27 @@ function Export-Crop {
     }
     New-Item -ItemType Directory -Force (Split-Path -Parent $target) | Out-Null
 
+    $geo = Resolve-Geometry -Geometry $Geometry -Factor $Scale
+    $mask = Resolve-Erase -Erase $Erase -Factor $Scale
+
     if ([IO.Path]::GetExtension($target).Equals('.jpg', [StringComparison]::OrdinalIgnoreCase)) {
-        & magick $source -crop $Geometry +repage -strip -quality 95 $target
+        & magick $source -crop $geo +repage -strip -quality $Quality $target
     }
     else {
-        & magick $source -crop $Geometry +repage -strip $target
+        & magick $source -crop $geo +repage -strip $target
     }
     if ($LASTEXITCODE -ne 0) { throw "ImageMagick failed for Slide $Slide" }
-    if ($Erase) {
-        & magick $target -fill white -draw $Erase -strip $target
+    if ($mask) {
+        # The mask is drawn BEFORE any downscale, so its coordinates stay in the
+        # cropped image's own space and never have to be scaled twice.
+        & magick $target -fill white -draw $mask -strip $target
         if ($LASTEXITCODE -ne 0) { throw "ImageMagick cleanup failed for Slide $Slide" }
+    }
+    if ($MaxEdge -gt 0) {
+        # '>' only ever shrinks. A crop already under the cap is left alone
+        # rather than being enlarged into a blur.
+        & magick $target -resize "${MaxEdge}x${MaxEdge}>" -strip $target
+        if ($LASTEXITCODE -ne 0) { throw "ImageMagick resize failed for Slide $Slide" }
     }
 }
 
