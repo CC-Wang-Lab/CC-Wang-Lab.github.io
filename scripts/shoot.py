@@ -155,7 +155,7 @@ window.addEventListener("load", function () {
   }
   setTimeout(sweep, 200);
 
-  function measure() {
+  async function measure() {
     function sel(e) {
       var c = (typeof e.className === "string" ? e.className : "").trim();
       return e.tagName.toLowerCase() + (c ? "." + c.split(/[ ]+/).slice(0, 2).join(".") : "");
@@ -663,7 +663,7 @@ window.addEventListener("load", function () {
       };
     }
     var setupSingleFigureAudit = null;
-    var setupStudy = document.querySelector(".setup-study--a");
+    var setupStudy = document.querySelector(".setup-study--single-figure");
     if (setupStudy) {
       var setupFigures = setupStudy.querySelectorAll(".setup-study-figure");
       var setupCopy = setupStudy.querySelector(".setup-study-copy");
@@ -680,7 +680,8 @@ window.addEventListener("load", function () {
           -Math.min(setupFigureRect.right - setupCopyRect.left,
                     setupCopyRect.right - setupFigureRect.left);
         setupSingleFigureAudit = {
-          desktop: window.innerWidth > 991.98,
+          desktopSideBySide: window.innerWidth > 991.98 &&
+            setupStudy.classList.contains("setup-study--a"),
           actualGap: setupActualGap,
           expectedGap: setupExpectedGap,
           mobileStacked: setupCopyRect.bottom <= setupFigureRect.top + 1,
@@ -689,25 +690,107 @@ window.addEventListener("load", function () {
         };
       }
     }
-    var croppedSetupImages = [];
-    var setupImages = document.querySelectorAll(".setup-study-figure img");
+    var setupImages = Array.prototype.slice.call(
+      document.querySelectorAll(".setup-study-figure img"));
+    await Promise.all(setupImages.map(function (setupImage) {
+      if (setupImage.complete) return Promise.resolve();
+      return new Promise(function (resolve) {
+        var settled = false;
+        function finish() {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve();
+        }
+        var timer = setTimeout(finish, 1500);
+        setupImage.addEventListener("load", finish, { once: true });
+        setupImage.addEventListener("error", finish, { once: true });
+      });
+    }));
+    await Promise.all(setupImages.map(function (setupImage) {
+      if (!setupImage.complete || !setupImage.naturalWidth ||
+          typeof setupImage.decode !== "function") return Promise.resolve();
+      return Promise.race([
+        setupImage.decode().catch(function () {}),
+        new Promise(function (resolve) { setTimeout(resolve, 750); })
+      ]);
+    }));
+    var setupImageIssues = [];
+    var setupImagesLoaded = 0;
     for (var si = 0; si < setupImages.length; si++) {
       var setupImage = setupImages[si];
+      var setupImageSrc = setupImage.getAttribute("src") || "(unknown image)";
       var setupImageRect = setupImage.getBoundingClientRect();
-      if (!setupImage.naturalWidth || !setupImage.naturalHeight ||
-          !setupImageRect.width || !setupImageRect.height) continue;
+      if (!setupImage.complete || !setupImage.naturalWidth ||
+          !setupImage.naturalHeight || !setupImageRect.width ||
+          !setupImageRect.height) {
+        setupImageIssues.push(setupImageSrc + " did not load to measurable dimensions");
+        continue;
+      }
+      setupImagesLoaded++;
+      var setupImageStyle = getComputedStyle(setupImage);
       var naturalRatio = setupImage.naturalWidth / setupImage.naturalHeight;
       var renderedRatio = setupImageRect.width / setupImageRect.height;
-      var ratioError = Math.abs(renderedRatio - naturalRatio) / naturalRatio;
-      if (ratioError > 0.01) {
-        croppedSetupImages.push(
-          (setupImage.getAttribute("src") || "(unknown image)") +
+      var fit = setupImageStyle.objectFit;
+      var containScale = Math.min(
+        setupImageRect.width / setupImage.naturalWidth,
+        setupImageRect.height / setupImage.naturalHeight);
+      var paintedWidth = setupImageRect.width;
+      var paintedHeight = setupImageRect.height;
+      if (fit === "contain") {
+        paintedWidth = setupImage.naturalWidth * containScale;
+        paintedHeight = setupImage.naturalHeight * containScale;
+      } else if (fit === "cover") {
+        var coverScale = Math.max(
+          setupImageRect.width / setupImage.naturalWidth,
+          setupImageRect.height / setupImage.naturalHeight);
+        paintedWidth = setupImage.naturalWidth * coverScale;
+        paintedHeight = setupImage.naturalHeight * coverScale;
+      } else if (fit === "none") {
+        paintedWidth = setupImage.naturalWidth;
+        paintedHeight = setupImage.naturalHeight;
+      } else if (fit === "scale-down") {
+        var scaleDown = Math.min(1, containScale);
+        paintedWidth = setupImage.naturalWidth * scaleDown;
+        paintedHeight = setupImage.naturalHeight * scaleDown;
+      }
+      var distorted = fit === "fill" &&
+        Math.abs(renderedRatio - naturalRatio) / naturalRatio > 0.01;
+      var croppedByFit = paintedWidth > setupImageRect.width + 1 ||
+        paintedHeight > setupImageRect.height + 1;
+      var clippedByAncestor = false;
+      for (var clipNode = setupImage.parentElement;
+           clipNode && clipNode !== setupImage.closest(".setup-study-figure");
+           clipNode = clipNode.parentElement) {
+        var clipStyle = getComputedStyle(clipNode);
+        if (!/(hidden|clip|scroll|auto)/.test(
+              clipStyle.overflowX + " " + clipStyle.overflowY)) continue;
+        var clipRect = clipNode.getBoundingClientRect();
+        if (setupImageRect.left < clipRect.left - 1 ||
+            setupImageRect.right > clipRect.right + 1 ||
+            setupImageRect.top < clipRect.top - 1 ||
+            setupImageRect.bottom > clipRect.bottom + 1) {
+          clippedByAncestor = true;
+          break;
+        }
+      }
+      if (distorted || croppedByFit || clippedByAncestor) {
+        setupImageIssues.push(
+          setupImageSrc + " fit=" + fit +
           " natural/rendered=" + naturalRatio.toFixed(3) + "/" +
-          renderedRatio.toFixed(3) + " object-fit=" +
-          getComputedStyle(setupImage).objectFit
+          renderedRatio.toFixed(3) +
+          " painted/box=" + paintedWidth.toFixed(1) + "x" +
+          paintedHeight.toFixed(1) + "/" + setupImageRect.width.toFixed(1) +
+          "x" + setupImageRect.height.toFixed(1) +
+          " ancestor-clipped=" + clippedByAncestor
         );
       }
     }
+    var setupImageAudit = {
+      total: setupImages.length,
+      loaded: setupImagesLoaded,
+      issues: setupImageIssues.slice(0, 12)
+    };
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
       motionStartsRunning: motionStartsRunning,
@@ -729,7 +812,7 @@ window.addEventListener("load", function () {
       overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
       profile: profileAudit, partners: partnerAudit,
       setupSingleFigure: setupSingleFigureAudit,
-      croppedSetupImages: croppedSetupImages.slice(0, 12)
+      setupImages: setupImageAudit
     })});
   }
 });
@@ -760,6 +843,10 @@ MATRIX = [
      "single-figure layout A must not reserve an empty media column"),
     ("/facilities/thermal-fin-natural-convection-chamber/", 492, "light",
      "single-figure layout A must retain the mobile stack"),
+    ("/facilities/air-cooler-wind-tunnel/", 492, "light",
+     "single-figure layout B must use the full mobile media width"),
+    ("/projects/thermosyphon-working-fluid-filling-ratio/", 492, "light",
+     "single-figure layout C must use the full mobile media width"),
     ("/people/", 492, "light", "stacked people index and narrow footer"),
     ("/publications/", 492, "light", "smallest type at the narrowest width Edge allows"),
     ("/publications/", 1440, "light", "densest small type, the longest run of --fs-xs"),
@@ -1067,26 +1154,50 @@ def main():
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
             setup_single = r.get("setupSingleFigure")
+            mobile_single_routes = {
+                "/facilities/thermal-fin-natural-convection-chamber/",
+                "/facilities/air-cooler-wind-tunnel/",
+                "/projects/thermosyphon-working-fluid-filling-ratio/",
+            }
             expects_setup_single = (
-                r.get("url") == "/facilities/thermal-fin-natural-convection-chamber/"
-                and r.get("w") in (492, 1440)
+                (r.get("url") == "/facilities/thermal-fin-natural-convection-chamber/"
+                 and r.get("w") == 1440)
+                or (r.get("url") in mobile_single_routes and r.get("w") == 492)
             )
             if expects_setup_single and not setup_single:
                 flags.append("single-figure layout audit did not run")
-            elif setup_single and setup_single.get("desktop"):
+            elif setup_single and setup_single.get("desktopSideBySide"):
                 if abs(setup_single.get("actualGap", 0) -
                        setup_single.get("expectedGap", 0)) > 2:
                     flags.append("single-figure desktop gap %.1fpx differs from %.1fpx"
                                  % (setup_single.get("actualGap", 0),
                                     setup_single.get("expectedGap", 0)))
-            elif setup_single and not all((
+            elif setup_single and r.get("w", 9999) <= 991.98 and not all((
                     setup_single.get("mobileStacked"),
                     setup_single.get("mobileCopyFullWidth"),
                     setup_single.get("mobileFigureFullWidth"))):
                 flags.append("single-figure layout does not retain its full-width mobile stack")
-            if r.get("croppedSetupImages"):
-                flags.append("%d setup image(s) do not preserve their source aspect ratio"
-                             % len(r["croppedSetupImages"]))
+            expected_setup_images = {
+                ("/projects/two-phase-closed-loop-thermosyphon/", 1440): 3,
+                ("/facilities/thermal-fin-natural-convection-chamber/", 1440): 1,
+                ("/facilities/thermal-fin-natural-convection-chamber/", 492): 1,
+                ("/facilities/air-cooler-wind-tunnel/", 492): 1,
+                ("/projects/thermosyphon-working-fluid-filling-ratio/", 492): 1,
+            }
+            expected_image_count = expected_setup_images.get((r.get("url"), r.get("w")))
+            setup_images = r.get("setupImages")
+            if expected_image_count is not None:
+                if not setup_images:
+                    flags.append("setup image audit did not run")
+                elif setup_images.get("total") != expected_image_count:
+                    flags.append("setup image count %s differs from expected %s"
+                                 % (setup_images.get("total"), expected_image_count))
+                elif setup_images.get("loaded") != expected_image_count:
+                    flags.append("only %s/%s setup images loaded"
+                                 % (setup_images.get("loaded"), expected_image_count))
+            if setup_images and setup_images.get("issues"):
+                flags.append("%d setup image(s) are distorted, cropped, clipped, or unloaded"
+                             % len(setup_images["issues"]))
             profile = r.get("profile")
             if profile:
                 if not profile.get("layoutStateAbsent"):
@@ -1243,8 +1354,11 @@ def main():
                 print("        setup  actual/expected gap = %.1f/%.1fpx"
                       % (setup_single.get("actualGap", 0),
                          setup_single.get("expectedGap", 0)))
-            for x in r.get("croppedSetupImages", []):
-                print("        crop   " + x)
+            if setup_images and setup_images.get("total"):
+                print("        images loaded/total = %s/%s"
+                      % (setup_images.get("loaded"), setup_images.get("total")))
+                for x in setup_images.get("issues", []):
+                    print("        image  " + x)
             if profile:
                 print("        profile requested=%s state=%s switcher=%s"
                       % (profile.get("requested") or "(none)",
