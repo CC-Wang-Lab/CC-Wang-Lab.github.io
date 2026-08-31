@@ -2292,14 +2292,20 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   sits beside these notes, so there is no empty half to create.
 */
 .setup-notes {
-  /* 58ch, measured, not 72ch guessed. `ch` is the width of a ZERO, and ET
-     Book's zero is 9.39px where its average character is 7.9px, so a 72ch
-     box held 85 to 90 characters a line across the 26 records. 58ch measures
-     66 to 72, which is the measure this is aiming at.
+  /* THE NOTES FILL THE ROW. There is no width cap.
 
-     scripts/shoot.py --measure reports `cpl` per block, so this number can be
-     checked rather than argued about. */
-  max-width: 58ch;
+     A capped block left the right half of the top row empty above a
+     full-width row of pictures, which reads as a missing cell rather than as
+     a margin. Site owner's call, 2026-08-31: merge it.
+
+     The measure is held by COLUMNS instead, so the words still break at a
+     readable line and the row is still full. `column-width` is a target, not
+     a count: one short paragraph stays in one column, and a long block
+     splits into two. */
+  column-width: 34rem;
+  /* The same gutter as the gap between two pictures, so the text columns
+     above a row sit on the same rhythm as the row under them. */
+  column-gap: var(--fig-gap);
   min-width: 0;
   font-size: var(--fs-md);
   line-height: var(--lh-normal);
@@ -2321,6 +2327,17 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    not fit on a line by ITSELF, which a 40-character URL always does. */
 .setup-notes a { overflow-wrap: anywhere; }
 .setup-notes p:last-child { margin-bottom: 0; }
+/* A heading may not be left at the foot of a column with its list in the
+   next one, and a list item may not be cut across the gutter.
+
+   A PARAGRAPH IS NOT ON THIS LIST, and that is the whole point. The first
+   version put `p` here, so the one paragraph on
+   gaming-laptop-hybrid-vapor-chamber could not break: it stayed whole in
+   column one and left column two empty, which is the fault this change was
+   made to remove, reproduced exactly. */
+.setup-notes :is(h2, h3, li) { break-inside: avoid; }
+.setup-notes :is(h2, h3) { break-after: avoid; }
+.setup-notes > section:first-child > :is(h2, h3):first-child { margin-top: 0; }
 
 /*
   Notes beside one photograph, for a record whose words would otherwise sit

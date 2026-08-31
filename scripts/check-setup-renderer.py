@@ -260,26 +260,29 @@ def renderer_contract_failures() -> list[str]:
     def rule(selector):
         return re.sub(r"/\*.*?\*/", "", css_rule(css, selector), flags=re.S)
 
-    # 1. The notes carry a MEASURE, and it is a measure, not a column.
+    # 1. The notes FILL THE ROW, and the measure is held by columns.
     #
-    # This assertion has now been reversed twice, so the history is worth
-    # keeping. It first demanded a cap, then forbade one, and now demands one
-    # again, and all three were right at the time:
+    # This assertion has been rewritten three times, so the history is worth
+    # keeping. Each version was right about its own layout:
     #
     #   - under layouts a and c the notes sat in a grid column already
-    #     narrower than a measure, so a cap could never bind;
-    #   - under layout b the notes WERE the container, and the cap left the
+    #     narrower than a measure, so a cap could never bind, and the check
+    #     forbade one;
+    #   - under layout b the notes WERE the container, and a cap left the
     #     right half of the row empty, measured at 700px inside 1320px;
-    #   - under rows nothing sits beside the notes, so there is no half to
-    #     leave empty, and without a cap the line runs to 160 characters.
+    #   - under rows a cap left the top of the page half empty above a
+    #     full-width row of pictures, which reads as a missing cell.
     #
-    # 58ch, not 72ch, and not a round number: `ch` is the width of a zero, and
-    # ET Book's zero is 9.39px where its average character is 7.9px. 72ch
-    # measured 85 to 90 characters a line across the 26 records.
+    # So the block fills the row and `column-width` holds the line length
+    # instead. A max-width would put the empty half back, and a bare
+    # full-width block runs to about 160 characters a line.
     notes = rule(".setup-notes")
-    if not re.search(r"max-width\s*:\s*\d+ch", notes):
-        failures.append("the setup notes must carry a measure in ch; without one "
-                        "the line runs to about 160 characters at 1440")
+    if re.search(r"max-width\s*:\s*(?!none)", notes):
+        failures.append("the setup notes must fill their row; a max-width leaves "
+                        "the page half empty above a full-width row of pictures")
+    if not re.search(r"column-width\s*:\s*[\d.]+rem", notes):
+        failures.append("the setup notes need a column-width to hold the measure; "
+                        "without one the line runs to about 160 characters at 1440")
     if "overflow-wrap: break-word;" not in notes:
         failures.append("the setup notes must break a long word; "
                         "TUNNEL+Environmental pushed the page 82px wider than a "

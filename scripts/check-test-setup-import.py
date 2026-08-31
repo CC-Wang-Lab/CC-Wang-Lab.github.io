@@ -251,10 +251,26 @@ def main() -> int:
                 for field in ("heading", "body", "items"):
                     require(section.get(f"{field}_en") == section.get(f"{field}_zh"),
                             f"{kind} {record_id}: section {field}_en and {field}_zh must match")
+            # A caption is either in BOTH languages or in neither.
+            #
+            # This used to demand the two strings be identical, because every
+            # caption was lifted verbatim off an English slide and copying it
+            # into both fields was the only honest thing to do. Captions
+            # written for the site are different: they are ours, so they get
+            # translated, and the two strings are then supposed to differ.
+            #
+            # What must never happen is one language having a caption and the
+            # other not, which is the drift this whole data design exists to
+            # prevent. That is what is checked now.
             if isinstance(figures, list):
                 for figure in figures:
-                    require(figure.get("caption_en") == figure.get("caption_zh"),
-                            f"{kind} {record_id}: figure captions must match")
+                    if not isinstance(figure, dict):
+                        continue
+                    english = (figure.get("caption_en") or "").strip()
+                    chinese = (figure.get("caption_zh") or "").strip()
+                    require(bool(english) == bool(chinese),
+                            f"{kind} {record_id}: figure {figure.get('id')!r} has a caption "
+                            f"in {'English' if english else 'Chinese'} only")
 
             # w/h are a COPY of what is on disk. They size a justified row and
             # they go on the <img> so the page does not reflow as pictures

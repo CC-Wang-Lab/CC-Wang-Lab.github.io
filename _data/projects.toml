@@ -35,8 +35,8 @@ kind       = "photo"
 image      = "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/upper-experimental-system.jpg"
 w          = 1110
 h          = 972
-caption_en = ""
-caption_zh = ""
+caption_en = "Test section: the heating block and specimen, with the fins and an air nozzle on each side"
+caption_zh = "測試段：加熱塊與試片，兩側各有鰭片與送風噴嘴"
 
 [[project.figure]]
 id         = "lower-experimental-system"
@@ -44,8 +44,8 @@ kind       = "photo"
 image      = "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/lower-experimental-system.jpg"
 w          = 1110
 h          = 834
-caption_en = ""
-caption_zh = ""
+caption_en = "The same assembly from above, with the heat pipes running out to each side"
+caption_zh = "同一組件的俯視圖，熱管由中央向兩側延伸"
 
 [[project]]
 id       = "two-phase-closed-loop-thermosyphon"
