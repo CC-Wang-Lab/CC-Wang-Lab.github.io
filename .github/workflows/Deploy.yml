@@ -67,6 +67,14 @@ jobs:
           fi
           echo "No unresolved template calls."
 
+      # The stylesheet the site SERVES, not the one in _css/. optimize() above
+      # minifies it, and on 2026-09-01 the minifier turned a valid figure cap
+      # into an invalid one by removing a space, so every figure row on the
+      # live site was uncapped while the local preview was correct. Every other
+      # gate reads the source and none of them could see it.
+      - name: Check the built stylesheet
+        run: python scripts/check-built-css.py
+
       - name: Check public content policy
         run: python scripts/check-public-site.py
 

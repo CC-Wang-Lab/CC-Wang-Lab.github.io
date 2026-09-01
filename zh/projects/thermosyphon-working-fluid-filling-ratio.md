@@ -14,11 +14,11 @@ lead = "This ongoing study investigates the effects of working fluid and filling
 \begin{split}{test-rig}
 This ongoing study investigates the effects of working fluid and filling ratio on the cooling performance of a two-phase thermosyphon heat sink. Heating power, evaporator and condenser temperature distributions, thermal resistance, and parameters related to high-power chip cooling in data centers are evaluated to determine the optimal filling ratio for each fluid and establish recommended filling-ratio ranges.
 
-## Working fluids:
+### Working fluids:
 
 R-1233zd(E), R-601, and acetone
 
-## Equipment:
+### Equipment:
 
 Thermal test vehicle, six DC power supplies, data logger, T-type thermocouples, and pressure gauge
 \end{split}

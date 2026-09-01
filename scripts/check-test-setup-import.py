@@ -90,7 +90,12 @@ EXPECTED = {
         "multi-agent-server-cooling-control": ([21, 22], "ai-thermal", 6),
         "pulsating-jet-impingement": ([23], "electronics-cooling", 2),
         "expansion-tank-pre-charge-pressure": ([24], "hvacr", 4),
-        "embedded-microfluidic-interlayer-cooling": ([25], "electronics-cooling", 4),
+        # 4 -> 3 on 2026-09-01. The import DID bring four figures off slide 25
+        # and this audit proved it. working-fluid-container was taken out of
+        # the record afterwards, deliberately, because the page would not show
+        # it; the picture is still on disk. This number tracks the record, not
+        # the import, so it moves when the record does.
+        "embedded-microfluidic-interlayer-cooling": ([25], "electronics-cooling", 3),
         "supercritical-co2-chiller": ([26], "hvacr", 2),
         "thermosyphon-working-fluid-filling-ratio": ([27], "two-phase", 1),
     },

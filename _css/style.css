@@ -2393,7 +2393,19 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   gap: var(--fig-gap);
   align-items: flex-start;
   width: 100%;
-  max-width: calc(var(--h-cap) * var(--sum-ar) + (var(--n) - 1) * var(--fig-gap));
+  /* `var(--gaps)` after the `+`, NEVER a parenthesis, and that is not style.
+
+     This read `+ (var(--n) - 1) * var(--fig-gap)` and was valid CSS. The
+     minifier that runs in `optimize()` strips whitespace before an opening
+     parenthesis, so the deployed file said `+(var(--n) - 1)`. In calc() the
+     `+` and `-` operators must have whitespace on both sides, so the whole
+     expression was invalid, `max-width` fell back to `none`, and every figure
+     row on the live site was uncapped while the local preview was correct.
+
+     The deployed file proves what is safe: `+ var(` and `- var(` both survive
+     it, `+ (` does not. `--gaps` is the row's gap count, emitted by
+     hfun_figrow, which knew it all along. */
+  max-width: calc(var(--h-cap) * var(--sum-ar) + var(--gaps) * var(--fig-gap));
   margin-inline: auto;
   /* CENTRE WHAT DOES NOT FILL.
 

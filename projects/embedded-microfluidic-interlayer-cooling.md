@@ -30,7 +30,7 @@ The objective of this study is to design and develop a novel 3D-IC microchannel 
 
 ### Working Fluid: Water
 
-{{figrow working-fluid-container}}
+
 
 {{figrow equipment-group infrared-camera}}
 

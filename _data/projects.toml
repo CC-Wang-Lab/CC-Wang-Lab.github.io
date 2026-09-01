@@ -256,7 +256,7 @@ caption_zh = ""
 [[project]]
 id       = "immersion-cooling-microchannel-lid"
 weight   = 8
-image    = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
+image    = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.png"
 # Just below the red annotation line, so the Inlet arrow is whole.
 card_focus = "50% 41%"
 area     = "electronics-cooling"
@@ -287,9 +287,9 @@ body_zh  = "This technology introduces microchannels within the CPU package's IH
 [[project.figure]]
 id         = "annotated-apparatus"
 kind       = "annotated-photo"
-image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
-w          = 1080
-h          = 1600
+image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.png"
+w          = 433
+h          = 602
 caption_en = ""
 caption_zh = ""
 
@@ -668,14 +668,16 @@ h          = 612
 caption_en = ""
 caption_zh = ""
 
-[[project.figure]]
-id         = "working-fluid-container"
-kind       = "photo"
-image      = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/working-fluid-container.jpg"
-w          = 246
-h          = 462
-caption_en = ""
-caption_zh = ""
+# working-fluid-container WAS HERE AND WAS TAKEN OUT, 2026-09-01.
+#
+# 246x462, still on disk at
+# /assets/img/test-setups/embedded-microfluidic-interlayer-cooling/working-fluid-container.jpg
+#
+# It was placed under the page's own "Working Fluid: Water" heading and removed
+# again the same afternoon. A record that lists a figure promises to show it,
+# and check-setup-pages holds it to that, so a picture nobody wants on the page
+# cannot stay in the record. Put the seven lines back and add
+# {{figrow working-fluid-container}} to BOTH language pages to restore it.
 
 [[project.figure]]
 id         = "test-setup"

@@ -1243,7 +1243,7 @@ function render_fig_row(record::AbstractDict, ids::Vector{String})::String
     nat_h = minimum(Int(f["h"]) for f in figures)
     body = join([render_fig(f) for f in figures], "\n")
     return """
-<div class="fig-row fig-row--n$(n)" style="--sum-ar:$(round(sum_ar, digits=6));--nat-h:$(nat_h)px;--n:$(n)">
+<div class="fig-row fig-row--n$(n)" style="--sum-ar:$(round(sum_ar, digits=6));--nat-h:$(nat_h)px;--gaps:$(n - 1)">
 $(body)
 </div>"""
 end
