@@ -63,7 +63,7 @@ EXPECTED = {
         "falling-film-cooling-system": ([2], "two-phase", 4),
         "thermal-fin-natural-convection-chamber": ([7], "heat-exchangers", 1),
         "air-cooler-wind-tunnel": ([8], "electronics-cooling", 1),
-        "data-center-air-cooling-facility": ([9, 10], "data-center", 7),
+        "data-center-air-cooling-facility": ([9, 10], "data-center", 9),
         "two-phase-cold-plate-test-platform": ([11], "two-phase", 1),
         "flooded-evaporator-test-rig": ([12], "two-phase", 2),
         "boiler-surface-test-rig": ([13], "two-phase", 6),
@@ -78,11 +78,16 @@ EXPECTED = {
     "project": {
         "gaming-laptop-hybrid-vapor-chamber": ([3], "electronics-cooling", 2),
         "two-phase-closed-loop-thermosyphon": ([4], "two-phase", 3),
-        "chip-package-lid-thermal-spreading": ([5, 6], "electronics-cooling", 7),
+        # Slides 5 and 6 are two different lids and were imported as one
+        # record. Split on 2026-09-01 at the site owner's request; every
+        # string stayed with its own slide. The id of the first is kept so
+        # nothing pointing at that URL breaks.
+        "chip-package-lid-thermal-spreading": ([5], "electronics-cooling", 4),
+        "chip-package-lid-diamond-copper": ([6], "electronics-cooling", 3),
         "heat-pipes-freezing-conditions": ([14], "two-phase", 2),
-        "immersion-cooling-microchannel-lid": ([19], "electronics-cooling", 3),
+        "immersion-cooling-microchannel-lid": ([19], "electronics-cooling", 2),
         "oil-immersion-heat-transfer-enhancement": ([20], "electronics-cooling", 5),
-        "multi-agent-server-cooling-control": ([21, 22], "ai-thermal", 5),
+        "multi-agent-server-cooling-control": ([21, 22], "ai-thermal", 6),
         "pulsating-jet-impingement": ([23], "electronics-cooling", 2),
         "expansion-tank-pre-charge-pressure": ([24], "hvacr", 4),
         "embedded-microfluidic-interlayer-cooling": ([25], "electronics-cooling", 4),
@@ -92,7 +97,7 @@ EXPECTED = {
 }
 
 PLURAL = {"facility": "facilities", "project": "projects"}
-EXPECTED_COUNTS = {"facility": 14, "project": 12}
+EXPECTED_COUNTS = {"facility": 14, "project": 13}
 EXPECTED_LAYOUTS = {
     "facility": {"a": 5, "b": 4, "c": 5},
     "project": {"a": 4, "b": 4, "c": 4},

@@ -1,15 +1,24 @@
 +++
-title = "2U Server Experimental Platform and Multi-Agent Control"
 project = "multi-agent-server-cooling-control"
 lang = "zh"
-blocks = [
-  "split(sec:1 sec:2):server-configuration single-fan-observation-range",
-  "row:load-profile",
-  "row:transient-computational-workflow",
-  "row:energy-saving-equation",
-]
+title = "2U Server Experimental Platform and Multi-Agent Control"
+lead = "2U Server Experimental Platform With Multi-Agent Control"
 +++
 
 ~~~
-{{project_setup_page}}
+{{setuphead}}
 ~~~
+
+\begin{page}
+
+
+
+{{figrow server-configuration single-fan-observation-range}}
+{{figrow server-airflow-schematic}}
+
+{{figrow transient-computational-workflow load-profile}}
+
+{{figrow energy-saving-equation}}
+
+
+\end{page}

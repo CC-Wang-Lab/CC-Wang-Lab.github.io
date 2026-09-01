@@ -524,6 +524,46 @@ is worse. Same call as `fingerprint()` makes.
 """
 const _ART = Dict{String,String}()
 
+"""
+`card_focus` on a record, as an inline custom property for the card's image box.
+
+A card crops its picture to 16/9. Which part survives is a judgement about the
+picture, not about the layout, so it belongs to the record. Absent, the card
+centres exactly as it always did.
+
+Accepts any CSS object-position value: a keyword like `top`, a pair like
+`50% 30%`. Validated only for the characters CSS allows there, so a typo cannot
+close the attribute and inject markup.
+"""
+function card_focus_style(record)::String
+    v = get(record, "card_focus", nothing)
+    v === nothing && return ""
+    s = strip(String(v))
+    isempty(s) && return ""
+    occursin(r"^[a-z0-9%.\s-]+$"i, s) ||
+        error("card_focus for '$(record["id"])' is not a CSS object-position: $(repr(s))")
+    return " style=\"--card-focus:$(s)\""
+end
+
+"""
+The picture a CARD should show for this record.
+
+`card_focus` chooses which band of the source survives the 16/9 crop, and needs
+no second file. `card_crop` is for the window it cannot reach, one narrower than
+the source, and `scripts/make-card-previews.py` cuts that into `<stem>.card.jpg`.
+
+Falls back to the source, so a record whose preview has not been cut yet shows
+the picture rather than a broken image.
+"""
+function card_image(record)::String
+    img = String(get(record, "image", "/assets/img/projects/placeholder.svg"))
+    haskey(record, "card_crop") || return img
+    stem, ext = splitext(img)
+    isempty(ext) && return img
+    cut = stem * ".card.jpg"
+    isfile(joinpath(@__DIR__, "_assets", cut[9:end])) ? cut : img
+end
+
 function card_media_art(path)
     url = String(path)
     if endswith(lowercase(url), ".svg") && startswith(url, "/assets/")
@@ -772,9 +812,24 @@ end
 function partner_item(o)
     logo = get(o, "logo", "")
     name = esc(pick(o, "name"))
-    body = isempty(logo) ?
-        """<span class="pt-name">$(name)</span>""" :
-        """<img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy" draggable="false">"""
+    if isempty(logo)
+        body = """<span class="pt-name">$(name)</span>"""
+    else
+        # `w`/`h` are THIS logo's display size in CSS pixels, written by
+        # scripts/prepare-partner-logos.py from the mark's own aspect ratio and
+        # ink coverage. One `max-height` cannot serve 70 marks whose aspect runs
+        # from 0.77:1 to 10:1; the wordmarks come out as slivers. The custom
+        # properties are inline because a stylesheet cannot know a per-file
+        # number, and they beat the `width`/`height` attributes, which are here
+        # only to reserve the space before the file arrives.
+        w = get(o, "w", 0)
+        h = get(o, "h", 0)
+        size = (w > 0 && h > 0) ?
+            string(" width=\"", w, "\" height=\"", h,
+                   "\" style=\"--pt-w:", round(w / 16, digits = 4),
+                   "rem;--pt-h:", round(h / 16, digits = 4), "rem\"") : ""
+        body = """<img class="pt-logo" src="$(esc(logo))" alt="$(name)"$(size) loading="lazy" draggable="false">"""
+    end
     return """<li class="pt-item">$(body)</li>"""
 end
 
@@ -874,6 +929,71 @@ end
 # ---------------------------------------------------------------------------
 
 """
+The title and lead for one record's CARD, read from that record's own page.
+
+    card_words("facilities", "air-cooler-wind-tunnel")
+
+The words live in the page now, so `_data/` is no longer the source for these
+two. English cards read `facilities/<id>.md`; Chinese cards read
+`zh/facilities/<id>.md`, so a card always shows the language of the page it
+is on.
+
+WHY THIS READS THE FILE AND NOT `pagevar`. **`pagevar` silently gives up after
+six pages.** Franklin carries a recursion guard that counts the wrong thing:
+
+    md.jl:38     if pagevar; PAGEVAR_DEPTH[] += 1
+                 elseif !isrecursive && !isinternal; PAGEVAR_DEPTH[] = 0
+    vars.jl:253  PAGEVAR_DEPTH[] > 5 && return default
+
+It is incremented and never decremented, and it is reset only when a NORMAL
+page build begins. So it counts how many not-yet-processed pages one page has
+pulled in, not how deep the nesting goes. It exists to stop a `pagevar` cycle
+overflowing the stack (Franklin issue #891) and it does that, but a card index
+reading 26 pages gets six answers and twenty `nothing`s, with no warning.
+
+Two wrong explanations were written down before this one, so they are recorded
+here to stop a third. It is NOT build order, and it is NOT custom variables
+versus Franklin's own: `title` is one of Franklin's and dies at the seventh
+page exactly like `lead`. Declaring a global default does not help either.
+
+Reading the source file sidesteps the guard entirely, and it has no ordering
+and no counter in it, so it cannot grow a cap later. The front matter here is
+written by `scripts/`, so the shape is narrow: `key = "value"` on one line,
+with `\\"` for a quote inside.
+
+WHY THIS ERRORS RATHER THAN FALLING BACK. A typo in an id would otherwise
+render a card with no title and no summary and say nothing, which is the silent
+no-op this repo keeps paying for. Falling back to `_data/` would be worse: the
+card would look right while the page it links to was missing, and nobody would
+find out until a reader clicked it.
+"""
+function card_words(folder::AbstractString, id::AbstractString)
+    rel = (lang() == "zh" ? "zh/" : "") * String(folder) * "/" * String(id) * ".md"
+    path = joinpath(@__DIR__, rel)
+    isfile(path) ||
+        error("card for '$(id)': there is no page at $(rel). The card would be blank.")
+    text = read(path, String)
+    parts = split(text, "+++")
+    length(parts) >= 3 ||
+        error("card for '$(id)': $(rel) has no `+++` front matter.")
+    front = parts[2]
+    function field(key)
+        m = match(Regex("^\\s*" * key * "\\s*=\\s*\"((?:[^\"\\\\]|\\\\.)*)\"\\s*\$", "m"), front)
+        m === nothing && return nothing
+        return replace(String(m.captures[1]), "\\\"" => "\"", "\\\\" => "\\")
+    end
+    title = field("title")
+    lead = field("lead")
+    title === nothing &&
+        error("card for '$(id)': $(rel) has no `title` in its front matter. " *
+              "The card would be blank.")
+    lead === nothing &&
+        error("card for '$(id)': $(rel) has no `lead` in its front matter. " *
+              "The card would have no summary.")
+    return title, lead
+end
+
+"""
 `{{facilities}}` — the equipment grid at /facilities/.
 
 `area` is optional and is an id from research.toml, so the badge is bilingual
@@ -888,20 +1008,22 @@ function hfun_facilities()
         href = prefix() * "/facilities/" * String(f["id"]) * "/"
         badge = haskey(f, "area") ? """
             <span class="card-badge">$(esc(pick(area_by_id(String(f["area"]), "facilities.toml"), "title")))</span>""" : ""
-        img = esc(get(f, "image", "/assets/img/projects/placeholder.svg"))
+        img = esc(card_image(f))
         image_fit = lowercase(String(get(f, "image_fit", "cover")))
         image_fit in ("cover", "contain") ||
             error("facilities.toml: image_fit for '$(f["id"])' must be cover or contain")
         image_class = image_fit == "contain" ? " card-media-img--contain" : ""
+        focus = card_focus_style(f)
+        card_title, card_lead = card_words("facilities", String(f["id"]))
         push!(cards, """
       <div class="col-md-6 col-lg-4">
         <a class="card-media" id="$(esc(f["id"]))" href="$(esc(href))">
-          <span class="card-media-img$(image_class)">
+          <span class="card-media-img$(image_class)"$(focus)>
             <img src="$(img)" alt="" loading="lazy">
           </span>
           <span class="card-media-body">$(badge)
-            <span class="card-title">$(esc(pick(f, "title")))</span>
-            <span class="card-scope">$(esc(pick(f, "lead")))</span>
+            <span class="card-title">$(esc(card_title))</span>
+            <span class="card-scope">$(esc(card_lead))</span>
           </span>
         </a>
       </div>""")
@@ -1157,11 +1279,18 @@ function setup_header_html(record::AbstractDict, kind::AbstractString)::String
     back_html = kind == "facility" ?
         "&larr; " * esc(ui("nav", "facilities")) : esc(ui("projects", "back"))
     area = area_by_id(String(record["area"]), src)
+    # THE PAGE'S OWN TITLE, not the record's. The card on /facilities/ reads the
+    # page, so the heading has to as well, or one string has two sources and
+    # they can drift without anything noticing. Every page carries `title` in
+    # its front matter, on both mechanisms, so this is safe for either.
+    page_title = locvar(:title)
+    page_title === nothing &&
+        error("record '$(record["id"])': its page has no `title` in the front matter")
     return """
 <header class="page-hd setup-study-hd"><div class="container">
   <p class="project-crumb"><a href="$(prefix())$(back_path)">$(back_html)</a></p>
   <span class="card-badge">$(esc(pick(area, "title")))</span>
-  <h1>$(esc(pick(record, "title")))</h1>
+  <h1>$(esc(String(page_title)))</h1>
 </div></header>"""
 end
 
@@ -1325,6 +1454,112 @@ $(body)
 </div></div>"""
 end
 
+
+# ---------------------------------------------------------------------------
+#  THE PAGE OWNS ITS WORDS AND ITS LAYOUT
+#
+#  A detail page used to be a data record plus a `blocks` list, and utils.jl
+#  assembled it. It is now a Markdown page that a person writes, using a few
+#  named markers. The words live in the page. `_data/` keeps only what a
+#  SCRIPT writes: each figure's id, kind, image, w and h, and the solved
+#  split_en / split_zh. Nobody has ever hand-typed a `w` or a split.
+#
+#  THE MARKERS, defined as environments in config.md so they are available to
+#  every page with no import:
+#
+#      \begin{page} ... \end{page}          the page shell
+#      \begin{level}{a b} ... \end{level}   words beside pictures, ending level
+#      \begin{split}{a b} ... \end{split}   words beside pictures, 5/7
+#      \begin{words} ... \end{words}        a prose block on its own
+#      {{figrow a b c}}                     one justified row of pictures
+#
+#  WHY ENVIRONMENTS AND NOT AN hfun. Measured, three ways, 2026-08-31:
+#
+#    - a bare `{{marker}}` that opens a <div> is wrapped in a <p> by Franklin,
+#      so the div lands inside a paragraph and the </p> closes before it;
+#    - the same inside `~~~ ~~~` swallows the whole block into one <p> and
+#      stray </p> tags appear around every boundary;
+#    - `@@name ... @@` is the only form that nests correctly and still runs
+#      the content through Markdown, so bold, headings and lists all work.
+#
+#  `@@` is therefore the mechanism, and an environment is what gives it a
+#  NAME at both ends. `people/maysam-gholampour.md` is the warning: it ends on
+#  four bare `@@` five levels deep and nobody can tell which closes what.
+#
+#  THE VOCABULARY IS A FLOOR, NOT A CEILING. A page may ignore every marker
+#  above and write its own `@@` blocks and its own prose. Two or three shapes
+#  cover the common cases; they are not a list of what is allowed. The last
+#  design that WAS a closed list, `layout = "a" | "b" | "c"`, put 25 of 26
+#  records in the wrong grid, because no fixed shape can tell four micrographs
+#  of one comparison set from a rack photograph beside a dot grid.
+# ---------------------------------------------------------------------------
+
+"""The record this page is about, from `facility` or `project` in its front matter."""
+function current_record()
+    id = locvar(:facility)
+    if id !== nothing
+        return facility_by_id(String(id)), "facility"
+    end
+    id = locvar(:project)
+    if id !== nothing
+        hit = filter(p -> p["id"] == String(id), projects())
+        isempty(hit) && error("no project with id '$(id)' in projects.toml")
+        return first(hit), "project"
+    end
+    error("this page needs `facility = \"<id>\"` or `project = \"<id>\"` in its front matter")
+end
+
+# The LCP picture. The first row on a page carries the largest image on it, and
+# every <img> this site emits is lazy, so a lazy first picture is half a second
+# of empty box. The old renderer swapped the first `loading="lazy"` in the whole
+# assembled page; here the rows arrive one hfun call at a time, so the count is
+# kept per page. `fd_rpath` changes when the build moves to the next file, which
+# is what resets it. A plain counter would leak across pages.
+const FIGROW_SEEN = Ref{Tuple{String,Int}}(("", 0))
+
+function figrow_index()::Int
+    here = string(something(locvar(:fd_rpath), ""))
+    path, n = FIGROW_SEEN[]
+    n = (path == here) ? n + 1 : 1
+    FIGROW_SEEN[] = (here, n)
+    return n
+end
+
+"""
+`{{figrow a b c}}` — one justified row of this record's figures.
+
+The ids are the record's own figure ids. An id the record has not got stops
+the build, which is the point: an unknown `{{name}}` would only warn, but a
+known name with a wrong argument must not ship a page with a picture missing.
+"""
+function hfun_figrow(ids::Vector{String})::String
+    record, _ = current_record()
+    isempty(ids) && error("record '$(record["id"])': {{figrow}} needs at least one figure id")
+    html = render_fig_row(record, ids)
+    return figrow_index() == 1 ?
+        replace(html, "loading=\"lazy\"" => "loading=\"eager\" fetchpriority=\"high\"", count = 1) :
+        html
+end
+
+"""
+`{{setuphead}}` — the crumb, the area badge and the title.
+
+It also carries the record's solved column widths, as a page-scoped `<style>`
+rather than a `style=` attribute, because the element that needs them is
+written by `@@` in the page and `@@` cannot carry an attribute. A custom
+property inherits, so setting it here reaches the block wherever the page puts
+it. One solved split per page is assumed and asserted.
+"""
+function hfun_setuphead()::String
+    record, kind = current_record()
+    head = setup_header_html(record, kind)
+    solved = split_ratio(record)
+    solved === nothing && return head
+    words_px, pics_px = solved
+    return head * """
+<style>.setup-study-page .setup-split--solved{--sp-words:$(fmt_num(words_px))px;--sp-pics:$(fmt_num(pics_px))px}</style>"""
+end
+
 """`{{facility_page}}` — one facility, composed by its own page."""
 function hfun_facility_page()::String
     id = locvar(:facility)
@@ -1421,26 +1656,53 @@ One card. `href` is resolved for the current language.
 `data-area` is what the filter bar on the Projects page reads. It costs nothing
 on the home page, where the same card is reused and nothing filters.
 
-The link opens in a new tab, by request: a visitor reading the grid is browsing,
-and a project write-up is a side trip, not a destination. Remove `target` and
-`rel` together if that is ever reversed.
+THE LINK OPENS IN THE SAME TAB, and it used to open in a new one. Reversed
+2026-09-01, on the site owner's report that "backspace does not return to
+previous page".
+
+*The old reason, kept because it was a real one: a visitor reading the grid is
+browsing, and a project write-up is a side trip rather than a destination.*
+
+*Why it lost: a new tab has no history, so Back is dead on every project page.
+Not only the backspace key, which Chromium dropped in 2016 and is not ours to
+fix, but the Back BUTTON, greyed out. Facility cards have never done this, so
+the site behaved two different ways depending on which grid you arrived from,
+and that inconsistency is most of what made it read as broken.*
+
+**Do not add `target="_blank"` back without reading the above.** If it ever
+does return, `rel="noopener"` returns with it: that attribute exists only to
+make a new tab safe and means nothing on its own.
+
+`words` exists for the renderer gate, which builds a fixture record that is not
+in `_data/` and therefore has no page to read. Production never passes it: a
+real record with no page must stop the build, not quietly borrow a title from
+somewhere else.
 """
-function project_card(p)
+function project_card(p; words = nothing)
     person = project_person(p)
     area   = area_by_id(p["area"])
     href   = prefix() * "/projects/" * p["id"] * "/"
     byline = person === nothing ? "" :
         """<span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>"""
+    card_title, card_lead = words === nothing ?
+        card_words("projects", String(p["id"])) : words
+    # Same key, same values and same class as hfun_facilities. A card crops to
+    # 16/9, which is right for a photograph and wrong for a technical drawing.
+    image_fit = lowercase(String(get(p, "image_fit", "cover")))
+    image_fit in ("cover", "contain") ||
+        error("projects.toml: image_fit for '$(p["id"])' must be cover or contain")
+    image_class = image_fit == "contain" ? " card-media-img--contain" : ""
+    focus = card_focus_style(p)
     return """
       <div class="col-md-6 col-lg-4 pg-item" data-area="$(esc(p["area"]))">
-        <a class="card-media" href="$(esc(href))" target="_blank" rel="noopener">
-          <span class="card-media-img">
-            $(card_media_art(p["image"]))
+        <a class="card-media" href="$(esc(href))">
+          <span class="card-media-img$(image_class)"$(focus)>
+            $(card_media_art(card_image(p)))
           </span>
           <span class="card-media-body">
             <span class="card-badge">$(esc(pick(area, "title")))</span>
-            <span class="card-title">$(esc(pick(p, "title")))</span>
-            <span class="card-scope">$(esc(pick(p, "lead")))</span>
+            <span class="card-title">$(esc(card_title))</span>
+            <span class="card-scope">$(esc(card_lead))</span>
             $(byline)
           </span>
         </a>

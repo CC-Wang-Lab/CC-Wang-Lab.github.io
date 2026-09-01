@@ -88,7 +88,109 @@ def main() -> int:
             en = english.read_text(encoding="utf-8").replace("\r\n", "\n")
             zh = chinese.read_text(encoding="utf-8").replace("\r\n", "\n")
 
-            # 1. parity, line by line, everything but `lang`
+            # WHICH MECHANISM IS THIS PAGE ON.
+            #
+            # Both are alive while the 26 records move across. A page that owns
+            # its words says so with `\begin{page}`; a page still assembled by
+            # utils.jl carries a `blocks` list. The two get different checks,
+            # because the parity gate below is TRUE of one and FALSE BY DESIGN
+            # of the other.
+            owns_words = "\\begin{page}" in en
+
+            # Whitespace-tolerant on purpose. The first version grepped for
+            # exactly `lang = "en"`, and a generated page that aligned its
+            # front-matter equals signs failed a check that had nothing to do
+            # with alignment. A gate should not care how a file is spaced.
+            if (not re.search(r'^\s*lang\s*=\s*"en"', en, re.M)
+                    or not re.search(r'^\s*lang\s*=\s*"zh"', zh, re.M)):
+                failures.append(f"{rid}: each page must declare its own lang")
+
+            # EVERY \begin{X} NEEDS ITS \end{X}, on both mechanisms.
+            #
+            # An unbalanced file fails in one of two ways and NEITHER is
+            # visible. A stray \begin kills the build, which at least says so.
+            # A stray \end silently drops the wrapper: the page renders, the
+            # words are all there, and they are no longer inside a
+            # `.setup-notes` div, so they lose their measure, their
+            # justification and every type rule the block carries.
+            #
+            # Found on chip-package-lid-diamond-copper, 2026-09-01, where the
+            # English page had two \end{words} and no \begin{words} while its
+            # Chinese twin was correct. check-setup-pages, check-setup-content
+            # and check-setup-renderer all passed it. Nothing counted the
+            # delimiters, so nothing could.
+            for path, text in ((english, en), (chinese, zh)):
+                for env in ("page", "words", "split", "level"):
+                    opens = len(re.findall(r"\\begin\{" + env + r"\}", text))
+                    closes = len(re.findall(r"\\end\{" + env + r"\}", text))
+                    if opens != closes:
+                        failures.append(
+                            f"{rid}: {path.name} has {opens} \\begin{{{env}}} and "
+                            f"{closes} \\end{{{env}}}; they must match")
+
+            if owns_words:
+                # THE FOUR CHECKS THAT REPLACE THE PARITY GATE.
+                #
+                # The old gate said the two language files differ by exactly one
+                # line. Once the words live in the page that is false on purpose,
+                # so it is gone. What replaces it is weaker and everyone should
+                # know it: nothing here can tell you the Chinese is WRONG, only
+                # that it exists and that it shows the same pictures.
+                for path, text, want in ((english, en, "en"), (chinese, zh, "zh")):
+                    front = text.split("+++")[1]
+                    for key in ("title", "lead"):
+                        if not re.search(rf'^\s*{key}\s*=\s*"', front, re.M):
+                            failures.append(
+                                f"{rid}: {path.name} has no `{key}` in its front "
+                                f"matter, and the cards read it")
+                    body = text.split("+++", 2)[-1]
+                    if not re.sub(r"[\\{}~@\s]|begin|end|page|words|level|split|"
+                                  r"figrow|setuphead", "", body):
+                        failures.append(
+                            f"{rid}: {path.name} has no prose at all; an empty "
+                            f"translation is worse than an English one")
+                # The pictures must not diverge between the languages. Only the
+                # words may.
+                en_figs = re.findall(r"\{\{figrow ([^}]*)\}\}|\\begin\{(?:level|split)\}\{([^}]*)\}", en)
+                zh_figs = re.findall(r"\{\{figrow ([^}]*)\}\}|\\begin\{(?:level|split)\}\{([^}]*)\}", zh)
+                if en_figs != zh_figs:
+                    failures.append(
+                        f"{rid}: the two languages name different figures, or name "
+                        f"them in a different order")
+                # FULL PARITY, for as long as no real Chinese exists.
+                #
+                # This architecture lets the two languages differ, because one
+                # day the Chinese pages will carry Chinese. Today not one of
+                # them holds a character its English twin does not, so any
+                # difference is a file somebody forgot, not a translation.
+                # supercritical-co2-chiller drifted exactly that way.
+                en_lines = [l for l in en.split(chr(10)) if not l.startswith("lang ")]
+                zh_lines = [l for l in zh.split(chr(10)) if not l.startswith("lang ")]
+                if en_lines != zh_lines:
+                    where = next((i for i, (a, b) in enumerate(zip(en_lines, zh_lines))
+                                  if a != b), min(len(en_lines), len(zh_lines)))
+                    failures.append(
+                        f"{rid}: the English and Chinese pages differ beyond the lang "
+                        f"line, first at line {where + 1}. Run "
+                        f"scripts/mirror-zh.py, which rewrites every Chinese page "
+                        f"from its English twin and refuses if one carries real "
+                        f"Chinese")
+                named = [i for pair in en_figs for grp in pair for i in grp.split()]
+                have = [str(f["id"]) for f in record.get("figure", [])]
+                for i in named:
+                    if i not in have:
+                        failures.append(f"{rid}: names figure '{i}', which the record has not got")
+                for i in have:
+                    if named.count(i) != 1:
+                        failures.append(
+                            f"{rid}: figure '{i}' appears {named.count(i)} time(s); "
+                            f"it must appear exactly once")
+                for name in re.findall(r"\{\{\s*([a-z_0-9]+)", en):
+                    if name not in known:
+                        failures.append(f"{rid}: calls {{{{{name}}}}}, which utils.jl does not define")
+                continue
+
+            # 1. parity, line by line, everything but `lang`. OLD MECHANISM ONLY.
             en_lines = [ln for ln in en.split("\n") if not ln.startswith("lang ")]
             zh_lines = [ln for ln in zh.split("\n") if not ln.startswith("lang ")]
             if en_lines != zh_lines:
@@ -97,8 +199,6 @@ def main() -> int:
                 failures.append(
                     f"{rid}: the English and Chinese pages differ beyond the lang line, "
                     f"first at line {first + 1}")
-            if 'lang = "en"' not in en or 'lang = "zh"' not in zh:
-                failures.append(f"{rid}: each page must declare its own lang")
 
             # 2. every record is composed, and every block is a shape the
             #    renderer knows. An unrecognised one stops the build, but a

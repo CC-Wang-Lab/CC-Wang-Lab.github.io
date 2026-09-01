@@ -1,16 +1,31 @@
 +++
-title = "Experiment Setup for boiler surface"
 facility = "boiler-surface-test-rig"
 lang = "en"
-blocks = [
-  "row:test-rig",
-  "row:test-schematic",
-  "notes",
-  "row:sintered additively-manufactured",
-  "row:diamond acid-etched",
-]
+title = "Experiment Setup for boiler surface"
+lead = "Different surface enhancement"
 +++
 
 ~~~
-{{facility_page}}
+{{setuphead}}
 ~~~
+
+\begin{page}
+
+{{figrow test-rig test-schematic}}
+
+
+
+\begin{note}
+### Different surface enhancement
+
+- Single & Double-layer sintering (copper-nickel alloy)
+- Additive manufacturing (copper-chrome alloy)
+- Acid etching (copper)
+- Metalized diamond particles (diamond-copper)
+\end{note}
+
+{{figrow sintered additively-manufactured}}
+
+{{figrow diamond acid-etched}}
+
+\end{page}

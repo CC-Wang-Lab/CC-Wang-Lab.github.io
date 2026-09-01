@@ -783,10 +783,20 @@ window.addEventListener("load", function () {
        reader actually sees.
        ------------------------------------------------------------------ */
     var justifyAudit = [], justifyAuditSeen = {};
+    /* `.setup-notes` is in this list, and it has to be. Franklin omits the <p>
+       when a block holds exactly one paragraph, so a one-paragraph record has
+       no `p` at all and a probe that selects only `p` finds nothing and
+       reports the page clean. That is the "a probe that selects a class
+       nobody emits reports clean" fault, and it hid a real one: the words
+       were left-aligned on a justified site and nothing said so. A block that
+       DOES contain a paragraph is skipped here, so nothing is counted twice. */
     var proseNodes = document.querySelectorAll(
-      "p, li, blockquote, .card-scope, .pg-scope, .person-row-topic, .news-body");
+      "p, li, blockquote, .card-scope, .pg-scope, .person-row-topic, .news-body," +
+      ".setup-notes");
     for (var pj = 0; pj < proseNodes.length; pj++) {
       var proseNode = proseNodes[pj];
+      if (proseNode.classList.contains("setup-notes") &&
+          proseNode.querySelector("p, li")) continue;
       var proseStyle = getComputedStyle(proseNode);
       if (proseStyle.display === "none" || proseStyle.visibility === "hidden") continue;
       if (proseStyle.textAlign !== "justify") continue;

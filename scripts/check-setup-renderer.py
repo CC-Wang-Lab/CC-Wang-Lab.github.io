@@ -224,7 +224,16 @@ def normalization_regression_failures() -> list[str]:
 
 
 def css_rule(css: str, selector: str) -> str:
-    match = re.search(rf"{re.escape(selector)}\s*\{{([^}}]*)\}}", css, re.DOTALL)
+    # ANCHORED TO THE START OF A LINE, on purpose.
+    #
+    # Unanchored, `.fig` also matches the tail of `.setup-rows > .fig-row--n1 >
+    # .fig {`, and whichever such rule comes first in the file wins. That
+    # happened on 2026-09-01: a new one-line rule above the real `.fig` block
+    # made this gate read the wrong declarations and fail on a stylesheet that
+    # was correct. The selector being checked is always a whole selector, so
+    # requiring it to begin a line is the honest test.
+    match = re.search(rf"^\s*{re.escape(selector)}\s*\{{([^}}]*)\}}",
+                      css, re.DOTALL | re.MULTILINE)
     return match.group(1) if match else ""
 
 
@@ -236,6 +245,21 @@ def julia_result(code: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         check=False,
     )
+
+
+# The fixture record below is not in _data/ and therefore has no page.
+# `card_words` in utils.jl reads the title and lead from the page and refuses to
+# guess, so a card test has to supply them itself.
+#
+# THE OBVIOUS ALTERNATIVE IS THE WRONG ONE. Letting `card_words` fall back to
+# _data/ when a page is missing would have made this gate pass with no change at
+# all, and it would have removed the only thing the function exists to catch: a
+# record whose page is missing or misnamed renders a card that looks perfectly
+# fine and links to nothing. `words` is passed HERE and nowhere in production,
+# so a real record with no page still stops the build.
+FIXTURE_WORDS = (
+    ', words = ("Studentless project", "Studentless project lead")'
+)
 
 
 def studentless_project_literal() -> str:
@@ -375,7 +399,7 @@ def renderer_contract_failures() -> list[str]:
         (
             "project card",
             'include("utils.jl"); locvar(::Symbol) = "en"; '
-            f"print(project_card({studentless}))",
+            f"print(project_card({studentless}{FIXTURE_WORDS}))",
             "card-by",
         ),
         (
@@ -407,7 +431,7 @@ def renderer_contract_failures() -> list[str]:
     invalid_code = (
         'include("utils.jl"); locvar(::Symbol) = "en"; '
         f'fixture = {studentless}; fixture["student"] = "{invalid_id}"; '
-        "print(project_card(fixture))"
+        "print(project_card(fixture" + FIXTURE_WORDS + "))"
     )
     result = julia_result(invalid_code)
     output = result.stdout + result.stderr
@@ -424,7 +448,7 @@ def renderer_contract_failures() -> list[str]:
         '"lead_zh" => "Studentless project lead", "student" => "maysam-gholampour")')
     present_code = (
         'include("utils.jl"); locvar(::Symbol) = "en"; '
-        f"print(project_card({with_student}))"
+        f"print(project_card({with_student}{FIXTURE_WORDS}))"
     )
     result = julia_result(present_code)
     output = result.stdout + result.stderr
@@ -473,7 +497,7 @@ def main() -> int:
         card_code = (
             'include("utils.jl"); locvar(::Symbol) = "en"; '
             f'fixture = only(filter(p -> p["id"] == "{PROJECT_EXPECTED["id"]}", projects())); '
-            "print(project_card(fixture))"
+            "print(project_card(fixture" + FIXTURE_WORDS + "))"
         )
         result = julia_result(card_code)
         output = result.stdout + result.stderr

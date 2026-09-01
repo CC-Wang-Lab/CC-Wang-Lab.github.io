@@ -68,6 +68,7 @@ caption_zh = "Fig. Experimental cabinet interior dimensions"
 id       = "thermal-fin-natural-convection-chamber"
 area     = "heat-exchangers"
 image    = "/assets/img/test-setups/thermal-fin-natural-convection-chamber/chamber.jpg"
+card_focus = "50% 40%"
 source_slides = [7]
 title_en = "Investigation of thermal fins under natural convection -  for thermosyphon and pulsating heat pipe thermal fin and typical fan-less heat sink"
 title_zh = "Investigation of thermal fins under natural convection -  for thermosyphon and pulsating heat pipe thermal fin and typical fan-less heat sink"
@@ -89,6 +90,7 @@ caption_zh = ""
 id       = "air-cooler-wind-tunnel"
 area     = "electronics-cooling"
 image    = "/assets/img/test-setups/air-cooler-wind-tunnel/wind-tunnel.jpg"
+image_fit = "contain"
 source_slides = [8]
 title_en = "Wind tunnel for air-cooler heat sink with Vapor chamber/heat pipe/pulsating heat pipe (and typical air-cooled heat sink)"
 title_zh = "Wind tunnel for air-cooler heat sink with Vapor chamber/heat pipe/pulsating heat pipe (and typical air-cooled heat sink)"
@@ -206,15 +208,36 @@ caption_zh = "Simulated rack"
 id         = "simulated-rack-rendering"
 kind       = "diagram"
 image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack-rendering.png"
-w          = 462
+w          = 531
 h          = 1215
 caption_en = "Simulated rack"
 caption_zh = "Simulated rack"
+
+# Slide 9 carries a rack showing the 2U and 20U partitions and a photograph of
+# it inside the containment. The import took neither. Added 2026-09-01.
+[[item.figure]]
+id         = "rack-partitions"
+kind       = "diagram"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/rack-partitions.png"
+w          = 362
+h          = 739
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "rack-containment"
+kind       = "photo"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/rack-containment.png"
+w          = 199
+h          = 769
+caption_en = ""
+caption_zh = ""
 
 [[item]]
 id       = "two-phase-cold-plate-test-platform"
 area     = "two-phase"
 image    = "/assets/img/test-setups/two-phase-cold-plate-test-platform/annotated-platform.jpg"
+image_fit = "contain"
 source_slides = [11]
 title_en = "Two-Phase Cold Plate Cooling Test Platform"
 title_zh = "Two-Phase Cold Plate Cooling Test Platform"
@@ -276,6 +299,7 @@ caption_zh = ""
 id       = "flooded-evaporator-test-rig"
 area     = "two-phase"
 image    = "/assets/img/test-setups/flooded-evaporator-test-rig/system.jpg"
+card_focus = "40% 45%"
 source_slides = [12]
 title_en = "Flooded evaporator for testing shell side boiling, applicable for various refrigerants"
 title_zh = "Flooded evaporator for testing shell side boiling, applicable for various refrigerants"
@@ -388,7 +412,6 @@ caption_zh = ""
 id       = "three-kilowatt-cold-plate-test-facility"
 area     = "two-phase"
 image    = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
-image_fit = "contain"
 source_slides = [15]
 title_en = "Two-phase cold plate test facility, up to 3 kW for various working fluids"
 title_zh = "Two-phase cold plate test facility, up to 3 kW for various working fluids"
@@ -410,8 +433,8 @@ caption_zh = ""
 id         = "flow-diagram"
 kind       = "diagram"
 image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
-w          = 1600
-h          = 904
+w          = 747
+h          = 423
 caption_en = ""
 caption_zh = ""
 
@@ -419,7 +442,6 @@ caption_zh = ""
 id       = "vapor-compression-cooling-system"
 area     = "hvacr"
 image    = "/assets/img/test-setups/vapor-compression-cooling-system/cold-plate-loop.jpg"
-image_fit = "contain"
 source_slides = [16]
 title_en = "Vapor Compression Refrigeration Cooling System (VCRC) Two phase Cold Plate"
 title_zh = "Vapor Compression Refrigeration Cooling System (VCRC) Two phase Cold Plate"
@@ -502,9 +524,9 @@ body_zh  = "This liquid-desiccant air-conditioning system integrates a vapor-com
 [[item.figure]]
 id         = "rig-front-view"
 kind       = "photo"
-image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/rig-front-view.jpg"
-w          = 810
-h          = 1224
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/rig-front-view.png"
+w          = 233
+h          = 311
 caption_en = "Photograph of the liquid desiccant air-conditioning system (Front view)"
 caption_zh = "Photograph of the liquid desiccant air-conditioning system (Front view)"
 
@@ -518,11 +540,11 @@ caption_en = "Perspective view of the liquid desiccant air-conditioning system (
 caption_zh = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
 
 [[item.figure]]
-id         = "process-flow-diagram"
+id         = "control-screen"
 kind       = "diagram"
-image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/process-flow-diagram.png"
-w          = 774
-h          = 507
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/control-screen.png"
+w          = 552
+h          = 332
 caption_en = ""
 caption_zh = ""
 
@@ -530,7 +552,6 @@ caption_zh = ""
 id       = "carvera-desktop-cnc"
 area     = "electronics-cooling"
 image    = "/assets/img/test-setups/carvera-desktop-cnc/cnc-machine.jpg"
-image_fit = "contain"
 source_slides = [28]
 title_en = "MAKEAR Carvera Desktop CNC Machine"
 title_zh = "MAKEAR Carvera Desktop CNC Machine"
@@ -570,7 +591,6 @@ caption_zh = ""
 id       = "fabrication-and-microscopy-equipment"
 area     = "electronics-cooling"
 image    = "/assets/img/test-setups/fabrication-and-microscopy-equipment/3d-printer.jpg"
-image_fit = "contain"
 source_slides = [29]
 title_en = "Fabrication and microscopy equipment"
 title_zh = "Fabrication and microscopy equipment"
@@ -610,7 +630,6 @@ caption_zh = "Microscope"
 id       = "amca-wind-tunnel"
 area     = "heat-exchangers"
 image    = "/assets/img/test-setups/amca-wind-tunnel/wind-tunnel-environmental-room.jpg"
-image_fit = "contain"
 source_slides = [30]
 title_en = "AMCA WIND TUNNEL+Environmental Control Room"
 title_zh = "AMCA WIND TUNNEL+Environmental Control Room"

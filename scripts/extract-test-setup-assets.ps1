@@ -130,7 +130,8 @@ Export-Crop -Slide 10 -Geometry '250x412+239+205' -RelativePath 'data-center-air
 Export-Crop -Slide 10 -Geometry '289x258+549+67' -RelativePath 'data-center-air-cooling-facility\hot-wire-mesh-front.jpg'
 Export-Crop -Slide 10 -Geometry '331x207+528+356' -RelativePath 'data-center-air-cooling-facility\hot-wire-mesh-overhead.jpg'
 Export-Crop -Slide 10 -Geometry '129x437+904+139' -RelativePath 'data-center-air-cooling-facility\simulated-rack.jpg'
-Export-Crop -Slide 10 -Geometry '154x405+1103+169' -RelativePath 'data-center-air-cooling-facility\simulated-rack-rendering.png'
+Export-Crop -Slide 9 -Geometry '230x480+795+63' -RelativePath 'data-center-air-cooling-facility\rack-partitions.png'
+Export-Crop -Slide 10 -Geometry '177x405+1103+169' -RelativePath 'data-center-air-cooling-facility\simulated-rack-rendering.png'
 
 Export-Crop -Slide 11 -Geometry '734x525+55+76' -RelativePath 'two-phase-cold-plate-test-platform\annotated-platform.jpg'
 
@@ -162,8 +163,7 @@ Export-Crop -Slide 18 -Geometry '811x426+469+64' -RelativePath 'liquid-desiccant
 Export-Crop -Slide 18 -Geometry '258x169+60+360' -RelativePath 'liquid-desiccant-air-conditioning-system\process-flow-diagram.png'
 
 Export-Crop -Slide 19 -Geometry '401x594+0+109' -RelativePath 'immersion-cooling-microchannel-lid\annotated-apparatus.jpg'
-Export-Crop -Slide 19 -Geometry '391x238+507+86' -RelativePath 'immersion-cooling-microchannel-lid\cold-plate-axial-resistance.png' -Erase 'rectangle 0,0 70,15 rectangle 388,50 390,80'
-Export-Crop -Slide 19 -Geometry '399x220+831+104' -RelativePath 'immersion-cooling-microchannel-lid\microchannel-lid-axial-resistance.png' -Erase 'rectangle 0,0 52,55 rectangle 0,56 13,75'
+Export-Crop -Slide 19 -Geometry '761x238+507+86' -RelativePath 'immersion-cooling-microchannel-lid\cold-plate-thermal-resistance.png' -Erase 'rectangle 0,0 70,15'
 
 Export-Crop -Slide 20 -Geometry '353x487+39+142' -RelativePath 'oil-immersion-heat-transfer-enhancement\immersion-tank.jpg'
 Export-Crop -Slide 20 -Geometry '482x248+411+141' -RelativePath 'oil-immersion-heat-transfer-enhancement\bubble-enhancement.jpg'

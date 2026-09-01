@@ -20,6 +20,7 @@
 id       = "gaming-laptop-hybrid-vapor-chamber"
 weight   = 3
 image    = "/assets/img/test-setups/gaming-laptop-hybrid-vapor-chamber/upper-experimental-system.jpg"
+card_focus = "50% 45%"
 area     = "electronics-cooling"
 source_slides = [3]
 title_en = "Hybrid Vapor Chamber–Heat Pipe Module for Thermal Management of Gaming Laptops"
@@ -57,6 +58,9 @@ caption_zh = "同一組件的俯視圖，熱管由中央向兩側延伸"
 id       = "two-phase-closed-loop-thermosyphon"
 weight   = 4
 image    = "/assets/img/test-setups/two-phase-closed-loop-thermosyphon/system-apparatus.jpg"
+# The glass visualisation chamber is four fifths down the frame. At 40% the
+# card showed a control panel and a bag of snacks.
+card_focus = "50% 80%"
 area     = "two-phase"
 source_slides = [4]
 title_en = "Two-Phase Closed Loop Thermosyphon (TPCT) cooling system"
@@ -96,9 +100,13 @@ caption_zh = ""
 [[project]]
 id       = "chip-package-lid-thermal-spreading"
 weight   = 5
-image    = "/assets/img/test-setups/chip-package-lid-thermal-spreading/experimental-setup.jpg"
+# experimental-setup.jpg moved to chip-package-lid-diamond-copper in the
+# 2026-09-01 split. A card must show a picture its own record still has.
+# contain, not cover: a 16/9 crop would cut the 40 mm arrows off this drawing.
+image     = "/assets/img/test-setups/chip-package-lid-thermal-spreading/vapor-chamber-schematic.png"
+image_fit = "contain"
 area     = "electronics-cooling"
-source_slides = [5, 6]
+source_slides = [5]
 title_en = "Experimental Investigation on Thermal Spreading of Chip Package Lids – Vapor Chamber Lid & PHP Lid"
 title_zh = "Experimental Investigation on Thermal Spreading of Chip Package Lids – Vapor Chamber Lid & PHP Lid"
 lead_en  = "This experiment investigates the thermal spreading performance of different chip package lids. The samples are heated from the bottom, while an infrared camera captures their surface temperature distributions. The tested samples include a pure copper plate, a diamond–copper composite, and an additively manufactured copper vapor chamber. For the vapor chamber, various working fluids and filling ratios are evaluated to determine the optimal operating conditions."
@@ -109,22 +117,6 @@ body_zh  = "This experiment investigates the thermal spreading performance of di
 [[project.section]]
 heading_en = "Test Samples"
 heading_zh = "Test Samples"
-body_en    = ""
-body_zh    = ""
-items_en   = []
-items_zh   = []
-
-[[project.section]]
-heading_en = "Experimental Investigation on Thermal Spreading of Chip Package Lids On Diamond-copper composite Lid"
-heading_zh = "Experimental Investigation on Thermal Spreading of Chip Package Lids On Diamond-copper composite Lid"
-body_en    = "In this experimental setup, a DC power supply controls the heating rod and heating block to heat the test area. A cooling fan provides forced-convection cooling to the test specimen, while an air duct equipped with a nozzle is used to quantify the airflow rate. An infrared camera mounted directly above the cooling surface monitors the temperature distribution and records data from 30 designated measurement points."
-body_zh    = "In this experimental setup, a DC power supply controls the heating rod and heating block to heat the test area. A cooling fan provides forced-convection cooling to the test specimen, while an air duct equipped with a nozzle is used to quantify the airflow rate. An infrared camera mounted directly above the cooling surface monitors the temperature distribution and records data from 30 designated measurement points."
-items_en   = []
-items_zh   = []
-
-[[project.section]]
-heading_en = "Photograph of the setup"
-heading_zh = "Photograph of the setup"
 body_en    = ""
 body_zh    = ""
 items_en   = []
@@ -166,6 +158,29 @@ h          = 585
 caption_en = ""
 caption_zh = ""
 
+[[project]]
+id       = "chip-package-lid-diamond-copper"
+weight   = 6
+# contain: the labels Cooling fan, Nozzle and IR Camera Hole sit at the top edge.
+image     = "/assets/img/test-setups/chip-package-lid-thermal-spreading/experimental-setup.jpg"
+image_fit = "contain"
+area     = "electronics-cooling"
+source_slides = [6]
+title_en = "Experimental Investigation on Thermal Spreading of Chip Package Lids On Diamond-copper composite Lid"
+title_zh = "Experimental Investigation on Thermal Spreading of Chip Package Lids On Diamond-copper composite Lid"
+lead_en  = "In this experimental setup, a DC power supply controls the heating rod and heating block to heat the test area. A cooling fan provides forced-convection cooling to the test specimen, while an air duct equipped with a nozzle is used to quantify the airflow rate. An infrared camera mounted directly above the cooling surface monitors the temperature distribution and records data from 30 designated measurement points."
+lead_zh  = "In this experimental setup, a DC power supply controls the heating rod and heating block to heat the test area. A cooling fan provides forced-convection cooling to the test specimen, while an air duct equipped with a nozzle is used to quantify the airflow rate. An infrared camera mounted directly above the cooling surface monitors the temperature distribution and records data from 30 designated measurement points."
+body_en  = "In this experimental setup, a DC power supply controls the heating rod and heating block to heat the test area. A cooling fan provides forced-convection cooling to the test specimen, while an air duct equipped with a nozzle is used to quantify the airflow rate. An infrared camera mounted directly above the cooling surface monitors the temperature distribution and records data from 30 designated measurement points."
+body_zh  = "In this experimental setup, a DC power supply controls the heating rod and heating block to heat the test area. A cooling fan provides forced-convection cooling to the test specimen, while an air duct equipped with a nozzle is used to quantify the airflow rate. An infrared camera mounted directly above the cooling surface monitors the temperature distribution and records data from 30 designated measurement points."
+
+[[project.section]]
+heading_en = "Photograph of the setup"
+heading_zh = "Photograph of the setup"
+body_en    = ""
+body_zh    = ""
+items_en   = []
+items_zh   = []
+
 [[project.figure]]
 id         = "experimental-setup"
 kind       = "annotated-photo"
@@ -195,7 +210,7 @@ caption_zh = ""
 
 [[project]]
 id       = "heat-pipes-freezing-conditions"
-weight   = 6
+weight   = 7
 image    = "/assets/img/test-setups/heat-pipes-freezing-conditions/freezing-chamber.jpg"
 area     = "two-phase"
 source_slides = [14]
@@ -240,8 +255,10 @@ caption_zh = ""
 
 [[project]]
 id       = "immersion-cooling-microchannel-lid"
-weight   = 7
+weight   = 8
 image    = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
+# Just below the red annotation line, so the Inlet arrow is whole.
+card_focus = "50% 41%"
 area     = "electronics-cooling"
 source_slides = [19]
 title_en = "Immersion Cooling Microchannel Lid Cold Plate"
@@ -271,33 +288,28 @@ body_zh  = "This technology introduces microchannels within the CPU package's IH
 id         = "annotated-apparatus"
 kind       = "annotated-photo"
 image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/annotated-apparatus.jpg"
-w          = 1080
-h          = 1600
+w          = 433
+h          = 602
 caption_en = ""
 caption_zh = ""
 
+# Slide 19 carries ONE figure here, not two. The centre labels (TIM2, TIM1,
+# TIM1.5, Lid, Substrate, PCB) are shared by both halves, so the earlier split
+# orphaned them and cut the end off "Lid channel". Re-cropped whole, 2026-09-01.
 [[project.figure]]
-id         = "cold-plate-axial-resistance"
+id         = "cold-plate-thermal-resistance"
 kind       = "diagram"
-image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/cold-plate-axial-resistance.png"
-w          = 1173
-h          = 714
-caption_en = ""
-caption_zh = ""
-
-[[project.figure]]
-id         = "microchannel-lid-axial-resistance"
-kind       = "diagram"
-image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/microchannel-lid-axial-resistance.png"
-w          = 1197
-h          = 660
+image      = "/assets/img/test-setups/immersion-cooling-microchannel-lid/cold-plate-thermal-resistance.png"
+w          = 1600
+h          = 500
 caption_en = ""
 caption_zh = ""
 
 [[project]]
 id       = "oil-immersion-heat-transfer-enhancement"
-weight   = 8
+weight   = 9
 image    = "/assets/img/test-setups/oil-immersion-heat-transfer-enhancement/immersion-tank.jpg"
+card_focus = "50% 45%"
 area     = "electronics-cooling"
 source_slides = [20]
 title_en = "Active Heat Transfer Enhancement in Oil Immersion Cooling"
@@ -354,8 +366,9 @@ caption_zh = ""
 
 [[project]]
 id       = "multi-agent-server-cooling-control"
-weight   = 9
+weight   = 10
 image    = "/assets/img/test-setups/multi-agent-server-cooling-control/server-configuration.jpg"
+card_focus = "50% 40%"
 area     = "ai-thermal"
 source_slides = [21, 22]
 title_en = "2U Server Experimental Platform and Multi-Agent Control"
@@ -450,10 +463,25 @@ h          = 199
 caption_en = ""
 caption_zh = ""
 
+# Section 2's whole body is the two words "Air flow", and this is the air flow.
+# Not from the deck; added 2026-09-01.
+[[project.figure]]
+id         = "server-airflow-schematic"
+kind       = "diagram"
+image      = "/assets/img/test-setups/multi-agent-server-cooling-control/server-airflow-schematic.png"
+w          = 842
+h          = 370
+caption_en = ""
+caption_zh = ""
+
 [[project]]
 id       = "pulsating-jet-impingement"
-weight   = 10
-image    = "/assets/img/test-setups/pulsating-jet-impingement/test-loop-schematic.png"
+weight   = 11
+# The response chart, not the loop schematic. The schematic's content is an
+# L-shape, so every 16/9 window cuts a label and contain leaves it tiny. The
+# chart is 1005x561, which IS the card box, and a pulsating velocity trace is
+# what this project is about.
+image    = "/assets/img/test-setups/pulsating-jet-impingement/response-chart.png"
 area     = "electronics-cooling"
 source_slides = [23]
 title_en = "Pulsating jet impingement – Testing trainsent and steady cold plate performance with PG25 and the like fluid"
@@ -499,7 +527,7 @@ caption_zh = ""
 
 [[project]]
 id       = "expansion-tank-pre-charge-pressure"
-weight   = 11
+weight   = 12
 image    = "/assets/img/test-setups/expansion-tank-pre-charge-pressure/setup.jpg"
 area     = "hvacr"
 source_slides = [24]
@@ -584,7 +612,7 @@ caption_zh = ""
 
 [[project]]
 id       = "embedded-microfluidic-interlayer-cooling"
-weight   = 12
+weight   = 13
 image    = "/assets/img/test-setups/embedded-microfluidic-interlayer-cooling/test-setup.jpg"
 area     = "electronics-cooling"
 source_slides = [25]
@@ -669,8 +697,11 @@ caption_zh = ""
 
 [[project]]
 id       = "supercritical-co2-chiller"
-weight   = 13
+weight   = 14
 image    = "/assets/img/test-setups/supercritical-co2-chiller/co2-chiller.jpg"
+# card_focus cannot help: the clutter is BESIDE the chiller, not above it, so no
+# full-width band avoids the wall on one side and the shelving on the other.
+card_crop = [180, 150, 510, 287]
 area     = "hvacr"
 source_slides = [26]
 title_en = "Heat Transfer Performance of a Two-Stage Compression Super-critical CO₂ Chiller"
@@ -730,7 +761,7 @@ caption_zh = ""
 
 [[project]]
 id       = "thermosyphon-working-fluid-filling-ratio"
-weight   = 14
+weight   = 15
 image    = "/assets/img/test-setups/thermosyphon-working-fluid-filling-ratio/test-rig.jpg"
 area     = "two-phase"
 source_slides = [27]

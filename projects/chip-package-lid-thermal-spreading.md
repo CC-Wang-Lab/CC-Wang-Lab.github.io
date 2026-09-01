@@ -1,17 +1,21 @@
 +++
-title = "Experimental Investigation on Thermal Spreading of Chip Package Lids – Vapor Chamber Lid & PHP Lid"
 project = "chip-package-lid-thermal-spreading"
 lang = "en"
-blocks = [
-  "split(lead sec:1):diamond-copper-composite pure-copper-plate",
-  "sec:2",
-  "row:vapor-chamber-schematic vapor-chamber-sample",
-  "sec:3",
-  "row:experimental-setup",
-  "row:thermal-map-tmax-60c thermal-map-tmax-55-4c",
-]
+title = "Experimental Investigation on Thermal Spreading of Chip Package Lids – Vapor Chamber Lid & PHP Lid"
+lead = "This experiment investigates the thermal spreading performance of different chip package lids. The samples are heated from the bottom, while an infrared camera captures their surface temperature distributions. The tested samples include a pure copper plate, a diamond–copper composite, and an additively manufactured copper vapor chamber. For the vapor chamber, various working fluids and filling ratios are evaluated to determine the optimal operating conditions."
 +++
 
 ~~~
-{{project_setup_page}}
+{{setuphead}}
 ~~~
+
+\begin{page}
+
+\begin{split}{diamond-copper-composite pure-copper-plate}
+This experiment investigates the thermal spreading performance of different chip package lids. The samples are heated from the bottom, while an infrared camera captures their surface temperature distributions. The tested samples include a pure copper plate, a diamond–copper composite, and an additively manufactured copper vapor chamber. For the vapor chamber, various working fluids and filling ratios are evaluated to determine the optimal operating conditions.
+
+\end{split}
+
+{{figrow vapor-chamber-schematic vapor-chamber-sample}}
+
+\end{page}

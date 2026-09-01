@@ -530,6 +530,66 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   font-size: var(--fs-xs);
   line-height: var(--lh-ui);
   color: var(--on-dark-3);
+  transition: color 0.25s ease-out;
+}
+
+/* --------------------------------------------------------------------------
+   The one joke on this site
+
+   The caption above says "Onset of nucleate boiling". Click it and the hero
+   boils. Nothing on the page explains that, and nothing should: the sentence
+   being clicked is the whole punchline, and it already exists in both
+   languages.
+
+   The hint is this hover tint and nothing else. A pointer cursor would give it
+   away before anybody found it.
+
+   `z-index: 1` is the veil's layer, and the field is appended after the veil,
+   so it paints above the video and below `.hero-inner` and `.hero-caption` at
+   `z-index: 2`. `.hero` is `overflow: hidden`, so no bubble can reach the page
+   and widen it.
+
+   `_assets/js/boil.js` builds the field, measures the rise, and takes the
+   nodes away when the last bubble has popped.
+   -------------------------------------------------------------------------- */
+
+.hero-caption:hover { color: var(--on-dark-2); }
+
+.boil-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.boil-bubble {
+  position: absolute;
+  bottom: -1.5rem;
+  left: var(--x);
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.22) 46%,
+    rgba(255, 255, 255, 0.05) 74%,
+    rgba(255, 255, 255, 0) 76%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  animation: boil-rise var(--t) linear var(--delay) both;
+}
+
+/* A bubble grows as it rises and leaves its site with a wobble, so the sway
+   alternates and the scale only ever increases. The last stretch is the pop:
+   it swells and goes, instead of sliding out under the top edge. */
+@keyframes boil-rise {
+  0%   { transform: translate3d(0, 0, 0) scale(0.4); opacity: 0; }
+  7%   { opacity: 0.9; }
+  25%  { transform: translate3d(var(--sway), calc(var(--rise) * -0.25), 0) scale(0.9); }
+  50%  { transform: translate3d(calc(var(--sway) * -1), calc(var(--rise) * -0.5), 0) scale(1); }
+  75%  { transform: translate3d(var(--sway), calc(var(--rise) * -0.75), 0) scale(1.08); }
+  88%  { opacity: 0.85; }
+  100% { transform: translate3d(0, calc(var(--rise) * -1), 0) scale(1.45); opacity: 0; }
 }
 
 /*
@@ -1654,6 +1714,16 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* WHICH part of the picture survives the crop.
+
+     The box is 16/9 and these pictures are not: measured over 27 records they
+     run from 0.60 to 2.88, so 13 lose more than a third of the frame to the
+     crop and six lose about 60%. Centre is the wrong guess for most of them,
+     which is how the immersion card came to have its Inlet label sliced off.
+
+     Set per record as `card_focus` in _data/, chosen by looking at the
+     picture. Defaults to centre, which is what every card did before. */
+  object-position: var(--card-focus, 50% 50%);
   transform: scale(1);
   transition: transform 0.4s ease-out;
 }
@@ -2168,7 +2238,32 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   width: 100%;
   max-width: calc(var(--h-cap) * var(--sum-ar) + (var(--n) - 1) * var(--fig-gap));
   margin-inline: auto;
+  /* CENTRE WHAT DOES NOT FILL.
+
+     .fig carries `flex: <aspect> 1 0`, so the grow factor IS the aspect ratio.
+     Per CSS Flexbox 9.7, when the grow factors on a line add up to less than 1
+     the items take only that fraction of the free space. So a lone TALL figure,
+     aspect below 1, leaves part of its track empty. Two rows on this site do:
+     immersion-cooling at 0.675 and two-phase-closed-loop at 0.684.
+
+     Left-aligned, all that slack lands on one side and reads as a mistake. A
+     row that fills has no free space, so this is a no-op on the other 46. The
+     split overrides it to flex-end, so its picture column still reaches the
+     page margin opposite the words. */
+  justify-content: center;
 }
+/* A LONE PICTURE FILLS THE ROW IT WAS GIVEN.
+
+   The row is already capped: max-width is --h-cap * --sum-ar, so a lone figure
+   of aspect 0.684 gets a 438px row and 640px of height, which is the ceiling.
+   But `flex: <aspect> 1 0` then hands it only 0.684 of that 438px, so it lands
+   at 300px inside a row sized for 438. The cap is applied twice.
+
+   Only outside a split. Inside one the row's max-width is replaced by 100%
+   (.setup-split > .fig-row below), so growing to 1 there would take the picture
+   to the full column height and past the 40rem ceiling. */
+.setup-rows > .fig-row--n1 > .fig { flex-grow: 1; }
+
 .fig {
   flex: calc(var(--ar-w) / var(--ar-h)) 1 0;
   min-width: min(var(--fig-floor), 100%);
@@ -2229,7 +2324,23 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
      as a guard: if a figure's recorded w/h ever drifts from the file, the
      image letterboxes instead of stretching, and the gate catches it. */
   object-fit: contain;
+  transition: transform 0.25s ease-out;
 }
+/*
+  Hover: the picture gains depth and the shadow deepens. Both numbers are the
+  card ones from .claude/rules/animation.md, unchanged: 2.5% should read as
+  depth and not as a zoom, and the shadow is the card's own value.
+
+  These are NOT gated on the motion flag, and that is the rule, not an
+  oversight. A hover effect is user-initiated and lasts a quarter of a second,
+  so it stays on when motion is paused, exactly like every other hover on this
+  site. Only the scroll reveal obeys the flag.
+
+  The box is `overflow: hidden`, so a scaled image is cropped by its own frame
+  and the row's equal heights cannot move.
+*/
+.fig-media:hover img { transform: scale(1.025) translateZ(0); }
+.fig-media:hover { box-shadow: 0 0.9375rem 1.5625rem 0 rgba(24, 24, 40, 0.15); }
 .fig--photo .fig-media { background: var(--lab-surface-2); }
 .fig--diagram .fig-media {
   padding: clamp(0.55rem, 0.374rem + 0.751vw, 1.05rem);
@@ -2313,6 +2424,20 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
      break at, which at 320px pushed the page 82px wider than the screen. */
   overflow-wrap: break-word;
 }
+/* JUSTIFY ON THE BLOCK, not only on <p>.
+
+   Franklin omits the <p> when a block holds exactly one paragraph, so a record
+   whose words are a single paragraph rendered as a bare text node and lost its
+   justification. Nothing said so: the audit's justify probe selects `p`, so a
+   page with no `p` reported nothing rather than reporting a fault. Measured on
+   air-cooler-wind-tunnel while moving it into its own page.
+
+   `.profile-narrative` already justifies this way, so this is the site's
+   existing pattern and not a new one. Headings keep their own alignment: a
+   heading that wraps to two lines would otherwise have its first line
+   stretched across the column. */
+.setup-notes { text-align: justify; }
+.setup-notes :is(h2, h3) { text-align: left; }
 .setup-notes p {
   margin: 0 0 1rem;
   text-align: justify;
@@ -2400,7 +2525,27 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   flex-direction: column;
   gap: var(--fig-row-gap);
 }
-.setup-split > .fig-row { flex: 1 1 100%; max-width: 100%; }
+.setup-split > .fig-row {
+  flex: 1 1 100%;
+  max-width: 100%;
+  /* FLUSH RIGHT, so the pictures reach the page margin like the words reach it
+     on the other side. It only ever does anything on a row that does not fill
+     its own width, and exactly two rows on this site can:
+
+     `.fig` grows by its ASPECT RATIO. CSS Flexbox 9.7 says that when the grow
+     factors on a line sum to less than ONE, the items share only that fraction
+     of the free space. So a row whose total aspect is below 1 under-fills, by
+     (1 - aspect) of the track, and the leftover lands on one side.
+
+       thermal-fin  annotated chamber  aspect 0.749  167px short
+       immersion    annotated photo    aspect 0.675  216px short
+
+     48 rows on the site, 46 have a total aspect above 1 and fill exactly, so
+     `justify-content` is a no-op on all of them. Alignment and not `flex-grow: 1`
+     because growing would change how big those two pictures are, and both sit
+     on pages the site owner has already approved. */
+  justify-content: flex-end;
+}
 
 @media (min-width: 992px) {
   /* Side by side, in the 5/7 proportion this block has always used. A solved
@@ -2437,6 +2582,10 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    `column-width` above, so one paragraph would break into two columns inside
    a block built to have exactly one. */
 .setup-split .setup-notes { column-width: auto; }
+/* The same thing, asked for by the page rather than implied by a split.
+   `words` splits above about 1116px of block width, which is right for a
+   long passage and wrong for a short one. `note` never splits. */
+.setup-notes--single { column-width: auto; }
 
 @media (max-width: 991.98px) {
   .ns-prev { left: -0.5rem; }
@@ -2629,7 +2778,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    at 0.43px per frame that is a visible step. See partners.js. */
 .pt-viewport {
   overflow: hidden;
-  min-height: 3rem;
+  min-height: 3.5rem;
   touch-action: pan-y;
   cursor: grab;
   user-select: none;
@@ -2660,7 +2809,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 3rem;
+  height: 3.5rem;
   flex: 0 0 auto;
 }
 .pt-name {
@@ -2672,12 +2821,20 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   transition: color 0.2s ease-out;
 }
 .pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
-/* Restore the original unified logo treatment: muted until hover, with the
-   prior dark-theme transform. The row controls remain arrowless. */
+/* Muted until hover, with the prior dark-theme transform. The row controls
+   remain arrowless.
+
+   EVERY LOGO CARRIES ITS OWN SIZE. Across this set the aspect ratio runs from
+   0.77:1 to 10:1 and the ink coverage from 17% to 100%, so a single max-height
+   paints a square badge at full weight and a wordmark as a thin sliver. The two
+   custom properties are written per file by scripts/prepare-partner-logos.py
+   and land inline on the <img>. The caps below are the fallback for a logo that
+   has no size yet, and the safety net if one is ever wrong. */
 .pt-logo {
-  max-height: 2.6rem;
-  max-width: 11rem;
-  width: auto;
+  width: var(--pt-w, auto);
+  height: var(--pt-h, auto);
+  max-height: 3rem;
+  max-width: 12rem;
   object-fit: contain;
   filter: grayscale(1);
   opacity: 0.62;
@@ -3024,4 +3181,21 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     grid-row: 1 / span 2;
     margin-bottom: 0;
   }
+}
+
+/* The 404's one flourish: the professor, with two thumbs up.
+
+   `alt=""` on purpose. It carries no information a screen-reader user needs,
+   and describing a joke to somebody who cannot see it is worse than skipping
+   it. The page already says what happened in words above. */
+.nf-figure {
+  margin: 0 0 1.75rem;
+  max-width: 190px;
+}
+.nf-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.9rem;
+  border: var(--rule);
 }

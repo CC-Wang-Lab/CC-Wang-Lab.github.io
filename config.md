@@ -8,6 +8,18 @@ author = "CC Wang Lab"
 mintoclevel = 2
 lang = "en"
 
+# `lead` is declared here only so the variable EXISTS. It is never the value
+# a page shows: every detail page sets its own, and `card_words` in utils.jl
+# stops the build when one does not.
+#
+# THIS DECLARATION IS NOT WHAT MAKES THE CARDS WORK, and the next person will
+# try it, so: `pagevar` cannot be used to read these at all. Franklin's
+# PAGEVAR_DEPTH guard (src/converter/markdown/md.jl:38, src/utils/vars.jl:253)
+# is incremented and never decremented, and returns the default once one page
+# has pulled in more than six unprocessed pages. A 26-card index gets six
+# answers and twenty blanks, silently. `card_words` reads the .md file instead.
+lead = ""
+
 # Franklin COPIES every path not named here into __site, and __site is what gets
 # published. Found on the first real deploy, 2026-08-19: the site was serving
 # /_data/partners.toml, /scripts/shoot.py, /Project.toml and /Manifest.toml.
@@ -68,3 +80,28 @@ form_to         = "juliahsieh@nycu.edu.tw"
 +++
 
 \newcommand{\R}{\mathbb R}
+
+<!--
+  THE DETAIL-PAGE MARKERS.
+
+  A facility or project page writes its own words and its own layout, in
+  Markdown, using these. The full reasoning is in the banner comment above
+  `current_record` in utils.jl; the short version is that `@@name ... @@` is
+  the only form Franklin nests correctly while still running the content
+  through Markdown, and an environment is what gives it a NAME at both ends.
+  Four bare `@@` five levels deep is what this replaces.
+
+  THESE ARE A FLOOR, NOT A CEILING. A page may ignore all of them and write
+  its own `@@` blocks. `oil-immersion-heat-transfer-enhancement` uses none of
+  the split shapes, only `{{figrow}}`, because it has five pictures and no
+  words at all.
+-->
+
+\newenvironment{page}{@@page-body,setup-study-page @@container @@setup-rows}{@@ @@ @@}
+
+\newenvironment{words}{@@setup-notes,prose}{@@}
+\newenvironment{note}{@@setup-notes,prose,setup-notes--single}{@@}
+
+\newenvironment{level}[1]{@@setup-split,setup-split--solved @@setup-split-words @@setup-notes,prose}{@@ @@ {{figrow #1}} @@}
+
+\newenvironment{split}[1]{@@setup-split @@setup-split-words @@setup-notes,prose}{@@ @@ {{figrow #1}} @@}

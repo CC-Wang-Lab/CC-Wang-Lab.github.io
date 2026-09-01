@@ -1,14 +1,18 @@
 +++
-title = "Active Heat Transfer Enhancement in Oil Immersion Cooling"
 project = "oil-immersion-heat-transfer-enhancement"
 lang = "zh"
-blocks = [
-  "row:immersion-tank bubble-enhancement",
-  "row:multi-needle-electrode",
-  "row:air-bubbling-mechanism ehd-heat-enhancement",
-]
+title = "Active Heat Transfer Enhancement in Oil Immersion Cooling"
+lead = "Air Bubbling Generator"
 +++
 
 ~~~
-{{project_setup_page}}
+{{setuphead}}
 ~~~
+
+\begin{page}
+
+{{figrow immersion-tank bubble-enhancement}}
+
+{{figrow air-bubbling-mechanism ehd-heat-enhancement multi-needle-electrode}}
+
+\end{page}
