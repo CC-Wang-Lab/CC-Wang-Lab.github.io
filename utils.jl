@@ -812,25 +812,30 @@ end
 function partner_item(o)
     logo = get(o, "logo", "")
     name = esc(pick(o, "name"))
-    if isempty(logo)
-        body = """<span class="pt-name">$(name)</span>"""
-    else
-        # `w`/`h` are THIS logo's display size in CSS pixels, written by
-        # scripts/prepare-partner-logos.py from the mark's own aspect ratio and
-        # ink coverage. One `max-height` cannot serve 70 marks whose aspect runs
-        # from 0.77:1 to 10:1; the wordmarks come out as slivers. The custom
-        # properties are inline because a stylesheet cannot know a per-file
-        # number, and they beat the `width`/`height` attributes, which are here
-        # only to reserve the space before the file arrives.
-        w = get(o, "w", 0)
-        h = get(o, "h", 0)
-        size = (w > 0 && h > 0) ?
-            string(" width=\"", w, "\" height=\"", h,
-                   "\" style=\"--pt-w:", round(w / 16, digits = 4),
-                   "rem;--pt-h:", round(h / 16, digits = 4), "rem\"") : ""
-        body = """<img class="pt-logo" src="$(esc(logo))" alt="$(name)"$(size) loading="lazy" draggable="false">"""
-    end
-    return """<li class="pt-item">$(body)</li>"""
+    isempty(logo) && return """<li class="pt-item"><span class="pt-name">$(name)</span></li>"""
+
+    # `w`/`h` are THIS logo's display size in CSS pixels, written by
+    # scripts/prepare-partner-logos.py from the mark's own aspect ratio and ink
+    # coverage. One `max-height` cannot serve 72 marks whose aspect runs from
+    # 0.77:1 to 10:1; the wordmarks come out as slivers. The custom properties
+    # are inline because a stylesheet cannot know a per-file number, and they
+    # beat the `width`/`height` attributes, which are here only to reserve the
+    # space before the file arrives.
+    w = get(o, "w", 0)
+    h = get(o, "h", 0)
+    size = (w > 0 && h > 0) ?
+        string(" width=\"", w, "\" height=\"", h,
+               "\" style=\"--pt-w:", round(w / 16, digits = 4),
+               "rem;--pt-h:", round(h / 16, digits = 4), "rem\"") : ""
+
+    # The name on hover, because a mark on its own does not always say who it
+    # is, and half of these are Taiwanese firms a visitor will not know.
+    #
+    # aria-hidden is NOT optional: the <img alt> already carries the same words,
+    # so without it a screen reader reads all 72 names twice.
+    return """<li class="pt-item">""" *
+           """<img class="pt-logo" src="$(esc(logo))" alt="$(name)"$(size) loading="lazy" draggable="false">""" *
+           """<span class="pt-tip" aria-hidden="true">$(name)</span></li>"""
 end
 
 """
@@ -2308,71 +2313,163 @@ function news_tag_label(item)
     return haskey(section, tag * "_en") || haskey(section, tag * "_zh") ? ui("news", tag) : tag
 end
 
-"""`{{news}}` for all of them, `{{news 3}}` for the newest three."""
-function hfun_news(params::Vector{String} = String[])
+"""
+The face of a news card.
+
+EVERY CARD HAS ONE, PICTURE OR NO PICTURE, and that is not decoration.
+`.claude/rules/animation.md` settles it: a row where some cards answer the mouse
+and some ignore it reads as broken long before anybody tries to click one. The
+`.card-media-img` frame is what carries the lift, the tilt and the cursor
+spotlight, so a card without a frame would be the dead one in the row.
+
+A news item gets a photograph by adding `image = "/assets/img/news/x.jpg"` to
+its row in `_data/news.toml`. Until then the frame carries the date, which is
+information the item already has, rather than a grey rectangle standing in for
+information it has not.
+"""
+function news_face(i)
+    img = String(get(i, "image", ""))
+    isempty(img) || return """<img src="$(esc(img))" alt="" loading="lazy">"""
+    # The class, not just the content, so the stylesheet can give a date a
+    # shallower frame than a photograph. 16/9 of a 602px card is 337px, which
+    # is right for a picture and far too much room for a number.
+    d = i["date"]
+    big  = lang() == "zh" ? "$(month(d))/$(day(d))" : string(day(d))
+    rest = lang() == "zh" ? string(year(d)) : "$(Dates.format(d, "u")) $(year(d))"
+    # aria-hidden: the same date is announced in full by .ns-date below, and a
+    # screen reader reading it twice is worse than not reading the big one.
+    return """<span class="ns-face-date" aria-hidden="true"><span class="ns-face-day">$(big)</span><span class="ns-face-rest">$(esc(rest))</span></span>"""
+end
+
+"""
+One news card. A LINK, and every card is one.
+
+`.claude/rules/animation.md` puts the whole difference between a card that leads
+somewhere and one that does not in the CURSOR: an `<a>` gets the pointer, a
+`<div>` keeps the arrow, and both lift. Every news item has a page of its own,
+so every news card is an `<a>` - and an `<a>` may only contain phrasing content,
+which is why these are spans rather than a heading and two paragraphs.
+
+Used twice, unchanged: once in the home-page carousel and once in the /news/
+grid. The wrapper around it differs. The card does not.
+"""
+function news_card(i)
+    tag = news_tag_label(i)
+    tagmk = isempty(tag) ? "" : """<span class="news-tag">$(esc(tag))</span>"""
+    face = haskey(i, "image") ? "" : " ns-face--dated"
+    href = prefix() * "/news/" * String(i["id"]) * "/"
+    return """
+        <a class="ns-card card-media" href="$(esc(href))">
+          <span class="card-media-img ns-face$(face)">$(news_face(i))</span>
+          <span class="card-media-body">
+            <span class="ns-date">$(esc(format_news_date(i["date"])))$(tagmk)</span>
+            <span class="ns-title">$(esc(pick(i, "title")))</span>
+            <span class="ns-body">$(esc(pick(i, "body")))</span>
+          </span>
+        </a>"""
+end
+
+"""The news item with this id, or an error naming the id that is missing."""
+function news_by_id(id::AbstractString)
+    hit = filter(i -> String(get(i, "id", "")) == id, news_items())
+    isempty(hit) && error("no news item with id '$(id)' in news.toml")
+    return first(hit)
+end
+
+"""
+`{{news_grid}}` - every published item, as cards, on /news/.
+
+The same card as the carousel, in the same three-column grid the projects page
+uses, so a reader meets one shape of card across the whole site.
+"""
+function hfun_news_grid()
     its = news_items()
     isempty(its) && return empty_state("news")
-    if !isempty(params)
-        n = parse(Int, params[1])
-        its = its[1:min(n, length(its))]
-    end
-    cards = join(["""
-      <div class="col-md-4">
-        <article class="news-card">
-          <p class="news-date">$(format_news_date(i["date"]))<span class="news-tag">$(esc(news_tag_label(i)))</span></p>
-          <h3 class="news-title">$(esc(pick(i, "title")))</h3>
-          <p class="news-body">$(esc(pick(i, "body")))</p>
-        </article>
+    cards = join(["""      <div class="col-md-6 col-lg-4">
+$(news_card(i))
       </div>""" for i in its], "\n")
     return """<div class="row g-4">\n$(cards)\n</div>"""
 end
 
 """
-`{{news_slider}}` — the home page band directly under the hero.
+`{{newshead}}` - the header of one news article page.
 
-Built to the same pattern as imec.com: the slides CROSS-FADE rather than sliding
-sideways, and the navigation underneath is a row of titles, each sitting above a
-progress line that fills across the slide's dwell time.
+Reads `news = "<id>"` from the page's front matter, the same way a project page
+reads `project = "<id>"`.
+"""
+function hfun_newshead()::String
+    id = locvar(:news)
+    id === nothing &&
+        error("a news page needs `news = \"<id>\"` in its front matter")
+    item = news_by_id(String(id))
+    # THE PAGE'S OWN TITLE, not the record's, for the reason the setup pages
+    # give: the card reads the record and the heading reads the page, so one
+    # string with two sources could drift with nothing noticing.
+    page_title = locvar(:title)
+    page_title === nothing &&
+        error("news item '$(id)': its page has no `title` in the front matter")
+    tag = news_tag_label(item)
+    tagmk = isempty(tag) ? "" : """<span class="news-tag">$(esc(tag))</span>"""
+    return """
+<header class="page-hd"><div class="container">
+  <p class="project-crumb"><a href="$(prefix())/news/">&larr; $(esc(ui("nav", "news")))</a></p>
+  <p class="ns-date">$(esc(format_news_date(item["date"])))$(tagmk)</p>
+  <h1>$(esc(String(page_title)))</h1>
+</div></header>"""
+end
 
-The markup carries no timing. `news-slider.js` owns that, so it can refuse to
-auto-advance for a visitor who asked for reduced motion while leaving the arrows
-and the title navigation working.
+"""
+The news carousel, between the hero and the research areas.
+
+The cards carry `card-media`, which is the class the research grid and the
+project grid use, so the lift, the shadow, the image zoom, the cursor spotlight
+and the tilt all arrive with no rule and no script of their own. `cards.js`
+finds them because it selects `.card-media`, and `reveal.js` leaves them alone
+because it skips everything inside `.news-slider`.
+
+Six at most. The home page is a doorway, not the news archive, and `/news/`
+holds the rest.
 """
 function hfun_news_slider()
     pre = prefix()
     its = news_items()
     isempty(its) && return ""
-    n = min(4, length(its))
-    its = its[1:n]
-
-    slides = join(["""
-        <article class="ns-slide$(k == 1 ? " is-active" : "")" data-index="$(k-1)">
-          <p class="ns-date">$(format_news_date(i["date"]))<span class="news-tag">$(esc(news_tag_label(i)))</span></p>
-          <h3 class="ns-title">$(esc(pick(i, "title")))</h3>
-          <p class="ns-body">$(esc(pick(i, "body")))</p>
-        </article>""" for (k, i) in enumerate(its)], "\n")
-
-    navitems = join(["""
-        <button class="ns-nav-item$(k == 1 ? " is-active" : "")" type="button" data-goto="$(k-1)"
-                aria-label="$(esc(pick(i, "title")))">
-          <span class="ns-nav-line"><span class="ns-nav-fill"></span></span>
-          <span class="ns-nav-title">$(esc(pick(i, "title")))</span>
-        </button>""" for (k, i) in enumerate(its)], "\n")
+    its = its[1:min(6, length(its))]
+    cards = join([news_card(i) for i in its], "\n")
+    # The dots are rendered here, not built in JavaScript, for the reason every
+    # list on this site is: a page that needs a script to say how many news
+    # items exist is a page that says nothing without one.
+    dots = join(["""      <button class="ns-dot$(k == 1 ? " is-on" : "")" type="button" data-goto="$(k-1)"
+              aria-label="$(esc(ui("news", "goto"))) $(k)"$(k == 1 ? " aria-current=\"true\"" : "")></button>"""
+                 for k in 1:length(its)], "\n")
 
     return """
 <section class="news-slider" id="newsSlider" aria-roledescription="carousel"
          aria-label="$(esc(ui("news", "carousel")))">
   <div class="container">
-    <p class="ns-head">$(esc(ui("home", "news_head")))</p>
-
-    <div class="ns-stage">
-      <button class="ns-arrow ns-prev" type="button" aria-label="$(esc(ui("news", "previous")))">$(icon("chevron-left"))</button>
-$(slides)
-      <button class="ns-arrow ns-next" type="button" aria-label="$(esc(ui("news", "next")))">$(icon("chevron-right"))</button>
+    <div class="ns-top">
+      <p class="ns-head">$(esc(ui("home", "news_head")))</p>
+      <div class="ns-controls">
+        <button class="ns-arrow ns-pause" data-motion-toggle type="button" aria-pressed="false">
+          <span class="motion-when-running">$(icon("pause-fill"))</span>
+          <span class="motion-when-paused">$(icon("play-fill"))</span>
+          <span class="visually-hidden">$(esc(ui("hero", "motion_pause")))</span>
+        </button>
+        <button class="ns-arrow ns-prev" type="button" aria-label="$(esc(ui("news", "previous")))">$(icon("chevron-left"))</button>
+        <button class="ns-arrow ns-next" type="button" aria-label="$(esc(ui("news", "next")))">$(icon("chevron-right"))</button>
+      </div>
     </div>
 
-    <div class="ns-nav">
-$(navitems)
+    <div class="ns-viewport">
+      <div class="ns-track">
+$(cards)
+      </div>
+    </div>
+
+    <div class="ns-rail" aria-hidden="true"><span class="ns-rail-fill"></span></div>
+
+    <div class="ns-dots">
+$(dots)
     </div>
 
     <p class="ns-more"><a class="link-arrow" href="$(pre)/news/">$(esc(ui("home", "news_link"))) <span class="link-arrow-mark">&rarr;</span></a></p>

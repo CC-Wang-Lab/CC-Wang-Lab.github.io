@@ -2,7 +2,7 @@
 facility = "fabrication-and-microscopy-equipment"
 lang = "zh"
 title = "Fabrication and microscopy equipment"
-lead = "3D Printer"
+lead = "3D Printer | Microscope"
 +++
 
 ~~~

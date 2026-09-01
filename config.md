@@ -99,6 +99,11 @@ form_to         = "juliahsieh@nycu.edu.tw"
 
 \newenvironment{page}{@@page-body,setup-study-page @@container @@setup-rows}{@@ @@ @@}
 
+<!-- A NEWS ARTICLE. One column of prose, in the page's own words.
+     Not `page`: that is the setup-study wrapper and it carries a figure-row
+     track a news article has no use for. -->
+\newenvironment{article}{@@page-body @@container @@prose,news-article}{@@ @@ @@}
+
 \newenvironment{words}{@@setup-notes,prose}{@@}
 \newenvironment{note}{@@setup-notes,prose,setup-notes--single}{@@}
 

@@ -220,10 +220,12 @@ def main() -> int:
         expect(not has_noindex(page(route)),
                f"canonical falling-film route must be indexable: {route}", failures)
 
+    # /news/ and /zh/news/ used to be here. News has published items now, so
+    # they are asserted as POPULATED below instead. The empty-state copy is
+    # still in ui.toml and hfun_news_grid still returns it, for the day the
+    # last item is withdrawn.
     empty_routes = {
-        "/news/": ("news", "No laboratory news is currently available."),
         "/people/alumni/": ("alumni", "No alumni records are currently published."),
-        "/zh/news/": ("news", "目前尚無實驗室最新消息。"),
         "/zh/people/alumni/": ("alumni", "目前尚未公開歷屆成員資料。"),
     }
     for route, (kind, message) in empty_routes.items():
@@ -237,8 +239,8 @@ def main() -> int:
         expect(message in html, f"{route} does not contain its localized empty-state copy", failures)
 
     for route in (
-        "/people/", "/projects/", "/facilities/",
-        "/zh/people/", "/zh/projects/", "/zh/facilities/",
+        "/people/", "/projects/", "/facilities/", "/news/",
+        "/zh/people/", "/zh/projects/", "/zh/facilities/", "/zh/news/",
     ):
         expect(not has_noindex(page(route)), f"{route} has public records but is noindexed", failures)
 
@@ -254,6 +256,17 @@ def main() -> int:
             hidden_routes.extend((
                 f'projects/{item["id"]}/index.html',
                 f'zh/projects/{item["id"]}/index.html',
+            ))
+    # A news item's page is an ordinary .md file and does not know about the
+    # placeholder flag. Withdraw the item and the card disappears from the
+    # carousel and the grid while the article stays live at its own URL, findable
+    # by anyone who has the link. Deleting the two pages is the other half of
+    # withdrawing an item, and this is what says so.
+    for item in rows("news", "item"):
+        if item.get("placeholder", False):
+            hidden_routes.extend((
+                f'news/{item["id"]}/index.html',
+                f'zh/news/{item["id"]}/index.html',
             ))
     for rel in hidden_routes:
         expect(not (SITE / rel).exists(), f"placeholder route was published: /{rel}", failures)
@@ -277,11 +290,11 @@ def main() -> int:
     homes = (("/", ""), ("/zh/", "/zh"))
     for route, prefix in homes:
         html = page(route)
-        expect(not has_data_value(html, "id", "newsSlider"), f"{route} exposes placeholder news", failures)
-        for hidden in ("news",):
-            href = f'href="{prefix}/{hidden}/"'
-            expect(href not in html, f"{route} navigation exposes empty {hidden}", failures)
-        for visible in ("people", "projects", "facilities"):
+        # This used to assert the OPPOSITE, that the carousel was absent, because
+        # every news item was a placeholder and the band rendered nothing. Real
+        # items exist now, so an absent carousel is the fault worth catching.
+        expect(has_data_value(html, "id", "newsSlider"), f"{route} lost the news carousel", failures)
+        for visible in ("people", "projects", "facilities", "news"):
             href = f'href="{prefix}/{visible}/"'
             expect(href in html, f"{route} lost populated {visible} navigation", failures)
         alumni_href = f'href="{prefix}/people/alumni/"'

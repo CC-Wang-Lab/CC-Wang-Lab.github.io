@@ -213,8 +213,14 @@ window.addEventListener("load", function () {
        exception applies to text flowing inside a sentence. */
     var targetSelector = [
       ".btn-cta", ".btn-ghost", ".btn-icon", ".navbar-toggler",
+      /* `.ns-nav-item` was here and is gone. The news band became a sliding
+         carousel and that class went with the old cross-fade slider's title
+         navigation. A selector that matches nothing does not fail: it quietly
+         covers nothing and the audit still reports clean, which is the fault
+         this file has already paid for three times. Checked before removing:
+         no stylesheet, no source file and no built page contains it. */
       ".lab-nav .nav-link", ".motion-toggle", ".ns-arrow",
-      ".ns-nav-item", ".pt-viewport", ".pg-chip", ".pi-chip",
+      ".pt-viewport", ".pg-chip", ".pi-chip",
       ".foot-nav a", "#backToTop", ".ff input", ".ff textarea", ".ff select"
     ].join(",");
     var targets = document.querySelectorAll(targetSelector);
@@ -562,15 +568,24 @@ window.addEventListener("load", function () {
       }
       var logosUnframed = true, logosLoaded = true, filtersPresent = true;
       var logoPointerEventsRestored = true;
+      var logosBroken = 0, logosDeferred = 0;
       for (var pl = 0; pl < partnerLogos.length; pl++) {
         var logo = partnerLogos[pl];
         var logoFrame = logo.closest(".pt-logo-frame");
         logosUnframed = logosUnframed && !logoFrame;
-        logosLoaded = logosLoaded && logo.complete && logo.naturalWidth > 0;
+        // A logo that has FINISHED loading and has no pixels is a 404, and that
+        // is the fault worth failing on. A logo that has not started is
+        // loading="lazy" doing its job: 72 marks do not fit in a 390px row, and
+        // the ones off the right-hand end are deferred on purpose. The old test
+        // demanded every one be complete, which was true at 15 logos and became
+        // a false alarm at 72.
+        if (logo.complete && logo.naturalWidth === 0) { logosBroken++; }
+        else if (!logo.complete) { logosDeferred++; }
         filtersPresent = filtersPresent && getComputedStyle(logo).filter !== "none";
         logoPointerEventsRestored = logoPointerEventsRestored &&
           getComputedStyle(logo).pointerEvents === "auto";
       }
+      logosLoaded = logosBroken === 0;
       var partnerKeyboard = { tested: false, passed: false, motionPaused: false };
       var partnerMotion = { expected: false, moving: false, resumesAfterDrag: false };
       var partnerFocus = { borderless: false, lineCue: false };
@@ -660,6 +675,8 @@ window.addEventListener("load", function () {
         logoCount: partnerLogos.length,
         logosUnframed: logosUnframed,
         logosLoaded: logosLoaded,
+        logosBroken: logosBroken,
+        logosDeferred: logosDeferred,
         filtersPresent: filtersPresent,
         logoPointerEventsRestored: logoPointerEventsRestored,
         keyboard: partnerKeyboard,
@@ -1613,7 +1630,7 @@ def main():
                     flags.append("partner SVG logos are missing")
                 for label, key in (
                     ("free of the reverted frames", "logosUnframed"),
-                    ("loaded", "logosLoaded"),
+                    ("loaded without a 404", "logosLoaded"),
                     ("using the restored filter treatment", "filtersPresent"),
                     ("using the branch-start pointer behavior", "logoPointerEventsRestored"),
                 ):
@@ -1701,8 +1718,10 @@ def main():
                          "absent" if profile.get("layoutStateAbsent") else "present",
                          "absent" if profile.get("switcherAbsent") else "present"))
             if partners:
-                print("        partners rows=%s logos=%s keyboard=%s filters=%s"
+                print("        partners rows=%s logos=%s (%s broken, %s deferred) "
+                      "keyboard=%s filters=%s"
                       % (partners.get("viewportCount"), partners.get("logoCount"),
+                         partners.get("logosBroken"), partners.get("logosDeferred"),
                          "pass" if partners.get("keyboard", {}).get("passed") else "fail",
                          "present" if partners.get("filtersPresent") else "missing"))
             for x in r["overflowing"]:
@@ -1719,6 +1738,40 @@ def main():
             print("        could not be measured there. Harness limit, see"
                   " point 4 in the docstring.")
             print("        The reveal effect IS covered above.")
+        # PICTURE RESOLUTION HEADROOM. A REPORT, NEVER A FINDING.
+        #
+        # The audit above catches a picture painted WIDER than its own pixels.
+        # It says nothing about one painted at EXACTLY its own pixels, which is
+        # right on a 1x display and soft on every laptop and phone made in the
+        # last decade. That is the other half of the same question and nothing
+        # was watching it.
+        #
+        # IT DOES NOT FAIL, AND THAT IS DELIBERATE. A low ratio is often the
+        # right answer: several of these are the site owner's own files, chosen
+        # by name, and re-cropping them from the slides would replace a picture
+        # he picked with one he rejected. That happened once. So this lists
+        # what it sees and leaves the judgement to a person.
+        headroom = {}
+        for report in REPORTS:
+            if report.get("w") != max((r.get('w') or 0) for r in REPORTS):
+                continue
+            for row in report.get("figRows") or ():
+                for fig in row.get("figs") or ():
+                    shown, natural = fig.get("w") or 0, fig.get("natW") or 0
+                    if shown and natural:
+                        key = (report.get("url", "?"), fig.get("src", "?"))
+                        headroom[key] = (shown, natural)
+        thin = sorted(((n / s, u, f, s, n) for (u, f), (s, n) in headroom.items()
+                       if n / s < 1.5))
+        if thin:
+            print("\n--- picture resolution, %d of %d under 1.5x at %dpx ---"
+                  % (len(thin), len(headroom), max((r.get('w') or 0) for r in REPORTS)))
+            print("    A low ratio is not automatically a fault. Check it against")
+            print("    the owner's own files before re-cropping anything.")
+            for ratio, url, src, shown, natural in thin:
+                print("    %5.2fx  shown %4d  file %4d  %-34s %s"
+                      % (ratio, shown, natural, src[:34], url))
+
         print("\n" + ("AUDIT CLEAN" if not bad else "%d finding(s)" % bad))
         if bad:
             return 1
