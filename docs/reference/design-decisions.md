@@ -281,9 +281,53 @@ URLs, on all 30 pages. Fonts, icons and the hero video are left alone on purpose
 being replaced with a differently named file, which busts itself.
 
 **What this does not fix, and cannot.** The HTML page is still held for up to ten minutes, and
-nothing on GitHub Pages can shorten that. The ten minutes are now bounded and harmless. A visitor
-gets the whole old page or the whole new page, never a mix, and it heals itself.
-**Nobody has to hard reload, and nobody has to be told to.**
+nothing on GitHub Pages can shorten that. The ten minutes are bounded and no longer produce a
+broken page: a visitor gets the whole old page or the whole new page, never a mix.
+
+### The whole old page turned out to be a hard reload after all
+
+*Added 2026-09-01. The paragraph above used to end "nobody has to hard reload, and nobody has to
+be told to". That was wrong, and it was reported from the live site within minutes of a deploy.*
+
+**A whole old page is still an old page.** Worse, a soft reload does not reliably cure it: the
+browser can answer from its own cache, and only Ctrl+Shift+R forces the question.
+
+**The fix: every page says which build it came from.**
+
+| | |
+|---|---|
+| `<meta name="lab-build">` | in every page, from `build_id()` in `utils.jl` |
+| `/build.txt` | the same string, written once per build by the same function |
+| `_assets/js/fresh.js` | fetches that file with `cache: "no-store"` and reloads once if it differs |
+
+One function computes the string, puts it in the page and writes the file, so the two cannot
+disagree. `build_id()` is a SHA-1 over every source file that decides what the HTML says: every
+`.md` at any depth, the stylesheet, every script, every data file, every layout, `config.md` and
+`utils.jl`. **Not the images.** Hashing 20 MB on every build to catch a picture replaced under the
+same name is a poor trade, and a stale picture is not what sends anyone to Ctrl+Shift+R.
+
+**The guard is the design, not a detail.** A reload loop is the worst thing a website can do.
+
+1. `sessionStorage` is **tested**, by writing and removing a key, before any other work. If it
+   throws, the file returns and does nothing. It never reloads without a way to remember it did.
+2. The id it saw is stored **before** the reload. One reload per build id per tab, for ever, even
+   if the reload brings back the same stale page because the CDN edge has not caught up either.
+3. Any network failure is swallowed. Offline is not a reason to reload.
+
+Measured in headless Edge, counting loads **inside the page**, because a reloaded document can
+come out of cache and never reach the server at all:
+
+| Case | Loads |
+|---|---|
+| Up to date | **1** |
+| Stale | **2**, then nothing for five seconds |
+| Stale, same tab, visited again | **1** |
+| `build.txt` returns 404 | **1**, and nothing remembered |
+
+**It checks on load and nowhere else.** Reloading a page somebody is halfway through reading takes
+their place away. Every navigation is a load, so a visitor who clicks anything gets the new build.
+The only person who keeps an old page is one sitting on a single page without clicking, and that
+is exactly the person not to interrupt.
 
 Motion state follows the same expectation. Every new page starts moving; the shared Play/Pause
 control changes only the current page. An obsolete saved `labMotion=off` value is ignored, so a

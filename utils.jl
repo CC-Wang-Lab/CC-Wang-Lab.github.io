@@ -174,6 +174,86 @@ A URL that maps to no file is returned unchanged rather than throwing. A
 missing asset is already a visible 404, and a build that dies over a cache tag
 is worse than one that ships a file without it.
 """
+const _BUILD_ID = Ref{String}("")
+const _BUILD_STAMPED = Ref{Bool}(false)
+
+"""
+One hash for the whole site, changing exactly when a page's content could.
+
+WHY THIS EXISTS. GitHub Pages sends `Cache-Control: max-age=600` on every HTML
+file and will not let anyone change it, so for ten minutes after a deploy a
+visitor can be handed the OLD page out of their own browser cache.
+`fingerprint()` below already stops that old page wearing a new stylesheet. It
+cannot do anything about the page itself. `_assets/js/fresh.js` can, and this
+is the string it compares.
+
+WHAT IS HASHED: everything that decides what the HTML says. Every `.md` at any
+depth, the stylesheet, every script, every data file, every layout, `config.md`
+and this file. Not the images: a picture changing under the same name is not
+what sends somebody to Ctrl+Shift+R, and hashing 20 MB on every build to catch
+it would be a poor trade.
+
+Paths go into the hash with forward slashes, so a build on Windows and a build
+on the Action agree when the content does.
+"""
+function build_id()::String
+    isempty(_BUILD_ID[]) || return _BUILD_ID[]
+    root = @__DIR__
+    paths = String[]
+    for f in ("config.md", "utils.jl")
+        p = joinpath(root, f)
+        isfile(p) && push!(paths, p)
+    end
+    for (dir, ext) in (("_css", ".css"), ("_assets/js", ".js"),
+                       ("_data", ".toml"), ("_layout", ".html"))
+        d = joinpath(root, dir)
+        isdir(d) || continue
+        for n in readdir(d)
+            endswith(n, ext) && push!(paths, joinpath(d, n))
+        end
+    end
+    for (dir, _, names) in walkdir(root)
+        rel = replace(relpath(dir, root), '\\' => '/')
+        any(startswith(rel, p) for p in ("__site", "_tmp", ".git", "node_modules")) && continue
+        for n in names
+            endswith(n, ".md") && push!(paths, joinpath(dir, n))
+        end
+    end
+    sort!(unique!(paths))
+    buf = IOBuffer()
+    for p in paths
+        write(buf, replace(relpath(p, root), '\\' => '/'))
+        write(buf, read(p))
+    end
+    _BUILD_ID[] = bytes2hex(sha1(take!(buf)))[1:12]
+    return _BUILD_ID[]
+end
+
+"""
+`{{build_stamp}}` - the meta `fresh.js` reads, and the file it reads it against.
+
+The file is written here rather than by a build step because there must be no
+way for the two to disagree. One function computes the string, puts it in the
+page and writes it to `__site/build.txt`, and it cannot put a different one in
+each.
+
+A build that cannot write the file is still a good build: `fresh.js` finds
+nothing, does nothing, and the site behaves exactly as it did before.
+"""
+function hfun_build_stamp()
+    id = build_id()
+    if !_BUILD_STAMPED[]
+        _BUILD_STAMPED[] = true
+        try
+            out = joinpath(@__DIR__, "__site")
+            mkpath(out)
+            write(joinpath(out, "build.txt"), id)
+        catch
+        end
+    end
+    return """<meta name="lab-build" content="$(id)" />"""
+end
+
 function fingerprint(url::AbstractString)
     get!(_FINGERPRINT, String(url)) do
         src = startswith(url, "/css/")    ? joinpath(@__DIR__, "_css",    url[6:end]) :
