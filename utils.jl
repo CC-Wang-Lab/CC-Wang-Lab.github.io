@@ -225,7 +225,15 @@ function build_id()::String
         write(buf, replace(relpath(p, root), '\\' => '/'))
         write(buf, read(p))
     end
-    _BUILD_ID[] = bytes2hex(sha1(take!(buf)))[1:12]
+    id = bytes2hex(sha1(take!(buf)))[1:12]
+    # LOWERCASE HEX, ENFORCED. The minifier ships this attribute unquoted, and
+    # an unquoted attribute value ends at the first space, so an id containing
+    # one would be silently truncated and every visitor would reload on every
+    # page for ever. `fresh.js` trims both sides so it no longer depends on
+    # this, and this no longer depends on `fresh.js`.
+    occursin(r"^[0-9a-f]+$", id) ||
+        error("build_id produced '$(id)', which is not lowercase hex")
+    _BUILD_ID[] = id
     return _BUILD_ID[]
 end
 

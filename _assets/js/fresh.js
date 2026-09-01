@@ -39,7 +39,16 @@
 
   var meta = document.querySelector('meta[name="lab-build"]');
   if (!meta) return;
-  var mine = meta.getAttribute("content");
+
+  /* TRIMMED, and not because anything is untidy today.
+     The minifier strips the quotes off this attribute, so the page ships
+     `<meta name=lab-build  content=48f911e687f3  />`. An unquoted attribute
+     value ends at the first space, so the browser hands back the bare hash and
+     there is nothing to trim - which means this works by HTML's parsing rules
+     rather than by anyone's intent. `build_id()` in utils.jl refuses to return
+     anything but lowercase hex for the same reason. Both sides are trimmed so
+     that neither of those has to stay true for this to keep working. */
+  var mine = (meta.getAttribute("content") || "").trim();
   if (!mine) return;
 
   // Guard first. No storage, no reloading. See point 1 above.
