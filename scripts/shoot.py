@@ -48,6 +48,7 @@ Five things here are not decoration:
    process holding a profile.
 """
 import argparse
+import base64
 import functools
 import http.server
 import json
@@ -61,6 +62,9 @@ import sys
 import threading
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import cdp  # noqa: E402  (needs the line above to be importable)
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "__site"
@@ -93,7 +97,7 @@ SEED = """<script>
 })();
 </script>"""
 
-AUDIT = """<script>
+AUDIT = r"""<script>
 /* Injected by scripts/shoot.py --measure. Reports the two things a grep over
    style.css cannot see, because both are COMPUTED: the final font-size of
    every element that really renders text, and anything wider than the
@@ -155,7 +159,7 @@ window.addEventListener("load", function () {
   }
   setTimeout(sweep, 200);
 
-  function measure() {
+  async function measure() {
     function sel(e) {
       var c = (typeof e.className === "string" ? e.className : "").trim();
       return e.tagName.toLowerCase() + (c ? "." + c.split(/[ ]+/).slice(0, 2).join(".") : "");
@@ -209,8 +213,14 @@ window.addEventListener("load", function () {
        exception applies to text flowing inside a sentence. */
     var targetSelector = [
       ".btn-cta", ".btn-ghost", ".btn-icon", ".navbar-toggler",
+      /* `.ns-nav-item` was here and is gone. The news band became a sliding
+         carousel and that class went with the old cross-fade slider's title
+         navigation. A selector that matches nothing does not fail: it quietly
+         covers nothing and the audit still reports clean, which is the fault
+         this file has already paid for three times. Checked before removing:
+         no stylesheet, no source file and no built page contains it. */
       ".lab-nav .nav-link", ".motion-toggle", ".ns-arrow",
-      ".ns-nav-item", ".pt-viewport", ".pg-chip", ".pi-chip",
+      ".pt-viewport", ".pg-chip", ".pi-chip",
       ".foot-nav a", "#backToTop", ".ff input", ".ff textarea", ".ff select"
     ].join(",");
     var targets = document.querySelectorAll(targetSelector);
@@ -269,6 +279,7 @@ window.addEventListener("load", function () {
     var noteTextSelector = [
       ".page-hd p:not(.profile-header-summary)", ".section-head p", ".page-narrow p", ".pi-body p",
       ".pub-theme p", ".pub-theme li", ".profile-narrative p",
+      ".setup-notes p", ".setup-notes li",
       ".form-col > p", ".pg-scope", ".project-body > p:not(:has(img, picture, video))",
       ".project-body > :is(ul, ol) > li", ".project-body > blockquote"
     ].join(",");
@@ -557,15 +568,24 @@ window.addEventListener("load", function () {
       }
       var logosUnframed = true, logosLoaded = true, filtersPresent = true;
       var logoPointerEventsRestored = true;
+      var logosBroken = 0, logosDeferred = 0;
       for (var pl = 0; pl < partnerLogos.length; pl++) {
         var logo = partnerLogos[pl];
         var logoFrame = logo.closest(".pt-logo-frame");
         logosUnframed = logosUnframed && !logoFrame;
-        logosLoaded = logosLoaded && logo.complete && logo.naturalWidth > 0;
+        // A logo that has FINISHED loading and has no pixels is a 404, and that
+        // is the fault worth failing on. A logo that has not started is
+        // loading="lazy" doing its job: 72 marks do not fit in a 390px row, and
+        // the ones off the right-hand end are deferred on purpose. The old test
+        // demanded every one be complete, which was true at 15 logos and became
+        // a false alarm at 72.
+        if (logo.complete && logo.naturalWidth === 0) { logosBroken++; }
+        else if (!logo.complete) { logosDeferred++; }
         filtersPresent = filtersPresent && getComputedStyle(logo).filter !== "none";
         logoPointerEventsRestored = logoPointerEventsRestored &&
           getComputedStyle(logo).pointerEvents === "auto";
       }
+      logosLoaded = logosBroken === 0;
       var partnerKeyboard = { tested: false, passed: false, motionPaused: false };
       var partnerMotion = { expected: false, moving: false, resumesAfterDrag: false };
       var partnerFocus = { borderless: false, lineCue: false };
@@ -655,6 +675,8 @@ window.addEventListener("load", function () {
         logoCount: partnerLogos.length,
         logosUnframed: logosUnframed,
         logosLoaded: logosLoaded,
+        logosBroken: logosBroken,
+        logosDeferred: logosDeferred,
         filtersPresent: filtersPresent,
         logoPointerEventsRestored: logoPointerEventsRestored,
         keyboard: partnerKeyboard,
@@ -662,8 +684,314 @@ window.addEventListener("load", function () {
         focus: partnerFocus
       };
     }
+    var setupImages = Array.prototype.slice.call(
+      document.querySelectorAll(".fig-media img"));
+    await Promise.all(setupImages.map(function (setupImage) {
+      if (setupImage.complete) return Promise.resolve();
+      return new Promise(function (resolve) {
+        var settled = false;
+        function finish() {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve();
+        }
+        var timer = setTimeout(finish, 1500);
+        setupImage.addEventListener("load", finish, { once: true });
+        setupImage.addEventListener("error", finish, { once: true });
+      });
+    }));
+    await Promise.all(setupImages.map(function (setupImage) {
+      if (!setupImage.complete || !setupImage.naturalWidth ||
+          typeof setupImage.decode !== "function") return Promise.resolve();
+      return Promise.race([
+        setupImage.decode().catch(function () {}),
+        new Promise(function (resolve) { setTimeout(resolve, 750); })
+      ]);
+    }));
+    var setupImageIssues = [];
+    var setupImagesLoaded = 0;
+    for (var si = 0; si < setupImages.length; si++) {
+      var setupImage = setupImages[si];
+      var setupImageSrc = setupImage.getAttribute("src") || "(unknown image)";
+      var setupImageRect = setupImage.getBoundingClientRect();
+      if (!setupImage.complete || !setupImage.naturalWidth ||
+          !setupImage.naturalHeight || !setupImageRect.width ||
+          !setupImageRect.height) {
+        setupImageIssues.push(setupImageSrc + " did not load to measurable dimensions");
+        continue;
+      }
+      setupImagesLoaded++;
+      var setupImageStyle = getComputedStyle(setupImage);
+      var naturalRatio = setupImage.naturalWidth / setupImage.naturalHeight;
+      var renderedRatio = setupImageRect.width / setupImageRect.height;
+      var fit = setupImageStyle.objectFit;
+      var containScale = Math.min(
+        setupImageRect.width / setupImage.naturalWidth,
+        setupImageRect.height / setupImage.naturalHeight);
+      var paintedWidth = setupImageRect.width;
+      var paintedHeight = setupImageRect.height;
+      if (fit === "contain") {
+        paintedWidth = setupImage.naturalWidth * containScale;
+        paintedHeight = setupImage.naturalHeight * containScale;
+      } else if (fit === "cover") {
+        var coverScale = Math.max(
+          setupImageRect.width / setupImage.naturalWidth,
+          setupImageRect.height / setupImage.naturalHeight);
+        paintedWidth = setupImage.naturalWidth * coverScale;
+        paintedHeight = setupImage.naturalHeight * coverScale;
+      } else if (fit === "none") {
+        paintedWidth = setupImage.naturalWidth;
+        paintedHeight = setupImage.naturalHeight;
+      } else if (fit === "scale-down") {
+        var scaleDown = Math.min(1, containScale);
+        paintedWidth = setupImage.naturalWidth * scaleDown;
+        paintedHeight = setupImage.naturalHeight * scaleDown;
+      }
+      var distorted = fit === "fill" &&
+        Math.abs(renderedRatio - naturalRatio) / naturalRatio > 0.01;
+      var croppedByFit = paintedWidth > setupImageRect.width + 1 ||
+        paintedHeight > setupImageRect.height + 1;
+      var clippedByAncestor = false;
+      for (var clipNode = setupImage.parentElement;
+           clipNode && clipNode !== setupImage.closest(".fig");
+           clipNode = clipNode.parentElement) {
+        var clipStyle = getComputedStyle(clipNode);
+        if (!/(hidden|clip|scroll|auto)/.test(
+              clipStyle.overflowX + " " + clipStyle.overflowY)) continue;
+        var clipRect = clipNode.getBoundingClientRect();
+        if (setupImageRect.left < clipRect.left - 1 ||
+            setupImageRect.right > clipRect.right + 1 ||
+            setupImageRect.top < clipRect.top - 1 ||
+            setupImageRect.bottom > clipRect.bottom + 1) {
+          clippedByAncestor = true;
+          break;
+        }
+      }
+      if (distorted || croppedByFit || clippedByAncestor) {
+        setupImageIssues.push(
+          setupImageSrc + " fit=" + fit +
+          " natural/rendered=" + naturalRatio.toFixed(3) + "/" +
+          renderedRatio.toFixed(3) +
+          " painted/box=" + paintedWidth.toFixed(1) + "x" +
+          paintedHeight.toFixed(1) + "/" + setupImageRect.width.toFixed(1) +
+          "x" + setupImageRect.height.toFixed(1) +
+          " ancestor-clipped=" + clippedByAncestor
+        );
+      }
+    }
+    var setupImageAudit = {
+      total: setupImages.length,
+      loaded: setupImagesLoaded,
+      issues: setupImageIssues.slice(0, 12)
+    };
+    /* ------------------------------------------------------------------
+       THE READING MEASURE, IN REAL CHARACTERS PER LINE.
+
+       Justification is required everywhere on this site and nothing has ever
+       checked whether the column is wide enough to carry it. style.css names
+       the floor itself, at the .foot-addr note: below about 45 characters the
+       word spaces measured 14-16px against 3-4px on the last line and a river
+       ran down the block.
+
+       Characters per line is counted from the TEXT, not guessed from a font
+       size. A Range over the contents returns one client rect per line box, so
+       distinct rect tops are the line count, and length/lines is the measure a
+       reader actually sees.
+       ------------------------------------------------------------------ */
+    var justifyAudit = [], justifyAuditSeen = {};
+    /* `.setup-notes` is in this list, and it has to be. Franklin omits the <p>
+       when a block holds exactly one paragraph, so a one-paragraph record has
+       no `p` at all and a probe that selects only `p` finds nothing and
+       reports the page clean. That is the "a probe that selects a class
+       nobody emits reports clean" fault, and it hid a real one: the words
+       were left-aligned on a justified site and nothing said so. A block that
+       DOES contain a paragraph is skipped here, so nothing is counted twice. */
+    var proseNodes = document.querySelectorAll(
+      "p, li, blockquote, .card-scope, .pg-scope, .person-row-topic, .news-body," +
+      ".setup-notes");
+    for (var pj = 0; pj < proseNodes.length; pj++) {
+      var proseNode = proseNodes[pj];
+      if (proseNode.classList.contains("setup-notes") &&
+          proseNode.querySelector("p, li")) continue;
+      var proseStyle = getComputedStyle(proseNode);
+      if (proseStyle.display === "none" || proseStyle.visibility === "hidden") continue;
+      if (proseStyle.textAlign !== "justify") continue;
+      var proseText = (proseNode.textContent || "").replace(/\s+/g, " ").trim();
+      if (proseText.length < 60) continue;
+      var proseRange = document.createRange();
+      proseRange.selectNodeContents(proseNode);
+      var proseRects = proseRange.getClientRects(), tops = [];
+      for (var pr = 0; pr < proseRects.length; pr++) {
+        if (proseRects[pr].width > 0) tops.push(proseRects[pr].top);
+      }
+      /* CLUSTER the tops, never round them. An inline <strong> or <a> sits a
+         fraction of a pixel off its own line, and rounding turns that into a
+         second line, which makes a wide paragraph look like a narrow one. */
+      tops.sort(function (a, b) { return a - b; });
+      var proseLines = 0, lastTop = -1e9;
+      for (var tp = 0; tp < tops.length; tp++) {
+        if (tops[tp] - lastTop > 3) { proseLines++; lastTop = tops[tp]; }
+      }
+      if (proseLines < 2) continue;
+      var proseKey = sel(proseNode);
+      if (justifyAuditSeen[proseKey]) continue;
+      justifyAuditSeen[proseKey] = 1;
+      /* The honest characters-per-line is the BOX width over the average
+         character width, not the text length over the line count. Every line
+         but the last is stretched to the box, and the last line is usually
+         short, so length/lines always reads low. The average is measured from
+         this element's own text in its own computed font. */
+      var widthProbe = document.createElement("span");
+      widthProbe.style.cssText = "position:absolute;left:-99999px;top:0;white-space:pre;";
+      widthProbe.style.fontFamily = proseStyle.fontFamily;
+      widthProbe.style.fontSize = proseStyle.fontSize;
+      widthProbe.style.fontWeight = proseStyle.fontWeight;
+      widthProbe.style.fontStyle = proseStyle.fontStyle;
+      widthProbe.style.letterSpacing = proseStyle.letterSpacing;
+      widthProbe.textContent = proseText.slice(0, 400);
+      document.body.appendChild(widthProbe);
+      var avgChar = widthProbe.getBoundingClientRect().width /
+                    Math.max(1, widthProbe.textContent.length);
+      document.body.removeChild(widthProbe);
+      var proseBox = proseNode.getBoundingClientRect().width;
+      justifyAudit.push({
+        sel: proseKey,
+        px: +proseBox.toFixed(1),
+        chars: proseText.length, lines: proseLines,
+        cpl: avgChar > 0 ? +(proseBox / avgChar).toFixed(1) : 0,
+        cplNaive: +(proseText.length / proseLines).toFixed(1),
+        avgChar: +avgChar.toFixed(2),
+        font: +parseFloat(proseStyle.fontSize).toFixed(1)
+      });
+    }
+
+    /* ------------------------------------------------------------------
+       THE SETUP GRID, AS THE BROWSER RESOLVED IT.
+
+       gridTemplateColumns comes back as used pixel values, so this reports
+       what the figure track really is rather than what the stylesheet asked
+       for. That is the only way to see a four-column track holding two
+       figures, which reads as a broken row and cannot be found by grepping.
+       ------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------
+       THE ROW AUDIT.
+
+       A justified row gives every picture in it `flex: aspect 1 0`, so the
+       widths come out proportional to aspect and every height is the same
+       number. Two things can go wrong and neither is visible in a
+       screenshot at a glance:
+
+         heightSpread  the heights are NOT equal. Some rule has overridden
+                       the computed size, and the row is a plain flex line
+                       wearing the class of a justified one. A min-height on
+                       a figure did exactly this and was removed.
+
+         upscaled      a picture is painted wider than its own pixels. The
+                       cap that prevents it lives on the ROW's max-width,
+                       computed from the smallest natural height in the row,
+                       and one wrong figure size in _data/ would break it
+                       silently.
+       ------------------------------------------------------------------ */
+    var figRows = [];
+    var rowNodes = document.querySelectorAll(".fig-row");
+    for (var rw = 0; rw < rowNodes.length; rw++) {
+      var rowNode = rowNodes[rw];
+      var rowRect = rowNode.getBoundingClientRect();
+      var items = rowNode.querySelectorAll(".fig");
+      var heights = [], upscaled = [], itemList = [];
+      for (var it = 0; it < items.length; it++) {
+        var itemImg = items[it].querySelector("img");
+        if (!itemImg) continue;
+        var itemRect = itemImg.getBoundingClientRect();
+        if (!itemRect.width || !itemImg.naturalWidth) continue;
+        /* The spread is measured on the MEDIA BOX, not on the image inside
+           it. A diagram's box carries padding so its drawing does not touch
+           the frame, which makes its image 33.6px shorter than a photograph
+           beside it at 1440 while the two boxes are exactly level. Measuring
+           the image reported a 33.59px spread on seven pages that were in
+           fact perfectly justified. The box is what the eye lines up. */
+        var itemBox = items[it].querySelector(".fig-media");
+        heights.push((itemBox || itemImg).getBoundingClientRect().height);
+        if (itemRect.width > itemImg.naturalWidth * 1.05) {
+          upscaled.push((itemImg.getAttribute("src") || "?").split("/").pop() +
+            " " + Math.round(itemRect.width) + "px of " + itemImg.naturalWidth);
+        }
+        itemList.push({
+          src: (itemImg.getAttribute("src") || "?").split("/").pop(),
+          w: +itemRect.width.toFixed(1), h: +itemRect.height.toFixed(1),
+          natW: itemImg.naturalWidth
+        });
+      }
+      figRows.push({
+        n: items.length,
+        stacked: getComputedStyle(rowNode).display !== "flex",
+        rowPx: +rowRect.width.toFixed(1),
+        spread: heights.length ?
+          +(Math.max.apply(null, heights) - Math.min.apply(null, heights)).toFixed(2) : 0,
+        upscaled: upscaled,
+        figs: itemList
+      });
+    }
+
+    /* ------------------------------------------------------------------
+       THE SPLIT BLOCKS, AND WHETHER THEY STILL END LEVEL.
+
+       A solved split carries two widths measured offline by
+       scripts/solve-split.py: the words at a readable measure, and the
+       pictures at the width that makes them exactly as tall. That is a COPY
+       of a fact about the record's prose, so editing one sentence in _data/
+       makes it wrong, and nothing in Julia can tell.
+
+       This is the check that catches it. No second mechanism is needed,
+       because a stale split IS a pair of columns that no longer end level.
+       The tolerance is one line height: the words step by whole lines, so
+       they can never match to better than that, and the measured residual on
+       a fresh solve is under 1px, which leaves 29px of headroom before an
+       edit trips it.
+
+       SKIPPED WHEN STACKED. Below 992px the two children sit one above the
+       other and there are no two heights to compare. Comparing anyway fails
+       every phone width in the sweep. The test is where the two boxes START,
+       not a breakpoint: a breakpoint written here would be a second copy of
+       the one in the stylesheet.
+       ------------------------------------------------------------------ */
+    var splitAudit = [];
+    var splitNodes = document.querySelectorAll(".setup-split");
+    for (var sp = 0; sp < splitNodes.length; sp++) {
+      var splitNode = splitNodes[sp];
+      var splitWords = splitNode.querySelector(".setup-split-words");
+      var splitRow = splitNode.querySelector(".fig-row");
+      if (!splitWords || !splitRow) {
+        splitAudit.push({ sel: sel(splitNode), broken: "missing a child" });
+        continue;
+      }
+      var sw = splitWords.getBoundingClientRect();
+      var sr = splitRow.getBoundingClientRect();
+      var sideBySide = Math.abs(sw.top - sr.top) < 5;
+      /* IN FORCE, not merely stored. The solved widths only apply from 1400px
+         up, where the container reaches the 1296px they were solved at; below
+         that the block falls back to a proportion nobody solved for and is
+         not expected to be level. Asked as "is the rendered width the stored
+         width", read off the element, so the 1400px breakpoint is not copied
+         out of the stylesheet into here where it could drift. */
+      var want = parseFloat(getComputedStyle(splitNode)
+                              .getPropertyValue("--sp-words"));
+      var inForce = !isNaN(want) && Math.abs(sw.width - want) < 1;
+      splitAudit.push({
+        sel: sel(splitNode),
+        solved: splitNode.classList.contains("setup-split--solved"),
+        inForce: inForce, wantWords: isNaN(want) ? null : want,
+        sideBySide: sideBySide,
+        wordsPx: +sw.width.toFixed(1), wordsH: +sw.height.toFixed(1),
+        picsPx: +sr.width.toFixed(1), picsH: +sr.height.toFixed(1),
+        apart: sideBySide ? +(sw.height - sr.height).toFixed(1) : null
+      });
+    }
+
     fetch("/__report", { method: "POST", body: JSON.stringify({
       url: location.pathname, w: window.innerWidth,
+      splitAudit: splitAudit,
       motionStartsRunning: motionStartsRunning,
       motion: document.documentElement.classList.contains("motion-off") ? "off" : "on",
       revealTotal: claimed.length, revealStuck: stuck.slice(0, 10),
@@ -681,7 +1009,9 @@ window.addEventListener("load", function () {
       unjustifiedNotes: unjustifiedNotes.slice(0, 12),
       narrowProjectMedia: narrowProjectMedia.slice(0, 8),
       overflowing: wide.slice(0, 14), heroTitle: heroTitleAudit,
-      profile: profileAudit, partners: partnerAudit
+      profile: profileAudit, partners: partnerAudit,
+      setupImages: setupImageAudit,
+      justifyAudit: justifyAudit, figRows: figRows
     })});
   }
 });
@@ -691,6 +1021,10 @@ REPORTS = []
 MOTION = ["off"]    # set from --motion; a list so shoot() can read it
 SCROLLTO = [None]   # set from --scrollto
 REALTIME = [False]  # set from --realtime
+EMULATE = [False]   # set from --emulate; drives shoot_cdp instead of shoot
+BROWSER = [None]    # the one reusable CDP browser, in --emulate runs only
+WIDTH_MISSES = []   # (url, asked, got) where content would not fit
+NO_SHOTS = [False]  # set from --no-shots; measure without capturing
 
 # page, width, theme, why this shot exists
 MATRIX = [
@@ -703,9 +1037,16 @@ MATRIX = [
     ("/projects/", 492, "light", "filter chips and project cards at the narrow end"),
     ("/projects/", 1440, "light", "project list and filters at the reference width"),
     ("/projects/", 1440, "dark", "project list theme parity"),
-    ("/projects/cpu-cooler-airflow/", 492, "light", "project prose and full-width media on mobile"),
-    ("/projects/cpu-cooler-airflow/", 1440, "light", "project prose measure beside full-width media"),
-    ("/projects/cpu-cooler-airflow/", 1440, "dark", "project detail theme parity"),
+    ("/projects/two-phase-closed-loop-thermosyphon/", 1440, "light",
+     "imported project figures preserve their complete source image"),
+    ("/facilities/thermal-fin-natural-convection-chamber/", 1440, "light",
+     "single-figure layout A must not reserve an empty media column"),
+    ("/facilities/thermal-fin-natural-convection-chamber/", 492, "light",
+     "single-figure layout A must retain the mobile stack"),
+    ("/facilities/air-cooler-wind-tunnel/", 492, "light",
+     "single-figure layout B must use the full mobile media width"),
+    ("/projects/thermosyphon-working-fluid-filling-ratio/", 492, "light",
+     "single-figure layout C must use the full mobile media width"),
     ("/people/", 492, "light", "stacked people index and narrow footer"),
     ("/publications/", 492, "light", "smallest type at the narrowest width Edge allows"),
     ("/publications/", 1440, "light", "densest small type, the longest run of --fs-xs"),
@@ -835,6 +1176,10 @@ GUTTER = 24
 # except the very narrow phone layout, which has to be checked by hand in
 # devtools. Measured 2026-08-19.
 NARROWEST = 492
+# One line height: --lh-normal 1.55 x --fs-md 19.2px at 1440, measured. The
+# words of a split step by whole lines, so the two columns can never match to
+# better than this, and a fresh solve lands under 1px.
+SPLIT_TOLERANCE = 29.76
 
 
 def request_target(url, theme):
@@ -885,6 +1230,105 @@ def shoot(edge, url, width, theme, out_png, profile, height=4000, budget=9000):
     return False
 
 
+def setup_routes():
+    """Every public facility and project detail route, read from _data/.
+
+    Generated, never listed by hand. A record added to facilities.toml or
+    projects.toml is swept on the next run with no edit here, which is the
+    same rule the rest of the site follows: the data file is the source and
+    the page grows itself.
+    """
+    import tomllib
+    routes = []
+    for name, key, base in (("facilities.toml", "item", "/facilities/"),
+                            ("projects.toml", "project", "/projects/")):
+        with open(ROOT / "_data" / name, "rb") as fh:
+            rows = tomllib.load(fh)[key]
+        for row in rows:
+            if row.get("placeholder", False):
+                continue
+            routes.append((base + row["id"] + "/", len(row.get("figure", [])),
+                           str(row.get("layout", "-"))))
+    return routes
+
+
+def setup_matrix(widths, theme="light"):
+    out = []
+    for route, figures, layout in setup_routes():
+        for w in widths:
+            out.append((route, w, theme,
+                        "layout %s, %d figure(s)" % (layout, figures)))
+    return out
+
+
+def shoot_cdp(edge, url, width, theme, out_png, profile, height=4000):
+    """Shoot at a TRUE layout width, over CDP. See scripts/cdp.py for why.
+
+    Three things differ from shoot() above, and all three are improvements:
+
+      1. The width is real. `Emulation.setDeviceMetricsOverride` sets the
+         layout viewport, so 320 is 320. shoot() cannot go below about 484 and
+         crops the difference, which is why NARROWEST exists.
+      2. There is no virtual-time budget, so requestAnimationFrame FIRES.
+         Point 4 of the module docstring says scroll-linked effects cannot be
+         measured; that is a limit of the --screenshot= flag, which shoots at
+         load and exits. Here the screenshot is a protocol call, so the page
+         can be given real time first and rAF works.
+      3. One browser serves the whole run instead of one process per shot.
+
+    The width is ASSERTED, not assumed. A harness that quietly lays out at the
+    wrong width is the exact fault this file was written to remove, so a
+    mismatch fails the shot rather than writing a mislabelled PNG.
+    """
+    browser = BROWSER[0]
+    if browser is None:
+        browser = cdp.Browser(edge, profile)
+        browser.call("Page.enable")
+        browser.call("Runtime.enable")
+        BROWSER[0] = browser
+
+    browser.call("Emulation.setDeviceMetricsOverride", {
+        "width": width, "height": height, "deviceScaleFactor": 1,
+        "mobile": width < 768, "screenWidth": width, "screenHeight": height,
+    })
+    before = len(REPORTS)
+    browser.clear_events()
+    browser.call("Page.navigate", {
+        "url": "http://127.0.0.1:%d%s" % (PORT, request_target(url, theme))})
+    browser.await_event("Page.loadEventFired", timeout=90)
+
+    seen = browser.evaluate("window.innerWidth")
+    if seen != width:
+        # This is a FINDING, not a harness fault, and the picture is the whole
+        # point of having it. A page whose content will not fit makes Chromium
+        # widen the visual viewport to show it, so innerWidth comes back larger
+        # than the device width. Refusing the shot would hide the one page that
+        # most needs looking at, so it is recorded and shot anyway.
+        WIDTH_MISSES.append((url, width, seen))
+        print("      OVERFLOW: content forced the viewport to %spx at %dpx"
+              % (seen, width))
+
+    if Injector.measure:
+        # The probe fires 2.5 s after load and POSTs to /__report. Poll for it
+        # rather than sleeping a guessed amount.
+        end = time.monotonic() + 45
+        while len(REPORTS) == before and time.monotonic() < end:
+            time.sleep(0.1)
+        if len(REPORTS) == before:
+            print("      the audit probe never reported - shot refused")
+            return False
+    else:
+        time.sleep(1.2)
+
+    if NO_SHOTS[0]:
+        return True
+    shot = browser.call("Page.captureScreenshot", {"format": "png"}, timeout=180)
+    if out_png.exists():
+        out_png.unlink()
+    out_png.write_bytes(base64.b64decode(shot["data"]))
+    return out_png.stat().st_size > 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--url")
@@ -903,11 +1347,31 @@ def main():
                     help="set the current-page LabMotion state. Default off, "
                          "which freezes the marquee and slider so shots are "
                          "diffable. Use on to test automatic motion.")
+    ap.add_argument("--sweep", choices=["setup"],
+                    help="replace the regression matrix with every public "
+                         "facility and project detail route, read from _data/")
+    # 1200 is not decoration. Between 992 and 1399 a solved split falls back to
+    # the 5/7 proportion, which nobody solved for, so its balance there is
+    # accidental and could be far out on a record nobody has looked at. It is
+    # in the DEFAULT rather than passed by hand because a width somebody has to
+    # remember is not a test.
+    ap.add_argument("--widths", default="320,390,1200,1440",
+                    help="comma-separated widths for --sweep")
+    ap.add_argument("--no-shots", action="store_true",
+                    help="run the audit probe but write no PNG. Measurement "
+                         "iterates far faster than full-page capture.")
+    ap.add_argument("--emulate", action="store_true",
+                    help="drive Edge over CDP and set the LAYOUT viewport, so "
+                         "widths below 492 are real instead of cropped")
     ap.add_argument("--measure", action="store_true",
                     help="audit computed type ramps, the 12.8px floor, 44px "
                          "controls, reading measures and viewport overflow")
     args = ap.parse_args()
 
+    if args.emulate and args.realtime:
+        sys.exit("--emulate already runs in real time and controls when the "
+                 "screenshot is taken, so --realtime adds nothing and its "
+                 "shoot-at-load behaviour would break the audit.")
     if args.measure and args.realtime:
         sys.exit("--measure and --realtime cannot be combined. Without the "
                  "virtual-time budget Edge screenshots at load and exits, so "
@@ -918,6 +1382,8 @@ def main():
     Injector.measure = args.measure
     MOTION[0] = args.motion
     REALTIME[0] = args.realtime
+    EMULATE[0] = args.emulate
+    NO_SHOTS[0] = args.no_shots
     SCROLLTO[0] = args.scrollto
     edge = find_edge()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -941,7 +1407,12 @@ def main():
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     print("serving %s on 127.0.0.1:%d (read-only, injecting)" % (SITE, PORT))
 
-    shots = ([(args.url, args.width, args.theme, "ad hoc")] if args.url else MATRIX)
+    if args.sweep == "setup":
+        shots = setup_matrix([int(w) for w in args.widths.split(",")], args.theme)
+    elif args.url:
+        shots = [(args.url, args.width, args.theme, "ad hoc")]
+    else:
+        shots = MATRIX
     made, failed = [], []
     try:
         for i, (url, width, theme, why) in enumerate(shots):
@@ -952,15 +1423,21 @@ def main():
                 slug += "-" + re.sub(r"[^a-z0-9-]+", "-", layout.lower()).strip("-")
             # NARROWEST, not `width`: below it Edge renders wider than asked,
             # and a file called _375_ that is really 492 is a lie.
-            real = max(width, NARROWEST)
+            real = width if args.emulate else max(width, NARROWEST)
             png = OUT / ("%02d_%s_%d_%s.png" % (i, slug, real, theme))
             profile = OUT / ("profile-%02d" % i)
-            ok = shoot(edge, url, width, theme, png, profile, args.height)
-            kb = png.stat().st_size // 1024 if ok else 0
+            ok = (shoot_cdp(edge, url, width, theme, png, OUT / "profile-cdp",
+                            args.height) if args.emulate else
+                  shoot(edge, url, width, theme, png, profile, args.height))
+            kb = (png.stat().st_size // 1024
+                  if ok and png.is_file() else 0)
             print("  %s %-28s %5d %-5s %6d KB  %s"
                   % ("ok  " if ok else "FAIL", url, width, theme, kb, why))
             (made if ok else failed).append(str(png))
     finally:
+        if BROWSER[0] is not None:
+            BROWSER[0].close()
+            BROWSER[0] = None
         if args.keep_server:
             print("\nserver still running on %d. Ctrl-C to stop." % PORT)
             try:
@@ -972,9 +1449,18 @@ def main():
         for d in OUT.glob("profile-*"):
             shutil.rmtree(d, ignore_errors=True)
 
+    if WIDTH_MISSES:
+        print("\n=== PAGES THAT WOULD NOT FIT ===")
+        for miss_url, asked, got in WIDTH_MISSES:
+            print("  %-56s asked %d, laid out %d (+%d)"
+                  % (miss_url, asked, got, got - asked))
+    if args.measure and REPORTS:
+        (OUT / "reports.json").write_text(json.dumps(REPORTS, indent=1),
+                                          encoding="utf-8")
+        print("\nwrote %s (%d report(s))" % (OUT / "reports.json", len(REPORTS)))
     if args.measure:
         print("\n=== COMPUTED AUDIT ===")
-        if len(REPORTS) < len(made):
+        if not args.no_shots and len(REPORTS) < len(made):
             print("  %d shot(s) but only %d report(s): the audit did not run on "
                   "every page, so this is NOT a clean result."
                   % (len(made), len(REPORTS)))
@@ -1012,6 +1498,57 @@ def main():
             if r.get("narrowProjectMedia"):
                 flags.append("%d project media block(s) are not full-width"
                              % len(r["narrowProjectMedia"]))
+            # Every page must have composed at least one row, and every row
+            # must hold its two invariants. `spread` above 1px means the
+            # heights are not equal, which means the justification is not
+            # working however plausible the row looks.
+            fig_rows = r.get("figRows")
+            if not fig_rows:
+                flags.append("no justified figure row on the page")
+            for i, row in enumerate(fig_rows or (), start=1):
+                if not row.get("stacked") and row.get("spread", 0) > 1:
+                    flags.append("row %d of %d: heights differ by %.2fpx; the row is "
+                                 "not justified" % (i, len(fig_rows), row["spread"]))
+                if row.get("upscaled"):
+                    flags.append("row %d: %s painted above natural width"
+                                 % (i, "; ".join(row["upscaled"])))
+            # A solved split must still end level. One line height of
+            # tolerance, because the words step by whole lines and can never
+            # match closer than that; a fresh solve lands under 1px.
+            for i, sp in enumerate(r.get("splitAudit") or (), start=1):
+                if sp.get("broken"):
+                    flags.append("split %d: %s" % (i, sp["broken"]))
+                    continue
+                # Only where the solved widths are actually in force. Below
+                # 1400px the block falls back to a proportion nobody solved
+                # for, so it is not expected to be level there and calling it
+                # "stale" would be a lie. Measured on air-cooler-wind-tunnel,
+                # which is level to 0.05px at 1440 and 37.8px out at 1200.
+                if (not sp.get("solved") or not sp.get("sideBySide")
+                        or not sp.get("inForce")):
+                    continue
+                if abs(sp.get("apart") or 0) > SPLIT_TOLERANCE:
+                    flags.append(
+                        "split %d: the columns are %.1fpx out of level "
+                        "(words %.0fx%.0f, pictures %.0fx%.0f). The stored "
+                        "split_<lang> is stale: re-run scripts/solve-split.py"
+                        % (i, sp["apart"], sp["wordsPx"], sp["wordsH"],
+                           sp["picsPx"], sp["picsH"]))
+            setup_images = r.get("setupImages")
+            expected_image_count = sum(row.get("n", 0) for row in fig_rows or ())
+            if expected_image_count:
+                if not setup_images:
+                    flags.append("setup image audit did not run")
+                elif setup_images.get("total") != expected_image_count:
+                    flags.append("setup image count %s differs from the %s figures "
+                                 "the rows contain"
+                                 % (setup_images.get("total"), expected_image_count))
+                elif setup_images.get("loaded") != expected_image_count:
+                    flags.append("only %s/%s setup images loaded"
+                                 % (setup_images.get("loaded"), expected_image_count))
+            if setup_images and setup_images.get("issues"):
+                flags.append("%d setup image(s) are distorted, cropped, clipped, or unloaded"
+                             % len(setup_images["issues"]))
             profile = r.get("profile")
             if profile:
                 if not profile.get("layoutStateAbsent"):
@@ -1093,7 +1630,7 @@ def main():
                     flags.append("partner SVG logos are missing")
                 for label, key in (
                     ("free of the reverted frames", "logosUnframed"),
-                    ("loaded", "logosLoaded"),
+                    ("loaded without a 404", "logosLoaded"),
                     ("using the restored filter treatment", "filtersPresent"),
                     ("using the branch-start pointer behavior", "logoPointerEventsRestored"),
                 ):
@@ -1164,14 +1701,27 @@ def main():
                 print("        align  " + x)
             for x in r.get("narrowProjectMedia", []):
                 print("        media  " + x)
+            for i, row in enumerate(r.get("figRows") or (), start=1):
+                print("        row %d  n=%s %s%.0fpx spread=%.2f  %s"
+                      % (i, row.get("n"), "stacked " if row.get("stacked") else "",
+                         row.get("rowPx", 0), row.get("spread", 0),
+                         " ".join("%s %.0f/%s" % (f["src"], f["w"], f["natW"])
+                                  for f in row.get("figs", []))))
+            if setup_images and setup_images.get("total"):
+                print("        images loaded/total = %s/%s"
+                      % (setup_images.get("loaded"), setup_images.get("total")))
+                for x in setup_images.get("issues", []):
+                    print("        image  " + x)
             if profile:
                 print("        profile requested=%s state=%s switcher=%s"
                       % (profile.get("requested") or "(none)",
                          "absent" if profile.get("layoutStateAbsent") else "present",
                          "absent" if profile.get("switcherAbsent") else "present"))
             if partners:
-                print("        partners rows=%s logos=%s keyboard=%s filters=%s"
+                print("        partners rows=%s logos=%s (%s broken, %s deferred) "
+                      "keyboard=%s filters=%s"
                       % (partners.get("viewportCount"), partners.get("logoCount"),
+                         partners.get("logosBroken"), partners.get("logosDeferred"),
                          "pass" if partners.get("keyboard", {}).get("passed") else "fail",
                          "present" if partners.get("filtersPresent") else "missing"))
             for x in r["overflowing"]:
@@ -1188,6 +1738,40 @@ def main():
             print("        could not be measured there. Harness limit, see"
                   " point 4 in the docstring.")
             print("        The reveal effect IS covered above.")
+        # PICTURE RESOLUTION HEADROOM. A REPORT, NEVER A FINDING.
+        #
+        # The audit above catches a picture painted WIDER than its own pixels.
+        # It says nothing about one painted at EXACTLY its own pixels, which is
+        # right on a 1x display and soft on every laptop and phone made in the
+        # last decade. That is the other half of the same question and nothing
+        # was watching it.
+        #
+        # IT DOES NOT FAIL, AND THAT IS DELIBERATE. A low ratio is often the
+        # right answer: several of these are the site owner's own files, chosen
+        # by name, and re-cropping them from the slides would replace a picture
+        # he picked with one he rejected. That happened once. So this lists
+        # what it sees and leaves the judgement to a person.
+        headroom = {}
+        for report in REPORTS:
+            if report.get("w") != max((r.get('w') or 0) for r in REPORTS):
+                continue
+            for row in report.get("figRows") or ():
+                for fig in row.get("figs") or ():
+                    shown, natural = fig.get("w") or 0, fig.get("natW") or 0
+                    if shown and natural:
+                        key = (report.get("url", "?"), fig.get("src", "?"))
+                        headroom[key] = (shown, natural)
+        thin = sorted(((n / s, u, f, s, n) for (u, f), (s, n) in headroom.items()
+                       if n / s < 1.5))
+        if thin:
+            print("\n--- picture resolution, %d of %d under 1.5x at %dpx ---"
+                  % (len(thin), len(headroom), max((r.get('w') or 0) for r in REPORTS)))
+            print("    A low ratio is not automatically a fault. Check it against")
+            print("    the owner's own files before re-cropping anything.")
+            for ratio, url, src, shown, natural in thin:
+                print("    %5.2fx  shown %4d  file %4d  %-34s %s"
+                      % (ratio, shown, natural, src[:34], url))
+
         print("\n" + ("AUDIT CLEAN" if not bad else "%d finding(s)" % bad))
         if bad:
             return 1

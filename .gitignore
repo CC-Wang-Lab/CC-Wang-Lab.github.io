@@ -1,7 +1,11 @@
 __site/
 _tmp/
 node_modules/
+__pycache__/
 package.json
 package-lock.json
 Manifest.toml
 .DS_Store
+
+# copies taken by scripts that edit a _data file in place
+*.toml.bak

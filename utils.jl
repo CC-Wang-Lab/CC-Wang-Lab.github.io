@@ -524,6 +524,46 @@ is worse. Same call as `fingerprint()` makes.
 """
 const _ART = Dict{String,String}()
 
+"""
+`card_focus` on a record, as an inline custom property for the card's image box.
+
+A card crops its picture to 16/9. Which part survives is a judgement about the
+picture, not about the layout, so it belongs to the record. Absent, the card
+centres exactly as it always did.
+
+Accepts any CSS object-position value: a keyword like `top`, a pair like
+`50% 30%`. Validated only for the characters CSS allows there, so a typo cannot
+close the attribute and inject markup.
+"""
+function card_focus_style(record)::String
+    v = get(record, "card_focus", nothing)
+    v === nothing && return ""
+    s = strip(String(v))
+    isempty(s) && return ""
+    occursin(r"^[a-z0-9%.\s-]+$"i, s) ||
+        error("card_focus for '$(record["id"])' is not a CSS object-position: $(repr(s))")
+    return " style=\"--card-focus:$(s)\""
+end
+
+"""
+The picture a CARD should show for this record.
+
+`card_focus` chooses which band of the source survives the 16/9 crop, and needs
+no second file. `card_crop` is for the window it cannot reach, one narrower than
+the source, and `scripts/make-card-previews.py` cuts that into `<stem>.card.jpg`.
+
+Falls back to the source, so a record whose preview has not been cut yet shows
+the picture rather than a broken image.
+"""
+function card_image(record)::String
+    img = String(get(record, "image", "/assets/img/projects/placeholder.svg"))
+    haskey(record, "card_crop") || return img
+    stem, ext = splitext(img)
+    isempty(ext) && return img
+    cut = stem * ".card.jpg"
+    isfile(joinpath(@__DIR__, "_assets", cut[9:end])) ? cut : img
+end
+
 function card_media_art(path)
     url = String(path)
     if endswith(lowercase(url), ".svg") && startswith(url, "/assets/")
@@ -772,10 +812,30 @@ end
 function partner_item(o)
     logo = get(o, "logo", "")
     name = esc(pick(o, "name"))
-    body = isempty(logo) ?
-        """<span class="pt-name">$(name)</span>""" :
-        """<img class="pt-logo" src="$(esc(logo))" alt="$(name)" loading="lazy" draggable="false">"""
-    return """<li class="pt-item">$(body)</li>"""
+    isempty(logo) && return """<li class="pt-item"><span class="pt-name">$(name)</span></li>"""
+
+    # `w`/`h` are THIS logo's display size in CSS pixels, written by
+    # scripts/prepare-partner-logos.py from the mark's own aspect ratio and ink
+    # coverage. One `max-height` cannot serve 72 marks whose aspect runs from
+    # 0.77:1 to 10:1; the wordmarks come out as slivers. The custom properties
+    # are inline because a stylesheet cannot know a per-file number, and they
+    # beat the `width`/`height` attributes, which are here only to reserve the
+    # space before the file arrives.
+    w = get(o, "w", 0)
+    h = get(o, "h", 0)
+    size = (w > 0 && h > 0) ?
+        string(" width=\"", w, "\" height=\"", h,
+               "\" style=\"--pt-w:", round(w / 16, digits = 4),
+               "rem;--pt-h:", round(h / 16, digits = 4), "rem\"") : ""
+
+    # The name on hover, because a mark on its own does not always say who it
+    # is, and half of these are Taiwanese firms a visitor will not know.
+    #
+    # aria-hidden is NOT optional: the <img alt> already carries the same words,
+    # so without it a screen reader reads all 72 names twice.
+    return """<li class="pt-item">""" *
+           """<img class="pt-logo" src="$(esc(logo))" alt="$(name)"$(size) loading="lazy" draggable="false">""" *
+           """<span class="pt-tip" aria-hidden="true">$(name)</span></li>"""
 end
 
 """
@@ -869,9 +929,74 @@ end
 #  Facilities — the equipment underneath the capabilities.
 #
 #  The SAME card as a project card, on purpose: image, research area, title,
-#  one line of scope. A facility has no page of its own to open, so the card is
-#  a static <div> and not a link, exactly like a research area with no project.
+#  one line of scope. Each public facility has one canonical detail page, so
+#  the card is an ordinary link.
 # ---------------------------------------------------------------------------
+
+"""
+The title and lead for one record's CARD, read from that record's own page.
+
+    card_words("facilities", "air-cooler-wind-tunnel")
+
+The words live in the page now, so `_data/` is no longer the source for these
+two. English cards read `facilities/<id>.md`; Chinese cards read
+`zh/facilities/<id>.md`, so a card always shows the language of the page it
+is on.
+
+WHY THIS READS THE FILE AND NOT `pagevar`. **`pagevar` silently gives up after
+six pages.** Franklin carries a recursion guard that counts the wrong thing:
+
+    md.jl:38     if pagevar; PAGEVAR_DEPTH[] += 1
+                 elseif !isrecursive && !isinternal; PAGEVAR_DEPTH[] = 0
+    vars.jl:253  PAGEVAR_DEPTH[] > 5 && return default
+
+It is incremented and never decremented, and it is reset only when a NORMAL
+page build begins. So it counts how many not-yet-processed pages one page has
+pulled in, not how deep the nesting goes. It exists to stop a `pagevar` cycle
+overflowing the stack (Franklin issue #891) and it does that, but a card index
+reading 26 pages gets six answers and twenty `nothing`s, with no warning.
+
+Two wrong explanations were written down before this one, so they are recorded
+here to stop a third. It is NOT build order, and it is NOT custom variables
+versus Franklin's own: `title` is one of Franklin's and dies at the seventh
+page exactly like `lead`. Declaring a global default does not help either.
+
+Reading the source file sidesteps the guard entirely, and it has no ordering
+and no counter in it, so it cannot grow a cap later. The front matter here is
+written by `scripts/`, so the shape is narrow: `key = "value"` on one line,
+with `\\"` for a quote inside.
+
+WHY THIS ERRORS RATHER THAN FALLING BACK. A typo in an id would otherwise
+render a card with no title and no summary and say nothing, which is the silent
+no-op this repo keeps paying for. Falling back to `_data/` would be worse: the
+card would look right while the page it links to was missing, and nobody would
+find out until a reader clicked it.
+"""
+function card_words(folder::AbstractString, id::AbstractString)
+    rel = (lang() == "zh" ? "zh/" : "") * String(folder) * "/" * String(id) * ".md"
+    path = joinpath(@__DIR__, rel)
+    isfile(path) ||
+        error("card for '$(id)': there is no page at $(rel). The card would be blank.")
+    text = read(path, String)
+    parts = split(text, "+++")
+    length(parts) >= 3 ||
+        error("card for '$(id)': $(rel) has no `+++` front matter.")
+    front = parts[2]
+    function field(key)
+        m = match(Regex("^\\s*" * key * "\\s*=\\s*\"((?:[^\"\\\\]|\\\\.)*)\"\\s*\$", "m"), front)
+        m === nothing && return nothing
+        return replace(String(m.captures[1]), "\\\"" => "\"", "\\\\" => "\\")
+    end
+    title = field("title")
+    lead = field("lead")
+    title === nothing &&
+        error("card for '$(id)': $(rel) has no `title` in its front matter. " *
+              "The card would be blank.")
+    lead === nothing &&
+        error("card for '$(id)': $(rel) has no `lead` in its front matter. " *
+              "The card would have no summary.")
+    return title, lead
+end
 
 """
 `{{facilities}}` — the equipment grid at /facilities/.
@@ -885,26 +1010,571 @@ function hfun_facilities()
     isempty(facilities) && return empty_state("facilities")
     cards = String[]
     for f in facilities
+        href = prefix() * "/facilities/" * String(f["id"]) * "/"
         badge = haskey(f, "area") ? """
             <span class="card-badge">$(esc(pick(area_by_id(String(f["area"]), "facilities.toml"), "title")))</span>""" : ""
-        img = esc(get(f, "image", "/assets/img/projects/placeholder.svg"))
+        img = esc(card_image(f))
+        image_fit = lowercase(String(get(f, "image_fit", "cover")))
+        image_fit in ("cover", "contain") ||
+            error("facilities.toml: image_fit for '$(f["id"])' must be cover or contain")
+        image_class = image_fit == "contain" ? " card-media-img--contain" : ""
+        focus = card_focus_style(f)
+        card_title, card_lead = card_words("facilities", String(f["id"]))
         push!(cards, """
       <div class="col-md-6 col-lg-4">
-        <div class="card-media is-static" id="$(esc(f["id"]))">
-          <span class="card-media-img">
+        <a class="card-media" id="$(esc(f["id"]))" href="$(esc(href))">
+          <span class="card-media-img$(image_class)"$(focus)>
             <img src="$(img)" alt="" loading="lazy">
           </span>
           <span class="card-media-body">$(badge)
-            <span class="card-title">$(esc(pick(f, "title")))</span>
-            <span class="card-scope">$(esc(pick(f, "lead")))</span>
+            <span class="card-title">$(esc(card_title))</span>
+            <span class="card-scope">$(esc(card_lead))</span>
           </span>
-        </div>
+        </a>
       </div>""")
     end
     return """<div class="row g-4">\n$(join(cards, "\n"))\n</div>"""
 end
 
 facility_items() = public_rows(data("facilities")["item"])
+
+function facility_by_id(id::AbstractString)
+    hit = filter(f -> get(f, "id", "") == id, facility_items())
+    isempty(hit) && error("no public facility with id '$(id)' in facilities.toml")
+    return first(hit)
+end
+
+function render_setup_item(item)::String
+    item isa AbstractDict || return "<li>$(esc(string(item)))</li>"
+
+    item_type = String(get(item, "type", ""))
+    item_type == "source-url" ||
+        error("unsupported structured section item type '$item_type'")
+    label = strip(pick(item, "label"))
+    isempty(label) && error("source-url section item needs a label")
+    value = strip(String(get(item, "value", "")))
+    occursin(r"^https://[^/?#\s]+(?:[/?#][^\s]*)?$", value) ||
+        error("source-url section item needs an absolute https:// value")
+    safe_value = esc(value)
+    return "<li>$(esc(label)) <a href=\"$(safe_value)\">$(safe_value)</a></li>"
+end
+
+function render_setup_sections(record::AbstractDict)
+    blocks = String[]
+    for section in get(record, "section", Any[])
+        heading = strip(pick(section, "heading"))
+        body = strip(pick(section, "body"))
+        items_key = "items_" * lang()
+        items = get(section, items_key, get(section, "items_en", Any[]))
+        items isa AbstractVector || error("section '$items_key' must be an array")
+        any(item -> isempty(strip(string(item))), items) &&
+            error("section '$items_key' must not contain blank items")
+        heading_html = isempty(heading) ? "" : "<h2>$(esc(heading))</h2>"
+        body_html = isempty(body) ? "" : "<p>$(esc(body))</p>"
+        items_html = isempty(items) ? "" :
+            "<ul>" * join([render_setup_item(item) for item in items]) * "</ul>"
+        push!(blocks, "<section>$(heading_html)$(body_html)$(items_html)</section>")
+    end
+    return join(blocks, "\n")
+end
+
+# ---------------------------------------------------------------------------
+#  Per-page composition: JUSTIFIED ROWS
+#
+#  A shared three-layout renderer cannot lay out these pages, because the thing
+#  that decides the layout is what the pictures ARE. One record is four
+#  micrographs of one comparison set; the next is a rack photograph beside a
+#  dot grid 497px wide and 1600px tall. No stylesheet can tell those apart.
+#
+#  So each page composes itself, in its own front matter:
+#
+#      blocks = [
+#        "row:test-rig",
+#        "notes",
+#        "row:sintered additively-manufactured",
+#        "row:diamond acid-etched",
+#      ]
+#
+#  WHY FRONT MATTER AND NOT `{{figrow a b}}` IN THE BODY, which is what the
+#  approved plan said. An unknown hfun name does not throw. Franklin logs a
+#  warning and substitutes an empty string, so `{{figrpw a b}}` builds green
+#  with two pictures missing and no `{{ }}` left in the HTML for a gate to
+#  grep. That is the same silent-no-op class of fault that put 25 of 26
+#  records into the wrong grid, and it is the fault this whole pass exists to
+#  remove. A front-matter list cannot misspell a function name, because there
+#  is no function name in it, and every id in it is checked below.
+#
+#  THE ARITHMETIC. Each figure is a flex item with `flex: aspect 1 0`. With a
+#  zero basis the free space is shared out in proportion to flex-grow, so
+#
+#      width_i = (W - gaps) * a_i / sum(a)     and     height_i = width_i / a_i
+#              = (W - gaps) / sum(a)           the SAME for every item.
+#
+#  The row therefore fills its container exactly, with nothing cropped and no
+#  ragged bottom edge, whatever shapes are in it.
+#
+#  THE CAP. An image must never be painted wider than its own pixels. Slot
+#  width is a_i * h, so the no-upscale condition a_i * h <= w_i reduces to
+#  h <= h_i: the row height cap is min(natural height) over the row. It is
+#  emitted as `--nat-h` and applied to the row's max-width, never to the
+#  image's max-height. Capping the image letterboxes it inside a slot that is
+#  still the old size, which breaks the equal-height property the row is for.
+# ---------------------------------------------------------------------------
+
+function figure_by_id(record::AbstractDict, id::AbstractString)
+    hit = filter(f -> String(get(f, "id", "")) == id, get(record, "figure", Any[]))
+    isempty(hit) && error("record '$(record["id"])' has no figure '$(id)'")
+    return first(hit)
+end
+
+"""One figure inside a justified row."""
+function render_fig(figure::AbstractDict)::String
+    kind = esc(String(get(figure, "kind", "figure")))
+    image = esc(String(figure["image"]))
+    haskey(figure, "w") && haskey(figure, "h") ||
+        error("figure '$(figure["id"])' has no w/h; run scripts/add-figure-sizes.py")
+    w = Int(figure["w"])
+    h = Int(figure["h"])
+    caption = esc(pick(figure, "caption"))
+    caption_html = isempty(caption) ? "" : "\n    <figcaption>$(caption)</figcaption>"
+    # --ar-w and --ar-h are the raw integers, never a rounded ratio. Three or
+    # more items in one row accumulate the rounding error, and the row then
+    # misses its container by a pixel or two at the right-hand edge.
+    return """
+  <figure class="fig fig--$(kind)" style="--ar-w:$(w);--ar-h:$(h);--nat-w:$(w)px">
+    <a class="fig-media" href="$(image)" aria-label="$(esc(ui("figure", "zoom")))"><img src="$(image)" alt="" width="$(w)" height="$(h)" loading="lazy" decoding="async"><span class="fig-zoom" aria-hidden="true"></span></a>$(caption_html)
+  </figure>"""
+end
+
+"""One justified row of figures, from a list of figure ids."""
+function render_fig_row(record::AbstractDict, ids::Vector{String})::String
+    isempty(ids) && error("record '$(record["id"])': a row needs at least one figure id")
+    figures = [figure_by_id(record, id) for id in ids]
+    n = length(figures)
+    sum_ar = sum(Int(f["w"]) / Int(f["h"]) for f in figures)
+    nat_h = minimum(Int(f["h"]) for f in figures)
+    body = join([render_fig(f) for f in figures], "\n")
+    return """
+<div class="fig-row fig-row--n$(n)" style="--sum-ar:$(round(sum_ar, digits=6));--nat-h:$(nat_h)px;--n:$(n)">
+$(body)
+</div>"""
+end
+
+"""The record's lead paragraph, on its own."""
+function render_lead(record::AbstractDict)::String
+    lead = esc(pick(record, "body"))
+    # Not unconditional. Five records have an empty body_en, and an empty <p>
+    # still occupies a line box plus its own bottom margin, so those pages
+    # opened on a blank gap nobody could see the cause of.
+    isempty(strip(lead)) && return ""
+    return """<div class="setup-notes prose"><p>$(lead)</p></div>"""
+end
+
+"""One section of the record's words, by its 1-based position."""
+function render_section(record::AbstractDict, n::Int)::String
+    sections = get(record, "section", Any[])
+    1 <= n <= length(sections) ||
+        error("record '$(record["id"])': sec:$(n) asked for, but it has $(length(sections)) section(s)")
+    one = Dict{String,Any}("section" => Any[sections[n]])
+    return """<div class="setup-notes prose">$(render_setup_sections(one))</div>"""
+end
+
+"""The record's words: the lead paragraph and every section under it."""
+function render_notes(record::AbstractDict)::String
+    lead = esc(pick(record, "body"))
+    lead_html = isempty(strip(lead)) ? "" : "<p>$(lead)</p>"
+    return """<div class="setup-notes prose">$(lead_html)
+$(render_setup_sections(record))</div>"""
+end
+
+"""One text block named inside a split: `notes`, `lead` or `sec:<n>`."""
+function render_split_text(record::AbstractDict, token::AbstractString)::String
+    token == "notes" && return render_notes(record)
+    token == "lead" && return render_lead(record)
+    startswith(token, "sec:") &&
+        return render_section(record, parse(Int, token[5:end]))
+    error("record '$(record["id"])': unknown text block $(repr(token)) in a split")
+end
+
+"""
+The solved column ratio for this record, in the page's language, or `nothing`.
+
+    split_en = [430, 734]
+
+means: the words want 430px and the pictures 734px. At those two widths the
+two columns end at the same height. They are WIDTHS, not a ratio, and that is
+deliberate: see the block comment on `.setup-split` in style.css. A ratio
+balances at one container width; two fixed widths balance at every width they
+both fit at, and the block stacks by itself when they stop fitting.
+
+WHY THIS IS STORED AND NOT COMPUTED. The notes are not one paragraph. A record
+carries an `h2` at 37.6px over a 41.36px line, list items that are one line
+whatever the column width, and a `figcaption` that re-wraps as the column
+narrows. `ceil(N * c / w) * L` describes none of that, so the height was read
+off a browser and the answer cannot be recovered in Julia at build time.
+
+IT IS THEREFORE A COPY OF A FACT AND CAN GO STALE. Nothing else needs to guard
+it: `shoot.py --measure` re-measures both column heights on every detail page,
+and a stale ratio is exactly a pair of columns that no longer end level. One
+mechanism, not two. It cannot run in CI, which has no browser, so the sweep is
+a local gate to run before a merge.
+
+ONE VALUE PER LANGUAGE. Today `split_en` and `split_zh` are identical, because
+every record's Chinese prose is still a copy of its English. Measured on all 26
+pages, the English and Chinese height curves match to the pixel. The day a
+native speaker writes the Chinese for real, they will not: Chinese sets far
+more compactly, and a split solved on English would stop ending level on the
+Chinese page, where only a Chinese reader would ever see it.
+"""
+function split_ratio(record::AbstractDict)
+    v = pick(record, "split")
+    (v === nothing || v == "") && return nothing
+    (v isa AbstractVector && length(v) == 2) ||
+        error("record '$(record["id"])': `split_$(lang())` must be two " *
+              "numbers, [words, pictures]; run scripts/solve-split.py")
+    return (Float64(v[1]), Float64(v[2]))
+end
+
+"""
+Words beside pictures. Side by side from 992px up, stacked below it.
+
+The pictures are sized so that the two columns end at the same height, which
+is what the ratio above carries. Where the record has no solved ratio the
+block falls back to the 5/7 split it has always used, so a page that has not
+been measured still renders.
+"""
+function render_split(record::AbstractDict, texts::Vector{String},
+                      ids::Vector{String})::String
+    isempty(ids) && error("record '$(record["id"])': a split needs a figure id")
+    solved = split_ratio(record)
+    if solved === nothing
+        # A portrait hero is capped at 40rem tall, so it is narrow, and a
+        # column sized for a landscape photograph leaves it floating in the
+        # middle of white space. Measured on
+        # thermal-fin-natural-convection-chamber: 360px of photograph inside a
+        # 733px column. A tall hero gets a column that hugs it instead.
+        figure = figure_by_id(record, ids[1])
+        mod = (length(ids) == 1 && Int(figure["w"]) < Int(figure["h"])) ?
+              " setup-split--tall" : ""
+        style = ""
+    else
+        words_px, pics_px = solved
+        mod = " setup-split--solved"
+        style = string(" style=\"--sp-words:", fmt_num(words_px),
+                       "px;--sp-pics:", fmt_num(pics_px), "px\"")
+    end
+    words = join([render_split_text(record, t) for t in texts], "\n")
+    return """
+<div class="setup-split$(mod)"$(style)>
+<div class="setup-split-words">
+$(words)
+</div>
+$(render_fig_row(record, ids))
+</div>"""
+end
+
+"""Trim a float for a style attribute without ever printing `1.0e3`."""
+fmt_num(x::Real) = (r = round(float(x), digits = 3);
+                    isinteger(r) ? string(Int(r)) : string(r))
+
+"""Crumb, area badge and title. Shared by the composed and the a/b/c path."""
+function setup_header_html(record::AbstractDict, kind::AbstractString)::String
+    src = kind == "facility" ? "facilities.toml" : "projects.toml"
+    back_path = kind == "facility" ? "/facilities/" : "/projects/"
+    back_html = kind == "facility" ?
+        "&larr; " * esc(ui("nav", "facilities")) : esc(ui("projects", "back"))
+    area = area_by_id(String(record["area"]), src)
+    # THE PAGE'S OWN TITLE, not the record's. The card on /facilities/ reads the
+    # page, so the heading has to as well, or one string has two sources and
+    # they can drift without anything noticing. Every page carries `title` in
+    # its front matter, on both mechanisms, so this is safe for either.
+    page_title = locvar(:title)
+    page_title === nothing &&
+        error("record '$(record["id"])': its page has no `title` in the front matter")
+    return """
+<header class="page-hd setup-study-hd"><div class="container">
+  <p class="project-crumb"><a href="$(prefix())$(back_path)">$(back_html)</a></p>
+  <span class="card-badge">$(esc(pick(area, "title")))</span>
+  <h1>$(esc(String(page_title)))</h1>
+</div></header>"""
+end
+
+"""
+Read `blocks` from the front matter and check it against the record.
+
+Every one of these fires on a real mistake somebody can make while composing:
+a figure left out, a figure used twice, an id that does not exist, notes put
+on a record that has none, or a record with words and nowhere to put them.
+"""
+function setup_blocks(record::AbstractDict)
+    raw = locvar(:blocks)
+    raw === nothing && return nothing
+    raw isa AbstractVector ||
+        error("`blocks` in the front matter must be a list of strings")
+
+    n_sections = length(get(record, "section", Any[]))
+    has_lead = !isempty(strip(pick(record, "body")))
+
+    parsed = Tuple{String,Vector{String}}[]
+    used = String[]
+    lead_blocks = 0
+    section_blocks = zeros(Int, n_sections)
+    for entry in raw
+        text = strip(String(entry))
+        if text == "notes"
+            # "notes" stands for the lead AND every section, so it counts as
+            # placing whatever the record actually has. A record with no lead
+            # is not made to say so.
+            #
+            # But a record with NEITHER a lead nor a section has nothing for
+            # "notes" to stand for, and every check below still passes: zero
+            # leads wanted, zero placed. `render_notes` then emits an empty
+            # `.setup-notes` div, which is a flex child of `.setup-rows` and
+            # still costs its 40px gap. The page gains a hole above the
+            # pictures that no gate can see.
+            #
+            # Found on fabrication-and-microscopy-equipment, 2026-08-31, when
+            # its ten-character body was deleted as redundant against three
+            # captions that already said the same words.
+            (has_lead || n_sections > 0) ||
+                error("record '$(record["id"])': `blocks` names \"notes\", but the " *
+                      "record has no lead and no sections. An empty notes block " *
+                      "still costs its own gap; remove \"notes\" from the page.")
+            lead_blocks += has_lead ? 1 : 0
+            section_blocks .+= 1
+            push!(parsed, ("notes", String[]))
+        elseif text == "lead"
+            lead_blocks += 1
+            push!(parsed, ("lead", String[]))
+        elseif startswith(text, "sec:")
+            n = tryparse(Int, strip(text[5:end]))
+            n === nothing && error("record '$(record["id"])': $(repr(text)) needs a section number")
+            1 <= n <= n_sections ||
+                error("record '$(record["id"])': $(repr(text)) but it has $(n_sections) section(s)")
+            section_blocks[n] += 1
+            push!(parsed, ("sec", String[string(n)]))
+        elseif startswith(text, "split")
+            #   split:<id> <id> ...          every word of the record, beside them
+            #   split(lead sec:1):<id> ...   only those text blocks, beside them
+            #
+            # The second form exists because eight records open on `lead` plus
+            # `sec:1` and keep `sec:2` further down the page. For those the top
+            # block is the lead AND section one, and `notes` would wrongly drag
+            # every later section into it.
+            m = match(r"^split(?:\(([^()]*)\))?:(.*)$", text)
+            m === nothing &&
+                error("record '$(record["id"])': $(repr(text)) is not a split; write " *
+                      "split:<figure-id> ... or split(lead sec:1):<figure-id> ...")
+            spec = m.captures[1] === nothing ? "notes" : strip(String(m.captures[1]))
+            texts = String.(split(spec))
+            isempty(texts) &&
+                error("record '$(record["id"])': $(repr(text)) names no text to " *
+                      "put beside the pictures")
+            for t in texts
+                if t == "notes"
+                    lead_blocks += has_lead ? 1 : 0
+                    section_blocks .+= 1
+                elseif t == "lead"
+                    lead_blocks += 1
+                elseif startswith(t, "sec:")
+                    n = tryparse(Int, t[5:end])
+                    n === nothing &&
+                        error("record '$(record["id"])': $(repr(t)) needs a section number")
+                    1 <= n <= n_sections ||
+                        error("record '$(record["id"])': $(repr(t)) but it has $(n_sections) section(s)")
+                    section_blocks[n] += 1
+                else
+                    error("record '$(record["id"])': $(repr(t)) cannot go in a split; " *
+                          "use notes, lead or sec:<n>")
+                end
+            end
+            ids = String.(split(strip(String(m.captures[2]))))
+            isempty(ids) &&
+                error("record '$(record["id"])': $(repr(text)) needs at least one figure id")
+            append!(used, ids)
+            # The payload is the text spec first, then every figure id. One
+            # vector, because that is what `parsed` holds for every other block.
+            push!(parsed, ("split", vcat([join(texts, " ")], ids)))
+        elseif startswith(text, "row:")
+            ids = String.(split(strip(text[5:end])))
+            isempty(ids) && error("record '$(record["id"])': empty row block")
+            append!(used, ids)
+            push!(parsed, ("row", ids))
+        else
+            error("record '$(record["id"])': unknown block $(repr(text)); use " *
+                  "notes, lead, sec:<n>, split:<figure-id> or row:<figure-id> ...")
+        end
+    end
+
+    all_ids = [String(f["id"]) for f in get(record, "figure", Any[])]
+    for id in used
+        id in all_ids ||
+            error("record '$(record["id"])': a block names figure '$(id)', which it has not got")
+    end
+    for id in all_ids
+        count(==(id), used) == 1 ||
+            error("record '$(record["id"])': figure '$(id)' appears $(count(==(id), used)) times in blocks; it must appear exactly once")
+    end
+    # Every piece of the record's words is placed exactly once. A lead left
+    # out, a section named twice, or a heading placed on a record that has no
+    # such section all stop the build here rather than quietly disappearing.
+    want_lead = has_lead ? 1 : 0
+    lead_blocks == want_lead ||
+        error("record '$(record["id"])': the lead paragraph is placed $(lead_blocks) time(s), " *
+              "and it must be placed $(want_lead)")
+    for (n, count) in enumerate(section_blocks)
+        count == 1 ||
+            error("record '$(record["id"])': section $(n) is placed $(count) time(s) in blocks; " *
+                  "it must be placed exactly once")
+    end
+    return parsed
+end
+
+"""A composed page: header, then the blocks in the order the page asked for."""
+function render_setup_rows(record::AbstractDict, kind::AbstractString, blocks)::String
+    parts = String[]
+    for (name, ids) in blocks
+        if name == "notes"
+            push!(parts, render_notes(record))
+        elseif name == "lead"
+            push!(parts, render_lead(record))
+        elseif name == "sec"
+            push!(parts, render_section(record, parse(Int, ids[1])))
+        elseif name == "split"
+            push!(parts, render_split(record, String.(split(ids[1])), ids[2:end]))
+        else
+            push!(parts, render_fig_row(record, ids))
+        end
+    end
+    # The first picture is the LCP element on nearly every one of these pages
+    # once the notes stop filling a column beside it, and every <img> the site
+    # emits is lazy. A lazy LCP image is half a second of empty box.
+    body = replace(join(parts, "\n"), "loading=\"lazy\"" => "loading=\"eager\" fetchpriority=\"high\"", count = 1)
+    return """
+$(setup_header_html(record, kind))
+<div class="page-body setup-study-page"><div class="container">
+  <div class="setup-rows">
+$(body)
+  </div>
+</div></div>"""
+end
+
+
+# ---------------------------------------------------------------------------
+#  THE PAGE OWNS ITS WORDS AND ITS LAYOUT
+#
+#  A detail page used to be a data record plus a `blocks` list, and utils.jl
+#  assembled it. It is now a Markdown page that a person writes, using a few
+#  named markers. The words live in the page. `_data/` keeps only what a
+#  SCRIPT writes: each figure's id, kind, image, w and h, and the solved
+#  split_en / split_zh. Nobody has ever hand-typed a `w` or a split.
+#
+#  THE MARKERS, defined as environments in config.md so they are available to
+#  every page with no import:
+#
+#      \begin{page} ... \end{page}          the page shell
+#      \begin{level}{a b} ... \end{level}   words beside pictures, ending level
+#      \begin{split}{a b} ... \end{split}   words beside pictures, 5/7
+#      \begin{words} ... \end{words}        a prose block on its own
+#      {{figrow a b c}}                     one justified row of pictures
+#
+#  WHY ENVIRONMENTS AND NOT AN hfun. Measured, three ways, 2026-08-31:
+#
+#    - a bare `{{marker}}` that opens a <div> is wrapped in a <p> by Franklin,
+#      so the div lands inside a paragraph and the </p> closes before it;
+#    - the same inside `~~~ ~~~` swallows the whole block into one <p> and
+#      stray </p> tags appear around every boundary;
+#    - `@@name ... @@` is the only form that nests correctly and still runs
+#      the content through Markdown, so bold, headings and lists all work.
+#
+#  `@@` is therefore the mechanism, and an environment is what gives it a
+#  NAME at both ends. `people/maysam-gholampour.md` is the warning: it ends on
+#  four bare `@@` five levels deep and nobody can tell which closes what.
+#
+#  THE VOCABULARY IS A FLOOR, NOT A CEILING. A page may ignore every marker
+#  above and write its own `@@` blocks and its own prose. Two or three shapes
+#  cover the common cases; they are not a list of what is allowed. The last
+#  design that WAS a closed list, `layout = "a" | "b" | "c"`, put 25 of 26
+#  records in the wrong grid, because no fixed shape can tell four micrographs
+#  of one comparison set from a rack photograph beside a dot grid.
+# ---------------------------------------------------------------------------
+
+"""The record this page is about, from `facility` or `project` in its front matter."""
+function current_record()
+    id = locvar(:facility)
+    if id !== nothing
+        return facility_by_id(String(id)), "facility"
+    end
+    id = locvar(:project)
+    if id !== nothing
+        hit = filter(p -> p["id"] == String(id), projects())
+        isempty(hit) && error("no project with id '$(id)' in projects.toml")
+        return first(hit), "project"
+    end
+    error("this page needs `facility = \"<id>\"` or `project = \"<id>\"` in its front matter")
+end
+
+# The LCP picture. The first row on a page carries the largest image on it, and
+# every <img> this site emits is lazy, so a lazy first picture is half a second
+# of empty box. The old renderer swapped the first `loading="lazy"` in the whole
+# assembled page; here the rows arrive one hfun call at a time, so the count is
+# kept per page. `fd_rpath` changes when the build moves to the next file, which
+# is what resets it. A plain counter would leak across pages.
+const FIGROW_SEEN = Ref{Tuple{String,Int}}(("", 0))
+
+function figrow_index()::Int
+    here = string(something(locvar(:fd_rpath), ""))
+    path, n = FIGROW_SEEN[]
+    n = (path == here) ? n + 1 : 1
+    FIGROW_SEEN[] = (here, n)
+    return n
+end
+
+"""
+`{{figrow a b c}}` — one justified row of this record's figures.
+
+The ids are the record's own figure ids. An id the record has not got stops
+the build, which is the point: an unknown `{{name}}` would only warn, but a
+known name with a wrong argument must not ship a page with a picture missing.
+"""
+function hfun_figrow(ids::Vector{String})::String
+    record, _ = current_record()
+    isempty(ids) && error("record '$(record["id"])': {{figrow}} needs at least one figure id")
+    html = render_fig_row(record, ids)
+    return figrow_index() == 1 ?
+        replace(html, "loading=\"lazy\"" => "loading=\"eager\" fetchpriority=\"high\"", count = 1) :
+        html
+end
+
+"""
+`{{setuphead}}` — the crumb, the area badge and the title.
+
+It also carries the record's solved column widths, as a page-scoped `<style>`
+rather than a `style=` attribute, because the element that needs them is
+written by `@@` in the page and `@@` cannot carry an attribute. A custom
+property inherits, so setting it here reaches the block wherever the page puts
+it. One solved split per page is assumed and asserted.
+"""
+function hfun_setuphead()::String
+    record, kind = current_record()
+    head = setup_header_html(record, kind)
+    solved = split_ratio(record)
+    solved === nothing && return head
+    words_px, pics_px = solved
+    return head * """
+<style>.setup-study-page .setup-split--solved{--sp-words:$(fmt_num(words_px))px;--sp-pics:$(fmt_num(pics_px))px}</style>"""
+end
+
+"""`{{facility_page}}` — one facility, composed by its own page."""
+function hfun_facility_page()::String
+    id = locvar(:facility)
+    id === nothing && error("this page needs `facility = \"<id>\"` in its front matter")
+    record = facility_by_id(String(id))
+    blocks = setup_blocks(record)
+    blocks === nothing &&
+        error("facilities/$(id).md has no `blocks`; every detail page composes itself")
+    return render_setup_rows(record, "facility", blocks)
+end
 
 # ---------------------------------------------------------------------------
 #  Team
@@ -953,9 +1623,9 @@ end
 # ---------------------------------------------------------------------------
 #  Projects
 #
-#  One row in projects.toml plus one Markdown page per project. The row carries
-#  a `student` id and an `area` id, so a name or a research area is never typed
-#  twice and a typo fails the build instead of rendering an empty card.
+#  Projects may carry a `student` id and always carry an `area` id, so a name
+#  or research area is never typed twice. An explicit typo still fails the
+#  build, while imported lab-owned work can omit `student` and its byline.
 # ---------------------------------------------------------------------------
 
 """Projects sorted by `weight`, lowest first."""
@@ -965,32 +1635,79 @@ function projects()
     return ps
 end
 
+function project_person(project)
+    id = get(project, "student", nothing)
+    id === nothing && return nothing
+    person = person_by_id(String(id))
+    return is_public(person) ? person : nothing
+end
+
+"""`{{project_setup_page}}` — one imported project, composed by its own page."""
+function hfun_project_setup_page()::String
+    id = locvar(:project)
+    id === nothing && error("this page needs `project = \"<id>\"` in its front matter")
+    hit = filter(p -> p["id"] == String(id), projects())
+    isempty(hit) && error("no project with id '$(id)' in projects.toml")
+    record = first(hit)
+    blocks = setup_blocks(record)
+    blocks === nothing &&
+        error("projects/$(id).md has no `blocks`; every detail page composes itself")
+    return render_setup_rows(record, "project", blocks)
+end
+
 """
 One card. `href` is resolved for the current language.
 
 `data-area` is what the filter bar on the Projects page reads. It costs nothing
 on the home page, where the same card is reused and nothing filters.
 
-The link opens in a new tab, by request: a visitor reading the grid is browsing,
-and a project write-up is a side trip, not a destination. Remove `target` and
-`rel` together if that is ever reversed.
+THE LINK OPENS IN THE SAME TAB, and it used to open in a new one. Reversed
+2026-09-01, on the site owner's report that "backspace does not return to
+previous page".
+
+*The old reason, kept because it was a real one: a visitor reading the grid is
+browsing, and a project write-up is a side trip rather than a destination.*
+
+*Why it lost: a new tab has no history, so Back is dead on every project page.
+Not only the backspace key, which Chromium dropped in 2016 and is not ours to
+fix, but the Back BUTTON, greyed out. Facility cards have never done this, so
+the site behaved two different ways depending on which grid you arrived from,
+and that inconsistency is most of what made it read as broken.*
+
+**Do not add `target="_blank"` back without reading the above.** If it ever
+does return, `rel="noopener"` returns with it: that attribute exists only to
+make a new tab safe and means nothing on its own.
+
+`words` exists for the renderer gate, which builds a fixture record that is not
+in `_data/` and therefore has no page to read. Production never passes it: a
+real record with no page must stop the build, not quietly borrow a title from
+somewhere else.
 """
-function project_card(p)
-    person = person_by_id(p["student"])
+function project_card(p; words = nothing)
+    person = project_person(p)
     area   = area_by_id(p["area"])
     href   = prefix() * "/projects/" * p["id"] * "/"
-    byline = is_public(person) ?
-        """<span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>""" : ""
+    byline = person === nothing ? "" :
+        """<span class="card-by">$(esc(ui("projects", "by"))): $(esc(pick(person, "name")))</span>"""
+    card_title, card_lead = words === nothing ?
+        card_words("projects", String(p["id"])) : words
+    # Same key, same values and same class as hfun_facilities. A card crops to
+    # 16/9, which is right for a photograph and wrong for a technical drawing.
+    image_fit = lowercase(String(get(p, "image_fit", "cover")))
+    image_fit in ("cover", "contain") ||
+        error("projects.toml: image_fit for '$(p["id"])' must be cover or contain")
+    image_class = image_fit == "contain" ? " card-media-img--contain" : ""
+    focus = card_focus_style(p)
     return """
       <div class="col-md-6 col-lg-4 pg-item" data-area="$(esc(p["area"]))">
-        <a class="card-media" href="$(esc(href))" target="_blank" rel="noopener">
-          <span class="card-media-img">
-            $(card_media_art(p["image"]))
+        <a class="card-media" href="$(esc(href))">
+          <span class="card-media-img$(image_class)"$(focus)>
+            $(card_media_art(card_image(p)))
           </span>
           <span class="card-media-body">
             <span class="card-badge">$(esc(pick(area, "title")))</span>
-            <span class="card-title">$(esc(pick(p, "title")))</span>
-            <span class="card-scope">$(esc(pick(p, "lead")))</span>
+            <span class="card-title">$(esc(card_title))</span>
+            <span class="card-scope">$(esc(card_lead))</span>
             $(byline)
           </span>
         </a>
@@ -1062,16 +1779,16 @@ function hfun_project_header()
     hit = filter(p -> p["id"] == String(id), projects())
     isempty(hit) && error("no project with id '$(id)' in projects.toml")
     p = first(hit)
-    person = person_by_id(p["student"])
+    person = project_person(p)
     area   = area_by_id(p["area"])
-    byline = is_public(person) ? """
+    byline = person === nothing ? "" : """
     <p class="project-by">
       <img class="project-by-photo" src="$(esc(get(person, "photo", "/assets/img/team/placeholder.svg")))" alt="">
       <span>
         <strong>$(esc(pick(person, "name")))</strong><br>
         <span class="muted">$(esc(pick(person, "role")))</span>
       </span>
-    </p>""" : ""
+    </p>"""
     return """
 <header class="page-hd project-hd">
   <div class="container">
@@ -1518,7 +2235,10 @@ function hfun_person_facts()
     # Projects are a LIST OF LINKS, not a grid of cards. The cards repeated the
     # image and the summary that the project's own page already opens with, and
     # a person page is a record, not a second index. Asked for on 2026-08-20.
-    mine = filter(pr -> String(pr["student"]) == String(id), projects())
+    mine = filter(projects()) do project
+        person = project_person(project)
+        person !== nothing && String(person["id"]) == String(id)
+    end
     isempty(mine) || push!(rows, (ui("people", "projects_head"),
         ["""<a href="$(esc(prefix()))/projects/$(esc(pr["id"]))/">$(esc(pick(pr, "title")))</a>"""
          for pr in mine]))
@@ -1593,71 +2313,163 @@ function news_tag_label(item)
     return haskey(section, tag * "_en") || haskey(section, tag * "_zh") ? ui("news", tag) : tag
 end
 
-"""`{{news}}` for all of them, `{{news 3}}` for the newest three."""
-function hfun_news(params::Vector{String} = String[])
+"""
+The face of a news card.
+
+EVERY CARD HAS ONE, PICTURE OR NO PICTURE, and that is not decoration.
+`.claude/rules/animation.md` settles it: a row where some cards answer the mouse
+and some ignore it reads as broken long before anybody tries to click one. The
+`.card-media-img` frame is what carries the lift, the tilt and the cursor
+spotlight, so a card without a frame would be the dead one in the row.
+
+A news item gets a photograph by adding `image = "/assets/img/news/x.jpg"` to
+its row in `_data/news.toml`. Until then the frame carries the date, which is
+information the item already has, rather than a grey rectangle standing in for
+information it has not.
+"""
+function news_face(i)
+    img = String(get(i, "image", ""))
+    isempty(img) || return """<img src="$(esc(img))" alt="" loading="lazy">"""
+    # The class, not just the content, so the stylesheet can give a date a
+    # shallower frame than a photograph. 16/9 of a 602px card is 337px, which
+    # is right for a picture and far too much room for a number.
+    d = i["date"]
+    big  = lang() == "zh" ? "$(month(d))/$(day(d))" : string(day(d))
+    rest = lang() == "zh" ? string(year(d)) : "$(Dates.format(d, "u")) $(year(d))"
+    # aria-hidden: the same date is announced in full by .ns-date below, and a
+    # screen reader reading it twice is worse than not reading the big one.
+    return """<span class="ns-face-date" aria-hidden="true"><span class="ns-face-day">$(big)</span><span class="ns-face-rest">$(esc(rest))</span></span>"""
+end
+
+"""
+One news card. A LINK, and every card is one.
+
+`.claude/rules/animation.md` puts the whole difference between a card that leads
+somewhere and one that does not in the CURSOR: an `<a>` gets the pointer, a
+`<div>` keeps the arrow, and both lift. Every news item has a page of its own,
+so every news card is an `<a>` - and an `<a>` may only contain phrasing content,
+which is why these are spans rather than a heading and two paragraphs.
+
+Used twice, unchanged: once in the home-page carousel and once in the /news/
+grid. The wrapper around it differs. The card does not.
+"""
+function news_card(i)
+    tag = news_tag_label(i)
+    tagmk = isempty(tag) ? "" : """<span class="news-tag">$(esc(tag))</span>"""
+    face = haskey(i, "image") ? "" : " ns-face--dated"
+    href = prefix() * "/news/" * String(i["id"]) * "/"
+    return """
+        <a class="ns-card card-media" href="$(esc(href))">
+          <span class="card-media-img ns-face$(face)">$(news_face(i))</span>
+          <span class="card-media-body">
+            <span class="ns-date">$(esc(format_news_date(i["date"])))$(tagmk)</span>
+            <span class="ns-title">$(esc(pick(i, "title")))</span>
+            <span class="ns-body">$(esc(pick(i, "body")))</span>
+          </span>
+        </a>"""
+end
+
+"""The news item with this id, or an error naming the id that is missing."""
+function news_by_id(id::AbstractString)
+    hit = filter(i -> String(get(i, "id", "")) == id, news_items())
+    isempty(hit) && error("no news item with id '$(id)' in news.toml")
+    return first(hit)
+end
+
+"""
+`{{news_grid}}` - every published item, as cards, on /news/.
+
+The same card as the carousel, in the same three-column grid the projects page
+uses, so a reader meets one shape of card across the whole site.
+"""
+function hfun_news_grid()
     its = news_items()
     isempty(its) && return empty_state("news")
-    if !isempty(params)
-        n = parse(Int, params[1])
-        its = its[1:min(n, length(its))]
-    end
-    cards = join(["""
-      <div class="col-md-4">
-        <article class="news-card">
-          <p class="news-date">$(format_news_date(i["date"]))<span class="news-tag">$(esc(news_tag_label(i)))</span></p>
-          <h3 class="news-title">$(esc(pick(i, "title")))</h3>
-          <p class="news-body">$(esc(pick(i, "body")))</p>
-        </article>
+    cards = join(["""      <div class="col-md-6 col-lg-4">
+$(news_card(i))
       </div>""" for i in its], "\n")
     return """<div class="row g-4">\n$(cards)\n</div>"""
 end
 
 """
-`{{news_slider}}` — the home page band directly under the hero.
+`{{newshead}}` - the header of one news article page.
 
-Built to the same pattern as imec.com: the slides CROSS-FADE rather than sliding
-sideways, and the navigation underneath is a row of titles, each sitting above a
-progress line that fills across the slide's dwell time.
+Reads `news = "<id>"` from the page's front matter, the same way a project page
+reads `project = "<id>"`.
+"""
+function hfun_newshead()::String
+    id = locvar(:news)
+    id === nothing &&
+        error("a news page needs `news = \"<id>\"` in its front matter")
+    item = news_by_id(String(id))
+    # THE PAGE'S OWN TITLE, not the record's, for the reason the setup pages
+    # give: the card reads the record and the heading reads the page, so one
+    # string with two sources could drift with nothing noticing.
+    page_title = locvar(:title)
+    page_title === nothing &&
+        error("news item '$(id)': its page has no `title` in the front matter")
+    tag = news_tag_label(item)
+    tagmk = isempty(tag) ? "" : """<span class="news-tag">$(esc(tag))</span>"""
+    return """
+<header class="page-hd"><div class="container">
+  <p class="project-crumb"><a href="$(prefix())/news/">&larr; $(esc(ui("nav", "news")))</a></p>
+  <p class="ns-date">$(esc(format_news_date(item["date"])))$(tagmk)</p>
+  <h1>$(esc(String(page_title)))</h1>
+</div></header>"""
+end
 
-The markup carries no timing. `news-slider.js` owns that, so it can refuse to
-auto-advance for a visitor who asked for reduced motion while leaving the arrows
-and the title navigation working.
+"""
+The news carousel, between the hero and the research areas.
+
+The cards carry `card-media`, which is the class the research grid and the
+project grid use, so the lift, the shadow, the image zoom, the cursor spotlight
+and the tilt all arrive with no rule and no script of their own. `cards.js`
+finds them because it selects `.card-media`, and `reveal.js` leaves them alone
+because it skips everything inside `.news-slider`.
+
+Six at most. The home page is a doorway, not the news archive, and `/news/`
+holds the rest.
 """
 function hfun_news_slider()
     pre = prefix()
     its = news_items()
     isempty(its) && return ""
-    n = min(4, length(its))
-    its = its[1:n]
-
-    slides = join(["""
-        <article class="ns-slide$(k == 1 ? " is-active" : "")" data-index="$(k-1)">
-          <p class="ns-date">$(format_news_date(i["date"]))<span class="news-tag">$(esc(news_tag_label(i)))</span></p>
-          <h3 class="ns-title">$(esc(pick(i, "title")))</h3>
-          <p class="ns-body">$(esc(pick(i, "body")))</p>
-        </article>""" for (k, i) in enumerate(its)], "\n")
-
-    navitems = join(["""
-        <button class="ns-nav-item$(k == 1 ? " is-active" : "")" type="button" data-goto="$(k-1)"
-                aria-label="$(esc(pick(i, "title")))">
-          <span class="ns-nav-line"><span class="ns-nav-fill"></span></span>
-          <span class="ns-nav-title">$(esc(pick(i, "title")))</span>
-        </button>""" for (k, i) in enumerate(its)], "\n")
+    its = its[1:min(6, length(its))]
+    cards = join([news_card(i) for i in its], "\n")
+    # The dots are rendered here, not built in JavaScript, for the reason every
+    # list on this site is: a page that needs a script to say how many news
+    # items exist is a page that says nothing without one.
+    dots = join(["""      <button class="ns-dot$(k == 1 ? " is-on" : "")" type="button" data-goto="$(k-1)"
+              aria-label="$(esc(ui("news", "goto"))) $(k)"$(k == 1 ? " aria-current=\"true\"" : "")></button>"""
+                 for k in 1:length(its)], "\n")
 
     return """
 <section class="news-slider" id="newsSlider" aria-roledescription="carousel"
          aria-label="$(esc(ui("news", "carousel")))">
   <div class="container">
-    <p class="ns-head">$(esc(ui("home", "news_head")))</p>
-
-    <div class="ns-stage">
-      <button class="ns-arrow ns-prev" type="button" aria-label="$(esc(ui("news", "previous")))">$(icon("chevron-left"))</button>
-$(slides)
-      <button class="ns-arrow ns-next" type="button" aria-label="$(esc(ui("news", "next")))">$(icon("chevron-right"))</button>
+    <div class="ns-top">
+      <p class="ns-head">$(esc(ui("home", "news_head")))</p>
+      <div class="ns-controls">
+        <button class="ns-arrow ns-pause" data-motion-toggle type="button" aria-pressed="false">
+          <span class="motion-when-running">$(icon("pause-fill"))</span>
+          <span class="motion-when-paused">$(icon("play-fill"))</span>
+          <span class="visually-hidden">$(esc(ui("hero", "motion_pause")))</span>
+        </button>
+        <button class="ns-arrow ns-prev" type="button" aria-label="$(esc(ui("news", "previous")))">$(icon("chevron-left"))</button>
+        <button class="ns-arrow ns-next" type="button" aria-label="$(esc(ui("news", "next")))">$(icon("chevron-right"))</button>
+      </div>
     </div>
 
-    <div class="ns-nav">
-$(navitems)
+    <div class="ns-viewport">
+      <div class="ns-track">
+$(cards)
+      </div>
+    </div>
+
+    <div class="ns-rail" aria-hidden="true"><span class="ns-rail-fill"></span></div>
+
+    <div class="ns-dots">
+$(dots)
     </div>
 
     <p class="ns-more"><a class="link-arrow" href="$(pre)/news/">$(esc(ui("home", "news_link"))) <span class="link-arrow-mark">&rarr;</span></a></p>

@@ -14,7 +14,7 @@ lang = "en"
 
 <div class="page-body">
   <div class="container">
-    {{news}}
+    {{news_grid}}
   </div>
 </div>
 ~~~

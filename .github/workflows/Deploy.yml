@@ -76,6 +76,9 @@ jobs:
       - name: Check partner strip
         run: python scripts/check-partner-strip.py
 
+      - name: Check detail-page composition
+        run: python scripts/check-setup-pages.py
+
       - name: Report site size
         run: du -sh __site && du -sh __site/assets/video
 

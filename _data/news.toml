@@ -1,35 +1,67 @@
-# News. Newest first — the build sorts by date, so the order here does not matter.
+# News.
 #
-# ALL THREE ENTRIES BELOW ARE PLACEHOLDERS. Replace them before launch.
+# ============================================================================
+#  ALL THREE ITEMS BELOW ARE FILLER TEXT. REPLACE THEM BEFORE LAUNCH.
 #
-# ChatGPT's warning, and it is right: for a lab claiming 20+ active industrial
-# projects, a news page whose newest item is eighteen months old does more
-# reputational damage than having no news page at all. If nobody will update
-# this monthly, remove News from the navigation instead.
+#  They are lorem ipsum in English and Thousand Character Classic in Chinese,
+#  which is the same thing for a CJK reader: text that is obviously not content.
+#  They are here on purpose, asked for on 2026-09-01, so the carousel, the
+#  navigation tab, the grid and the article pages can all be seen working
+#  before the laboratory has written a real item.
+#
+#  Nothing here says anything about the laboratory. That is the point. It is
+#  also the risk: this text is PUBLISHABLE, unlike the `placeholder = true`
+#  rows it replaced, so it will go live on the next deploy.
+#
+#  ChatGPT's warning, and it is right: for a lab claiming 20+ active industrial
+#  projects, a news page whose newest item is eighteen months old does more
+#  reputational damage than having no news page at all. If nobody will update
+#  this monthly, remove News from the navigation instead.
+# ============================================================================
+#
+# EVERY ITEM NEEDS AN `id`, and a page to go with it:
+#
+#     news/<id>.md   and   zh/news/<id>.md
+#
+# The id is the URL. `id = "lorem-ipsum-dolor"` is /news/lorem-ipsum-dolor/,
+# and the card on the home page and the card on /news/ both link to it.
+#
+# The order here does not matter. The build sorts by date, newest first.
+#
+# AN ITEM MAY CARRY A PICTURE:
+#
+#     image = "/assets/img/news/rig-commissioned.jpg"
+#
+# Optional. Without it the card's face carries the item's own date, set large,
+# so a card is never a grey rectangle waiting for a photograph. The face is
+# cropped to 16/9 by `object-fit: cover`, the same as every other card here.
+#
+# `title` and `body` are the CARD. The article itself lives in the page, in
+# Markdown, the same way a project's words live in its own page.
 
 [[item]]
-placeholder = true
+id   = "lorem-ipsum-dolor"
 date = 2026-08-01
 tag  = "facility"
-title_en = "PLACEHOLDER — New pool-boiling visualization rig commissioned"
-title_zh = "範例 — 新池沸騰可視化實驗平台啟用"
-body_en  = "Replace this with a real item. One or two sentences. Say what changed and why an outside reader should care."
-body_zh  = "請以真實內容取代。一至兩句話，說明有何進展、以及為何值得關注。"
+title_en = "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+title_zh = "天地玄黃　宇宙洪荒"
+body_en  = "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris."
+body_zh  = "日月盈昃，辰宿列張。寒來暑往，秋收冬藏。閏餘成歲，律呂調陽。"
 
 [[item]]
-placeholder = true
+id   = "sed-ut-perspiciatis"
 date = 2026-07-15
 tag  = "paper"
-title_en = "PLACEHOLDER — Paper accepted on immersion cooling of high-power packages"
-title_zh = "範例 — 高功率封裝浸沒式冷卻論文獲接受"
-body_en  = "Replace this with a real item. Link the DOI when the paper is online."
-body_zh  = "請以真實內容取代。論文上線後請附上 DOI 連結。"
+title_en = "Sed ut perspiciatis unde omnis iste natus error sit voluptatem"
+title_zh = "雲騰致雨　露結為霜"
+body_en  = "Accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae."
+body_zh  = "金生麗水，玉出崑岡。劍號巨闕，珠稱夜光。果珍李柰，菜重芥薑。"
 
 [[item]]
-placeholder = true
+id   = "nemo-enim-ipsam"
 date = 2026-06-20
 tag  = "award"
-title_en = "PLACEHOLDER — Lab member receives conference best-paper award"
-title_zh = "範例 — 實驗室成員獲研討會最佳論文獎"
-body_en  = "Replace this with a real item. Name the person and the conference."
-body_zh  = "請以真實內容取代。請寫出得獎人姓名與研討會名稱。"
+title_en = "Nemo enim ipsam voluptatem quia voluptas sit aspernatur"
+title_zh = "海鹹河淡　鱗潛羽翔"
+body_en  = "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam."
+body_zh  = "龍師火帝，鳥官人皇。始制文字，乃服衣裳。推位讓國，有虞陶唐。"

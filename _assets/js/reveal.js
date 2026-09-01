@@ -74,7 +74,14 @@
        which is a worse page, not a fancier one. */
     ".prose > h2",
     ".prose > hr",
-    ".pt-head"
+    ".pt-head",
+    /* .fig, NEVER .fig-row. The observer sorts arriving entries by top then
+       left and writes --reveal-i, so a row of four micrographs lands left to
+       right at 60ms a step. Revealing the ROW instead would land all four at
+       once and lose the reading order, which is the whole point on a
+       comparison set. The figcaption is inside .fig, so it arrives with its
+       own picture and needs no rule of its own. */
+    ".fig"
   ].join(",");
 
   /* The stagger STEP is in the CSS, on --reveal-i. This is only the cap, so a

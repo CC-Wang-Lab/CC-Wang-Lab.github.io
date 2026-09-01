@@ -4,15 +4,653 @@
 # languages. The card is the same one the Projects page uses: image, research
 # area, title, one line of scope. Nobody writes HTML for a facility.
 #
-# ALL SIX ENTRIES BELOW ARE PLACEHOLDERS. Replace them before launch.
+# Entries marked `placeholder = true` remain hidden until replaced.
 #
 # FIELDS
 #   id     required   the anchor, /facilities/#<id>
 #   area   optional   an id from research.toml. Draws the label above the
 #                     title, in both languages. A wrong id STOPS the build.
 #   image  optional   a photo. Left out, the card shows the shared placeholder.
+#   image_fit optional `cover` (default) or `contain` for technical drawings
 #   title  required   what the thing is called
 #   lead   required   one or two sentences: what it measures, and for whom
+
+[[item]]
+id       = "falling-film-cooling-system"
+area     = "two-phase"
+image    = "/assets/img/facilities/falling-film-cooling-cabinet.png"
+image_fit = "contain"
+source_slides = [2]
+title_en = "Two-phase falling-film cooling system"
+title_zh = "Two-phase falling-film cooling system"
+lead_en  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop."
+lead_zh  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop."
+body_en  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop. Experiments were conducted using a simulated heat source measuring 44 mm × 34 mm × 1 mm. The degree of subcooling was maintained at 10°C, while flow rates of 500, 700, and 900 g/min were tested to investigate the effects of flow rate and heat-sink design on the heat transfer coefficient and temperature distribution. At the same flow rate, increasing the power input expanded the two-phase boiling region and increased the overall heat transfer coefficient. At the same power input, a higher flow rate provided better heat transfer performance."
+body_zh  = "This two-phase falling-film cooling system uses 3M™ Electronic Fluorinated Fluid HFE-7100 as the working fluid and operates as an atmospheric-pressure closed loop. Experiments were conducted using a simulated heat source measuring 44 mm × 34 mm × 1 mm. The degree of subcooling was maintained at 10°C, while flow rates of 500, 700, and 900 g/min were tested to investigate the effects of flow rate and heat-sink design on the heat transfer coefficient and temperature distribution. At the same flow rate, increasing the power input expanded the two-phase boiling region and increased the overall heat transfer coefficient. At the same power input, a higher flow rate provided better heat transfer performance."
+
+[[item.figure]]
+id         = "100w"
+kind       = "photo"
+image      = "/assets/img/facilities/falling-film-cooling-100w.jpg"
+w          = 498
+h          = 672
+caption_en = "Fig. Falling film (100 W)"
+caption_zh = "Fig. Falling film (100 W)"
+
+[[item.figure]]
+id         = "500w"
+kind       = "photo"
+image      = "/assets/img/facilities/falling-film-cooling-500w.jpg"
+w          = 504
+h          = 672
+caption_en = "Fig. Falling film (500 W)"
+caption_zh = "Fig. Falling film (500 W)"
+
+[[item.figure]]
+id         = "cabinet"
+kind       = "diagram"
+image      = "/assets/img/facilities/falling-film-cooling-cabinet.png"
+w          = 1224
+h          = 747
+caption_en = "Fig. Perspective view of the experimental cabinet"
+caption_zh = "Fig. Perspective view of the experimental cabinet"
+
+[[item.figure]]
+id         = "dimensions"
+kind       = "diagram"
+image      = "/assets/img/facilities/falling-film-cooling-dimensions.png"
+w          = 1044
+h          = 657
+caption_en = "Fig. Experimental cabinet interior dimensions"
+caption_zh = "Fig. Experimental cabinet interior dimensions"
+
+[[item]]
+id       = "thermal-fin-natural-convection-chamber"
+area     = "heat-exchangers"
+image    = "/assets/img/test-setups/thermal-fin-natural-convection-chamber/chamber.jpg"
+card_focus = "50% 40%"
+source_slides = [7]
+title_en = "Investigation of thermal fins under natural convection -  for thermosyphon and pulsating heat pipe thermal fin and typical fan-less heat sink"
+title_zh = "Investigation of thermal fins under natural convection -  for thermosyphon and pulsating heat pipe thermal fin and typical fan-less heat sink"
+lead_en  = "This environmental chamber uses heaters and a proportional–integral–derivative controller to maintain the desired ambient temperature for natural-convection testing."
+lead_zh  = "This environmental chamber uses heaters and a proportional–integral–derivative controller to maintain the desired ambient temperature for natural-convection testing."
+body_en  = "This environmental chamber uses heaters and a proportional–integral–derivative controller to maintain the desired ambient temperature for natural-convection testing. A two-phase thermosyphon fin is tested inside the chamber under natural-convection conditions. This type of fin is intended for cooling 5G internet stations. The research aims to improve the module’s functionality while reducing the amount of working fluid used inside the fin, as the working fluid is the module’s main cost component."
+body_zh  = "This environmental chamber uses heaters and a proportional–integral–derivative controller to maintain the desired ambient temperature for natural-convection testing. A two-phase thermosyphon fin is tested inside the chamber under natural-convection conditions. This type of fin is intended for cooling 5G internet stations. The research aims to improve the module’s functionality while reducing the amount of working fluid used inside the fin, as the working fluid is the module’s main cost component."
+
+[[item.figure]]
+id         = "chamber"
+kind       = "photo"
+image      = "/assets/img/test-setups/thermal-fin-natural-convection-chamber/chamber.jpg"
+w          = 1199
+h          = 1600
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "air-cooler-wind-tunnel"
+area     = "electronics-cooling"
+image    = "/assets/img/test-setups/air-cooler-wind-tunnel/wind-tunnel.jpg"
+image_fit = "contain"
+source_slides = [8]
+title_en = "Wind tunnel for air-cooler heat sink with Vapor chamber/heat pipe/pulsating heat pipe (and typical air-cooled heat sink)"
+title_zh = "Wind tunnel for air-cooler heat sink with Vapor chamber/heat pipe/pulsating heat pipe (and typical air-cooled heat sink)"
+lead_en  = "This wind tunnel facility evaluates the thermal performance of air-cooled electronic cooling devices, such as vapor chambers and heat sinks, under controlled airflow conditions."
+lead_zh  = "This wind tunnel facility evaluates the thermal performance of air-cooled electronic cooling devices, such as vapor chambers and heat sinks, under controlled airflow conditions."
+body_en  = "This wind tunnel facility evaluates the thermal performance of air-cooled electronic cooling devices, such as vapor chambers and heat sinks, under controlled airflow conditions. The device under test is installed in the test section, where a copper heater block reproduces the heat generated by an electronic component. By adjusting the airflow rate and heat input, the cooling capability of the device can be systematically evaluated under different operating conditions. It Can handle up to 1 kW air-cooled system"
+body_zh  = "This wind tunnel facility evaluates the thermal performance of air-cooled electronic cooling devices, such as vapor chambers and heat sinks, under controlled airflow conditions. The device under test is installed in the test section, where a copper heater block reproduces the heat generated by an electronic component. By adjusting the airflow rate and heat input, the cooling capability of the device can be systematically evaluated under different operating conditions. It Can handle up to 1 kW air-cooled system"
+
+# Solved by scripts/solve-split.py, never written by hand.
+# [words, pictures] in px. At these two widths the two columns end at
+# the same height. Widths, not a ratio: see .setup-split in style.css.
+split_en = [546, 686]
+split_zh = [546, 686]
+
+
+[[item.figure]]
+id         = "wind-tunnel"
+kind       = "photo"
+image      = "/assets/img/test-setups/air-cooler-wind-tunnel/wind-tunnel.jpg"
+w          = 1600
+h          = 555
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "data-center-air-cooling-facility"
+area     = "data-center"
+image    = "/assets/img/test-setups/data-center-air-cooling-facility/facility-airflow-diagram.png"
+image_fit = "contain"
+source_slides = [9, 10]
+title_en = "Experimental Data Center Facility (air-cooled, raise floor, up to 100 kW)"
+title_zh = "Experimental Data Center Facility (air-cooled, raise floor, up to 100 kW)"
+lead_en  = "Ten server racks arranged in two rows with cold and hot aisles"
+lead_zh  = "Ten server racks arranged in two rows with cold and hot aisles"
+body_en  = """Ten server racks arranged in two rows with cold and hot aisles
+Facility dimensions: 6.0 m × 3.1 m × 2.3 m
+Cold aisle containment with a 50% perforated-floor opening ratio
+Rack heat loads: 40 kW for existing racks and 12 kW for new racks
+Computer room air handler airflow rates: 2.4 and 3.4 m³/s"""
+body_zh  = """Ten server racks arranged in two rows with cold and hot aisles
+Facility dimensions: 6.0 m × 3.1 m × 2.3 m
+Cold aisle containment with a 50% perforated-floor opening ratio
+Rack heat loads: 40 kW for existing racks and 12 kW for new racks
+Computer room air handler airflow rates: 2.4 and 3.4 m³/s"""
+
+[[item.section]]
+items_en = [
+  "Temperature and airflow measured using 175 thermocouples and 15 anemometers",
+  "Server simulators include 2U and 4U chassis with heating modules rated up to 400 W each",
+  "Performance evaluated using power usage effectiveness, rack cooling index, and supply heat index",
+  "Rack inlet temperatures assessed using the recommended range of 18–27°C and allowable range of 15–32°C",
+]
+items_zh = [
+  "Temperature and airflow measured using 175 thermocouples and 15 anemometers",
+  "Server simulators include 2U and 4U chassis with heating modules rated up to 400 W each",
+  "Performance evaluated using power usage effectiveness, rack cooling index, and supply heat index",
+  "Rack inlet temperatures assessed using the recommended range of 18–27°C and allowable range of 15–32°C",
+]
+
+[[item.figure]]
+id         = "facility-airflow-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/facility-airflow-diagram.png"
+w          = 1545
+h          = 960
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "tc-measurements-mesh"
+kind       = "diagram"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/tc-measurements-mesh.png"
+w          = 497
+h          = 1600
+caption_en = "TC measurements mesh"
+caption_zh = "TC measurements mesh"
+
+[[item.figure]]
+id         = "tc-measurements-rack"
+kind       = "photo"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/tc-measurements-rack.jpg"
+w          = 750
+h          = 1236
+caption_en = "TC measurements mesh"
+caption_zh = "TC measurements mesh"
+
+[[item.figure]]
+id         = "hot-wire-mesh-front"
+kind       = "photo"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/hot-wire-mesh-front.jpg"
+w          = 867
+h          = 774
+caption_en = "Hot-wire measurements mesh"
+caption_zh = "Hot-wire measurements mesh"
+
+[[item.figure]]
+id         = "hot-wire-mesh-overhead"
+kind       = "photo"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/hot-wire-mesh-overhead.jpg"
+w          = 993
+h          = 621
+caption_en = "Hot-wire measurements mesh"
+caption_zh = "Hot-wire measurements mesh"
+
+[[item.figure]]
+id         = "simulated-rack"
+kind       = "photo"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack.jpg"
+w          = 387
+h          = 1311
+caption_en = "Simulated rack"
+caption_zh = "Simulated rack"
+
+[[item.figure]]
+id         = "simulated-rack-rendering"
+kind       = "diagram"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/simulated-rack-rendering.png"
+w          = 531
+h          = 1215
+caption_en = "Simulated rack"
+caption_zh = "Simulated rack"
+
+# Slide 9 carries a rack showing the 2U and 20U partitions and a photograph of
+# it inside the containment. The import took neither. Added 2026-09-01.
+[[item.figure]]
+id         = "rack-partitions"
+kind       = "diagram"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/rack-partitions.png"
+w          = 362
+h          = 739
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "rack-containment"
+kind       = "photo"
+image      = "/assets/img/test-setups/data-center-air-cooling-facility/rack-containment.png"
+w          = 199
+h          = 769
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "two-phase-cold-plate-test-platform"
+area     = "two-phase"
+image    = "/assets/img/test-setups/two-phase-cold-plate-test-platform/annotated-platform.jpg"
+image_fit = "contain"
+source_slides = [11]
+title_en = "Two-Phase Cold Plate Cooling Test Platform"
+title_zh = "Two-Phase Cold Plate Cooling Test Platform"
+lead_en  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions."
+lead_zh  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions."
+body_en  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions. The working fluid circulates from the tank through the pump, preheater, flow meter, test section, and condenser before returning to the tank. The system controls the flow rate, pressure, and fluid temperature while recording steady-state thermal and hydraulic data. It is used to evaluate boiling curves, critical heat flux, heat transfer coefficients, thermal resistance, pressure drop, and flow behavior."
+body_zh  = "This two-phase cooling test platform evaluates two-phase cold plates under controlled operating conditions. The working fluid circulates from the tank through the pump, preheater, flow meter, test section, and condenser before returning to the tank. The system controls the flow rate, pressure, and fluid temperature while recording steady-state thermal and hydraulic data. It is used to evaluate boiling curves, critical heat flux, heat transfer coefficients, thermal resistance, pressure drop, and flow behavior."
+
+[[item.section]]
+heading_en = "Main Function"
+heading_zh = "Main Function"
+items_en = [
+  "Evaluate two-phase cold plates",
+  "Control flow rate, pressure, and fluid temperature",
+  "Record thermal and hydraulic data at steady state",
+  "For various working fluids, up to 5 kW",
+]
+items_zh = [
+  "Evaluate two-phase cold plates",
+  "Control flow rate, pressure, and fluid temperature",
+  "Record thermal and hydraulic data at steady state",
+  "For various working fluids, up to 5 kW",
+]
+
+[[item.section]]
+heading_en = "Flow Path"
+heading_zh = "Flow Path"
+body_en = "Tank → Pump →( Preheater)→ Flow meter → Test section→ Condenser → Tank"
+body_zh = "Tank → Pump →( Preheater)→ Flow meter → Test section→ Condenser → Tank"
+
+[[item.section]]
+heading_en = "Main Function"
+heading_zh = "Main Function"
+items_en = [
+  "Boiling curve / CHF",
+  "Heat transfer coefficient (HTC)",
+  "Thermal resistance",
+  "Pressure drop",
+  "Flow visualization",
+]
+items_zh = [
+  "Boiling curve / CHF",
+  "Heat transfer coefficient (HTC)",
+  "Thermal resistance",
+  "Pressure drop",
+  "Flow visualization",
+]
+
+[[item.figure]]
+id         = "annotated-platform"
+kind       = "photo"
+image      = "/assets/img/test-setups/two-phase-cold-plate-test-platform/annotated-platform.jpg"
+w          = 1600
+h          = 1144
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "flooded-evaporator-test-rig"
+area     = "two-phase"
+image    = "/assets/img/test-setups/flooded-evaporator-test-rig/system.jpg"
+card_focus = "40% 45%"
+source_slides = [12]
+title_en = "Flooded evaporator for testing shell side boiling, applicable for various refrigerants"
+title_zh = "Flooded evaporator for testing shell side boiling, applicable for various refrigerants"
+lead_en  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser."
+lead_zh  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser."
+body_en  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser. Vapor flows through the upper connection line to the condenser before returning to the evaporator as liquid. A water bath regulates the condensation rate to maintain stable saturation pressure and temperature. The visualized evaporator includes a quartz sight-glass window, cartridge heaters, embedded thermocouples, and differential-pressure transducers. The system evaluates smooth, micro-porous-coated, and enhanced-fin surfaces under different single-tube and tube-bundle arrangements."
+body_zh  = "This closed-loop external-tube pool-boiling system consists of two cylindrical stainless-steel vessels serving as the evaporator and condenser. Vapor flows through the upper connection line to the condenser before returning to the evaporator as liquid. A water bath regulates the condensation rate to maintain stable saturation pressure and temperature. The visualized evaporator includes a quartz sight-glass window, cartridge heaters, embedded thermocouples, and differential-pressure transducers. The system evaluates smooth, micro-porous-coated, and enhanced-fin surfaces under different single-tube and tube-bundle arrangements."
+
+[[item.figure]]
+id         = "system"
+kind       = "photo"
+image      = "/assets/img/test-setups/flooded-evaporator-test-rig/system.jpg"
+w          = 1206
+h          = 1176
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "evaporator-close-up"
+kind       = "photo"
+image      = "/assets/img/test-setups/flooded-evaporator-test-rig/evaporator-close-up.jpg"
+w          = 1044
+h          = 1017
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "boiler-surface-test-rig"
+area     = "two-phase"
+image    = "/assets/img/test-setups/boiler-surface-test-rig/test-rig.jpg"
+source_slides = [13]
+title_en = "Experiment Setup for boiler surface"
+title_zh = "Experiment Setup for boiler surface"
+lead_en  = "Different surface enhancement"
+lead_zh  = "Different surface enhancement"
+body_en  = ""
+body_zh  = ""
+
+[[item.section]]
+heading_en = "Different surface enhancement"
+heading_zh = "Different surface enhancement"
+items_en = [
+  "Single & Double-layer sintering (copper-nickel alloy)",
+  "Additive manufacturing (copper-chrome alloy)",
+  "Acid etching (copper)",
+  "Metalized diamond particles (diamond-copper)",
+]
+items_zh = [
+  "Single & Double-layer sintering (copper-nickel alloy)",
+  "Additive manufacturing (copper-chrome alloy)",
+  "Acid etching (copper)",
+  "Metalized diamond particles (diamond-copper)",
+]
+
+[[item.figure]]
+id         = "sintered"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/sintered.jpg"
+w          = 816
+h          = 351
+caption_en = "Sintered"
+caption_zh = "Sintered"
+
+[[item.figure]]
+id         = "additively-manufactured"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/additively-manufactured.jpg"
+w          = 816
+h          = 351
+caption_en = "Additively manufactured"
+caption_zh = "Additively manufactured"
+
+[[item.figure]]
+id         = "diamond"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/diamond.jpg"
+w          = 816
+h          = 351
+caption_en = "Diamond"
+caption_zh = "Diamond"
+
+[[item.figure]]
+id         = "acid-etched"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/acid-etched.jpg"
+w          = 816
+h          = 351
+caption_en = "Acid etched"
+caption_zh = "Acid etched"
+
+[[item.figure]]
+id         = "test-rig"
+kind       = "photo"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/test-rig.jpg"
+w          = 801
+h          = 552
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "test-schematic"
+kind       = "diagram"
+image      = "/assets/img/test-setups/boiler-surface-test-rig/test-schematic.png"
+w          = 1600
+h          = 964
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "three-kilowatt-cold-plate-test-facility"
+area     = "two-phase"
+image    = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
+source_slides = [15]
+title_en = "Two-phase cold plate test facility, up to 3 kW for various working fluids"
+title_zh = "Two-phase cold plate test facility, up to 3 kW for various working fluids"
+lead_en  = "The cold plate setup supports up to 3 kW of power"
+lead_zh  = "The cold plate setup supports up to 3 kW of power"
+body_en  = "The cold plate setup supports up to 3 kW of power"
+body_zh  = "The cold plate setup supports up to 3 kW of power"
+
+[[item.figure]]
+id         = "rig"
+kind       = "photo"
+image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/rig.jpg"
+w          = 1600
+h          = 1197
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "flow-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/three-kilowatt-cold-plate-test-facility/flow-diagram.png"
+w          = 747
+h          = 423
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "vapor-compression-cooling-system"
+area     = "hvacr"
+image    = "/assets/img/test-setups/vapor-compression-cooling-system/cold-plate-loop.jpg"
+source_slides = [16]
+title_en = "Vapor Compression Refrigeration Cooling System (VCRC) Two phase Cold Plate"
+title_zh = "Vapor Compression Refrigeration Cooling System (VCRC) Two phase Cold Plate"
+lead_en  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate."
+lead_zh  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate."
+body_en  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate. Refrigerant temperature, pressure, flow rate, and cold-plate temperature are measured throughout the system. The experimental variables include compressor speed, heat load, and expansion-valve opening. The measured data are used to evaluate cooling capacity, heat transfer rate, thermal resistance, refrigerant enthalpy, vapor quality, and coefficient of performance."
+body_zh  = "This vapor-compression refrigeration cooling system uses R-134a and consists of a compressor, condenser, refrigerant flow meter, electronic expansion valve, and two-phase cold plate. Refrigerant temperature, pressure, flow rate, and cold-plate temperature are measured throughout the system. The experimental variables include compressor speed, heat load, and expansion-valve opening. The measured data are used to evaluate cooling capacity, heat transfer rate, thermal resistance, refrigerant enthalpy, vapor quality, and coefficient of performance."
+
+[[item.figure]]
+id         = "system-overview"
+kind       = "photo"
+image      = "/assets/img/test-setups/vapor-compression-cooling-system/system-overview.jpg"
+w          = 1410
+h          = 1056
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "cold-plate-loop"
+kind       = "photo"
+image      = "/assets/img/test-setups/vapor-compression-cooling-system/cold-plate-loop.jpg"
+w          = 1545
+h          = 1161
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "refrigerant-lubricant-boiling-system"
+area     = "two-phase"
+image    = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/system-diagram.png"
+image_fit = "contain"
+source_slides = [17]
+title_en = "Single Tube Boiling Test System for Refrigerant–Lubricant Mixtures"
+title_zh = "Single Tube Boiling Test System for Refrigerant–Lubricant Mixtures"
+lead_en  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces."
+lead_zh  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces."
+body_en  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces. A heating tube is immersed in the refrigerant within a closed system and operated at heat fluxes of 10–110 kW/m² under different saturation temperatures. The evaporator serves as the boiling test chamber, while the condenser controls the saturation temperature. The 19.05 mm heating tube has a heated length of 115 mm and contains four thermocouples for temperature measurement. A high-speed camera records bubble-generation frequency and departure size."
+body_zh  = "This external-tube refrigerant test system evaluates refrigerant boiling performance, lubricant–refrigerant mixtures, and enhanced heat transfer surfaces. A heating tube is immersed in the refrigerant within a closed system and operated at heat fluxes of 10–110 kW/m² under different saturation temperatures. The evaporator serves as the boiling test chamber, while the condenser controls the saturation temperature. The 19.05 mm heating tube has a heated length of 115 mm and contains four thermocouples for temperature measurement. A high-speed camera records bubble-generation frequency and departure size."
+
+[[item.figure]]
+id         = "apparatus"
+kind       = "photo"
+image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/apparatus.jpg"
+w          = 1185
+h          = 1029
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "system-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/system-diagram.png"
+w          = 1434
+h          = 1191
+caption_en = ""
+caption_zh = ""
+
+[[item.figure]]
+id         = "heater-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/refrigerant-lubricant-boiling-system/heater-diagram.png"
+w          = 1600
+h          = 492
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "liquid-desiccant-air-conditioning-system"
+area     = "hvacr"
+image    = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/perspective-system-diagram.png"
+image_fit = "contain"
+source_slides = [18]
+title_en = "Liquid desiccant air-conditioning system"
+title_zh = "Liquid desiccant air-conditioning system"
+lead_en  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant."
+lead_zh  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant."
+body_en  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant. The system consists of a regeneration tower and a dehumidification tower equipped with packed beds, an immersion dehumidifier, a precooling coil, and a reheat coil. The evaporators cool the solution to enhance moisture absorption as the solution directly contacts the air through the packed bed. Condenser heat is used for solution regeneration and air reheating, enabling dehumidification, cooling, and heating operation."
+body_zh  = "This liquid-desiccant air-conditioning system integrates a vapor-compression heat pump with liquid-desiccant dehumidification using CreCOPlus® 5100C ionic liquid and R-407C refrigerant. The system consists of a regeneration tower and a dehumidification tower equipped with packed beds, an immersion dehumidifier, a precooling coil, and a reheat coil. The evaporators cool the solution to enhance moisture absorption as the solution directly contacts the air through the packed bed. Condenser heat is used for solution regeneration and air reheating, enabling dehumidification, cooling, and heating operation."
+
+[[item.figure]]
+id         = "rig-front-view"
+kind       = "photo"
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/rig-front-view.png"
+w          = 233
+h          = 311
+caption_en = "Photograph of the liquid desiccant air-conditioning system (Front view)"
+caption_zh = "Photograph of the liquid desiccant air-conditioning system (Front view)"
+
+[[item.figure]]
+id         = "perspective-system-diagram"
+kind       = "diagram"
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/perspective-system-diagram.png"
+w          = 1600
+h          = 840
+caption_en = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
+caption_zh = "Perspective view of the liquid desiccant air-conditioning system (Regeneration tower on the left and dehumidification tower on the right)"
+
+[[item.figure]]
+id         = "control-screen"
+kind       = "diagram"
+image      = "/assets/img/test-setups/liquid-desiccant-air-conditioning-system/control-screen.png"
+w          = 552
+h          = 332
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "carvera-desktop-cnc"
+area     = "electronics-cooling"
+image    = "/assets/img/test-setups/carvera-desktop-cnc/cnc-machine.jpg"
+source_slides = [28]
+title_en = "MAKEAR Carvera Desktop CNC Machine"
+title_zh = "MAKEAR Carvera Desktop CNC Machine"
+lead_en  = "Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+lead_zh  = "Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+body_en  = "Description: Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+body_zh  = "Description: Automated equipment that uses software to control the machine and tool positions for the production of high-precision parts; features four-axis machining and laser capabilities."
+
+[[item.section]]
+items_en = [
+  "Status: On standby",
+  "Dimensions: 57.9 × 52.1 × 54.1 cm",
+  "Weight: Approx. 50 kg",
+  "Spindle power: 200 W",
+  "Spindle speed: 0–15,000 rpm",
+  { type = "source-url", label_en = "Link to detailed information:", label_zh = "Link to detailed information:", value = "https://www.kidentech.com/carvera" },
+]
+items_zh = [
+  "Status: On standby",
+  "Dimensions: 57.9 × 52.1 × 54.1 cm",
+  "Weight: Approx. 50 kg",
+  "Spindle power: 200 W",
+  "Spindle speed: 0–15,000 rpm",
+  { type = "source-url", label_en = "Link to detailed information:", label_zh = "Link to detailed information:", value = "https://www.kidentech.com/carvera" },
+]
+
+[[item.figure]]
+id         = "cnc-machine"
+kind       = "photo"
+image      = "/assets/img/test-setups/carvera-desktop-cnc/cnc-machine.jpg"
+w          = 1600
+h          = 1133
+caption_en = ""
+caption_zh = ""
+
+[[item]]
+id       = "fabrication-and-microscopy-equipment"
+area     = "electronics-cooling"
+image    = "/assets/img/test-setups/fabrication-and-microscopy-equipment/3d-printer.jpg"
+source_slides = [29]
+title_en = "Fabrication and microscopy equipment"
+title_zh = "Fabrication and microscopy equipment"
+lead_en  = "3D Printer"
+lead_zh  = "3D Printer"
+# body_en  = "3D Printer"
+# body_zh  = "3D Printer"
+
+[[item.figure]]
+id         = "3d-printer"
+kind       = "photo"
+image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/3d-printer.jpg"
+w          = 1134
+h          = 1206
+caption_en = "3D Printer"
+caption_zh = "3D Printer"
+
+[[item.figure]]
+id         = "microscope-1"
+kind       = "photo"
+image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/microscope-1.jpg"
+w          = 948
+h          = 1206
+caption_en = "Microscope"
+caption_zh = "Microscope"
+
+[[item.figure]]
+id         = "microscope-2"
+kind       = "photo"
+image      = "/assets/img/test-setups/fabrication-and-microscopy-equipment/microscope-2.jpg"
+w          = 993
+h          = 1206
+caption_en = "Microscope"
+caption_zh = "Microscope"
+
+[[item]]
+id       = "amca-wind-tunnel"
+area     = "heat-exchangers"
+image    = "/assets/img/test-setups/amca-wind-tunnel/wind-tunnel-environmental-room.jpg"
+source_slides = [30]
+title_en = "AMCA WIND TUNNEL+Environmental Control Room"
+title_zh = "AMCA WIND TUNNEL+Environmental Control Room"
+lead_en  = "Ambient control 10-30 DB, 15-25 WB"
+lead_zh  = "Ambient control 10-30 DB, 15-25 WB"
+# Folded into the paragraph below as a full sentence, 2026-08-31.
+# body_en  = "Ambient control 10-30 DB, 15-25 WB"
+# body_zh  = "Ambient control 10-30 DB, 15-25 WB"
+
+[[item.section]]
+body_en = "The LW-4900 AMCA wind tunnel operates under controlled environmental conditions, including temperature, cooling, heating, and humidity. The ambient condition is held between 10 and 30 °C dry bulb and between 15 and 25 °C wet bulb. Airflow is supplied by a compressed-air-assisted fan system and adjusted using selectable nozzles. The airflow rate is determined from the measured pressure drop and covers a range of 40–1,107 CFM. Operating data are captured and recorded using the LW9015M data acquisition program."
+body_zh = "The LW-4900 AMCA wind tunnel operates under controlled environmental conditions, including temperature, cooling, heating, and humidity. The ambient condition is held between 10 and 30 °C dry bulb and between 15 and 25 °C wet bulb. Airflow is supplied by a compressed-air-assisted fan system and adjusted using selectable nozzles. The airflow rate is determined from the measured pressure drop and covers a range of 40–1,107 CFM. Operating data are captured and recorded using the LW9015M data acquisition program."
+
+[[item.figure]]
+id         = "wind-tunnel-environmental-room"
+kind       = "photo"
+image      = "/assets/img/test-setups/amca-wind-tunnel/wind-tunnel-environmental-room.jpg"
+w          = 1600
+h          = 1200
+caption_en = ""
+caption_zh = ""
 
 [[item]]
 id       = "placeholder-facility-1"

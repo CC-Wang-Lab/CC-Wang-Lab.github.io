@@ -112,6 +112,7 @@
   --lh-snug: 1.25;
   --lh-normal: 1.55;
   --lh-ui: 1.35;
+  --measure: 74ch;
 
   /* Tracking - 3 tokens replacing 7 ad-hoc values (0.01 to 0.14em). */
   --tracking-eyebrow: 0.1em;
@@ -529,6 +530,66 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   font-size: var(--fs-xs);
   line-height: var(--lh-ui);
   color: var(--on-dark-3);
+  transition: color 0.25s ease-out;
+}
+
+/* --------------------------------------------------------------------------
+   The one joke on this site
+
+   The caption above says "Onset of nucleate boiling". Click it and the hero
+   boils. Nothing on the page explains that, and nothing should: the sentence
+   being clicked is the whole punchline, and it already exists in both
+   languages.
+
+   The hint is this hover tint and nothing else. A pointer cursor would give it
+   away before anybody found it.
+
+   `z-index: 1` is the veil's layer, and the field is appended after the veil,
+   so it paints above the video and below `.hero-inner` and `.hero-caption` at
+   `z-index: 2`. `.hero` is `overflow: hidden`, so no bubble can reach the page
+   and widen it.
+
+   `_assets/js/boil.js` builds the field, measures the rise, and takes the
+   nodes away when the last bubble has popped.
+   -------------------------------------------------------------------------- */
+
+.hero-caption:hover { color: var(--on-dark-2); }
+
+.boil-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.boil-bubble {
+  position: absolute;
+  bottom: -1.5rem;
+  left: var(--x);
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.22) 46%,
+    rgba(255, 255, 255, 0.05) 74%,
+    rgba(255, 255, 255, 0) 76%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  animation: boil-rise var(--t) linear var(--delay) both;
+}
+
+/* A bubble grows as it rises and leaves its site with a wobble, so the sway
+   alternates and the scale only ever increases. The last stretch is the pop:
+   it swells and goes, instead of sliding out under the top edge. */
+@keyframes boil-rise {
+  0%   { transform: translate3d(0, 0, 0) scale(0.4); opacity: 0; }
+  7%   { opacity: 0.9; }
+  25%  { transform: translate3d(var(--sway), calc(var(--rise) * -0.25), 0) scale(0.9); }
+  50%  { transform: translate3d(calc(var(--sway) * -1), calc(var(--rise) * -0.5), 0) scale(1); }
+  75%  { transform: translate3d(var(--sway), calc(var(--rise) * -0.75), 0) scale(1.08); }
+  88%  { opacity: 0.85; }
+  100% { transform: translate3d(0, calc(var(--rise) * -1), 0) scale(1.45); opacity: 0; }
 }
 
 /*
@@ -1653,9 +1714,24 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* WHICH part of the picture survives the crop.
+
+     The box is 16/9 and these pictures are not: measured over 27 records they
+     run from 0.60 to 2.88, so 13 lose more than a third of the frame to the
+     crop and six lose about 60%. Centre is the wrong guess for most of them,
+     which is how the immersion card came to have its Inlet label sliced off.
+
+     Set per record as `card_focus` in _data/, chosen by looking at the
+     picture. Defaults to centre, which is what every card did before. */
+  object-position: var(--card-focus, 50% 50%);
   transform: scale(1);
   transition: transform 0.4s ease-out;
 }
+.card-media-img--contain {
+  padding: clamp(0.65rem, 0.474rem + 0.751vw, 1.15rem);
+  background: #fff;
+}
+.card-media-img--contain > img { object-fit: contain; }
 
 .card-media-body {
   display: block;
@@ -1932,6 +2008,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   A narrow measure is a property of the text, not of the box around it.
 */
 .news-slider {
+  --ns-gap: 1.75rem;
   margin: var(--space-news-y) 0;
   padding: 0;
   background: transparent;
@@ -1939,66 +2016,52 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 .news-slider > .container {
   background: var(--lab-ink);
   color: #fff;
-  padding: 2.5rem 2.75rem 2rem;
+  padding: 2.5rem 2.75rem 2.25rem;
   border-radius: 1rem;
   box-shadow: 0 1.25rem 2.5rem rgba(24, 24, 40, 0.16);
 }
+/* IN DARK THEME THE PANEL IS NEARLY THE PAGE. `--lab-ink` on a page that is
+   almost the same dark leaves the band with no edge, and the whole point of
+   this component is that it is a contained card and not a full-bleed strip.
+   A hairline is enough; lightening the ink would break the brand colour. */
 [data-bs-theme="dark"] .news-slider > .container {
-  /* --lab-ink is a BRAND colour, so it does not flip with the theme. In light
-     that makes a deliberate navy slab. In dark it put #181828 on a #14141e
-     page: 1.04:1, and the card disappeared. --lab-surface-2 is the same
-     surface the Laboratory-head band already uses, and every on-dark token
-     still clears AA on it (13.17 / 9.92 / 6.44). */
-  background: var(--lab-surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   box-shadow: 0 1.25rem 2.5rem rgba(0, 0, 0, 0.45);
 }
 
+/*
+  The head row: the label on the left, the two arrows on the right.
+
+  THE ARROWS MOVED HERE FROM THE SLIDE EDGES, and that fixed a fault rather
+  than expressing a preference. They were absolutely positioned at
+  `left: -1.75rem` and `right: -1.75rem`, which put them OUTSIDE the panel's
+  own rounded corner, and the corner clipped the left one at every width.
+*/
+.ns-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
 .ns-head {
   font-family: var(--font-ui);
   font-size: var(--fs-xs);
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--on-dark-3);
-  margin-bottom: 1.5rem;
+  margin: 0;
 }
 
-.ns-stage { position: relative; display: grid; }
-/* Slides are stacked on top of each other and cross-fade. */
-.ns-slide {
-  grid-area: 1 / 1;
-  min-width: 100%;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.5s ease-out, visibility 0s linear 0.5s;
-}
-.ns-slide.is-active {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.5s ease-out, visibility 0s;
-}
-.ns-date {
-  font-family: var(--font-ui);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--on-dark-3);
-  margin-bottom: 0.5rem;
-}
-.ns-slide .news-tag { background: rgba(255, 255, 255, 0.12); color: var(--lab-orange-bright); }
-.ns-title {
-  color: #fff;
-  font-style: normal;
-  font-size: var(--fs-xl);
-  max-width: 26ch;
-  margin-bottom: 0.6rem;
-}
-.ns-body { color: var(--on-dark-2); max-width: 52ch; font-size: var(--fs-sm); margin-bottom: 0; }
-
+.ns-controls { display: flex; gap: 0.25rem; align-items: center; }
+/* The pause control, beside the arrows rather than only up in the hero. Same
+   button, same flag: motion.js binds every [data-motion-toggle] on the page. */
+.ns-pause .motion-when-running,
+.ns-pause .motion-when-paused { display: inline-flex; }
+.ns-pause .motion-when-paused,
+.ns-pause.is-paused .motion-when-running { display: none; }
+.ns-pause.is-paused .motion-when-paused { display: inline-flex; }
 .ns-arrow {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  transform: translateY(-50%);
   border: 0;
   background: transparent;
   color: var(--on-dark-3);
@@ -2013,53 +2076,223 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   transition: transform 0.18s ease-out, color 0.18s ease-out;
 }
 .ns-arrow:hover { color: #fff; }
-.ns-prev { left: -1.75rem; }
-.ns-next { right: -1.75rem; }
-.ns-prev:hover { transform: translate(-0.3125rem, -50%); }
-.ns-next:hover { transform: translate(0.3125rem, -50%); }
+.ns-prev:hover { transform: translateX(-0.3125rem); }
+.ns-next:hover { transform: translateX(0.3125rem); }
 
-.ns-nav { display: flex; gap: 2.5rem; margin-top: 2.25rem; flex-wrap: wrap; }
-.ns-nav-item {
-  min-height: var(--control-min);
+/* A carousel that cannot move must not offer controls promising that it can.
+   news-slider.js sets this whenever every card is already on screen, which is
+   what three items and three visible would be: a row, not a carousel. */
+.ns-static .ns-controls,
+.ns-static .ns-rail,
+.ns-static .ns-dots { visibility: hidden; }
+
+/*
+  WHERE YOU ARE, not just how long until the next move.
+
+  The rail is a clock. It cannot say how many items there are or which one is
+  in front, so a visitor has no way to know whether they have seen everything.
+  That is the oldest complaint about carousels and it is a fair one.
+*/
+.ns-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+.ns-dot {
+  width: 2.75rem;              /* the 44px target, kept */
+  height: 1.5rem;
+  padding: 0;
   border: 0;
   background: transparent;
-  padding: 0;
-  text-align: left;
-  max-width: 13.75rem;
-  color: var(--on-dark-3);
-  transition: color 0.25s ease-out;
-}
-.ns-nav-item.is-active { color: #fff; }
-.ns-nav-item:hover { color: #fff; }
-/* The progress line: a track with a fill bar driven from JS. */
-.ns-nav-line {
   position: relative;
-  overflow: hidden;
-  display: block;
-  width: 13.75rem;
-  max-width: 100%;
-  height: 0.25rem;
-  background-color: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
 }
-.ns-nav-fill {
+.ns-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1.5rem;
+  height: 0.375rem;
+  border-radius: 1rem;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.28);
+  transition: background-color 0.25s ease-out, width 0.25s ease-out;
+}
+.ns-dot:hover::after { background: rgba(255, 255, 255, 0.5); }
+.ns-dot.is-on::after { width: 2.25rem; background: var(--lab-orange); }
+
+/*
+  The viewport clips sideways. The VERTICAL PADDING is what stops it clipping
+  the lift: every card rises 1.25em under the cursor and casts a deeper shadow,
+  and with `overflow: hidden` and no padding the top of that movement is cut
+  off. The negative margin hands the padding back to the layout.
+*/
+.ns-viewport {
+  overflow: hidden;
+  padding: 1.75rem 0 2.25rem;
+  margin: -1.75rem 0 -1.25rem;
+}
+.ns-track {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ns-gap);
+}
+
+/*
+  TWO CARDS ABREAST, NOT THREE, and the reason is the item count.
+
+  The carousel only moves when there are more cards than fit. The laboratory
+  has three news items today, so three abreast would be a static row wearing a
+  carousel's clothes. Two abreast moves at three items, and news copy wants the
+  width anyway.
+*/
+.ns-track > .ns-card {
+  flex: 0 0 calc((100% - var(--ns-gap)) / 2);
+  max-width: calc((100% - var(--ns-gap)) / 2);
+}
+
+/*
+  The face of a card, and why every card has one.
+
+  `.ns-card` carries `card-media`, so the lift, the shadow, the image zoom, the
+  cursor spotlight and the 4-degree tilt all arrive from the research grid's own
+  rules with nothing new to tune. All of them act on `.card-media-img`, which is
+  this element. A card without one would sit dead in a row of live ones, and
+  that exact fault is written up in `.claude/rules/animation.md`.
+
+  So a news item with no photograph still gets a face: its own date, set large.
+*/
+.ns-face { background: rgba(255, 255, 255, 0.04); }
+/* A date needs less room than a photograph. 16/9 of a 602px card is 337px
+   tall, which is right for a picture of a rig and absurd for a number. */
+.ns-face--dated { aspect-ratio: 5 / 2; }
+.ns-face-date {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  /* THE INK IS THE BASE, not the panel behind it. This card appears twice: on
+     the ink band under the hero, and on the white /news/ grid. Built out of
+     white overlays alone it looked right in the first place and washed out to
+     nothing in the second. */
+  background:
+    radial-gradient(90% 130% at 8% 0%, rgba(216, 144, 48, 0.38), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.02)),
+    var(--lab-ink);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+  transform: scale(1);
+  transition: transform 0.4s ease-out;
+}
+.ns-face-day {
+  font-family: var(--font-body);
+  font-size: clamp(2.6rem, 1.8rem + 3vw, 4.2rem);
+  line-height: 1;
+  color: #fff;
+}
+.ns-face-rest {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--on-dark-2);
+}
+/* The same 1.025 a photograph gets, so a dated card and a pictured card behave
+   identically under the cursor. */
+.card-media:hover .ns-face-date { transform: scale(1.025) translateZ(0); }
+
+.ns-card .card-media-body { padding: 1.1rem 0.15rem 0; }
+/* `display: block` on all three, because an `<a>` may only hold phrasing
+   content, so the card's date, title and body are spans. */
+.ns-date {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  margin-bottom: 0.45rem;
+}
+/* On the ink band the light-page colours have nothing like enough contrast. */
+.news-slider .ns-date { color: var(--on-dark-3); }
+.news-slider .ns-card .news-tag {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--lab-orange-bright);
+}
+/* Clamped so a long title cannot push one card taller than the two beside it.
+   The flex row already equalises the BOX; this equalises what is in it. */
+.ns-title {
+  display: block;
+  /* `inherit`, so one rule serves both grounds: the ink band sets #fff on its
+     container and the white grid leaves the body colour alone. */
+  color: inherit;
+  font-style: normal;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
+  margin: 0 0 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ns-body {
+  display: block;
+  color: var(--lab-muted);
+  font-size: var(--fs-sm);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The dwell, drawn. Same mechanism as the progress lines it replaces: a track
+   with a fill bar that JS drives from translateX(-100%) to translateX(0) over
+   the dwell, restarted at every step. */
+.ns-rail {
+  position: relative;
+  overflow: hidden;
+  height: 0.1875rem;
+  margin-top: 1.5rem;
+  border-radius: 2rem;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+.ns-rail-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background-color: var(--lab-orange);
   transform: translateX(-100%);
   transform-origin: left center;
 }
-.ns-nav-title {
-  font-family: var(--font-ui);
-  font-size: var(--fs-xs);
-  line-height: var(--lh-ui);
-  margin-top: 0.9rem;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.ns-more { margin: 2rem 0 0; }
+
+.news-slider .ns-body { color: var(--on-dark-2); }
+
+/* The /news/ grid. The card is the carousel's card, unchanged; only the room
+   around it differs, and Bootstrap's columns own that. */
+.news-grid .ns-card { height: 100%; }
+
+/* A news article page: one column of prose, the width the rest of the site
+   reads at. */
+.news-article { max-width: 68ch; }
+.news-article p { margin-bottom: 1.15rem; }
+
+.ns-more { margin: 1.5rem 0 0; }
 .ns-more a { color: var(--lab-orange-bright); }
+
+@media (max-width: 991.98px) {
+  .ns-track > .ns-card { flex-basis: 100%; max-width: 100%; }
+}
+@media (max-width: 575.98px) {
+  /* No padding rule here. The 767.98 block below sets the panel's padding and
+     comes later in the file, so anything written here would be overruled and
+     would read as if it worked. */
+  .ns-top { margin-bottom: 1.25rem; }
+  .ns-viewport { padding: 1.25rem 0 1.75rem; margin: -1.25rem 0 -1rem; }
+}
 
 /* --------------------------------------------------------------------------
    Project pages
@@ -2094,12 +2327,423 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   margin-top: 0.6rem;
 }
 
-@media (max-width: 991.98px) {
-  .ns-prev { left: -0.5rem; }
-  .ns-next { right: -0.5rem; }
-  .ns-nav { gap: 1.25rem; }
-  .ns-nav-line { width: 6rem; }
+/* Detail pages: the header, then whatever the page composed. */
+.setup-study-hd .card-badge { margin-bottom: 0.6rem; }
+/* Measured at 390px on 2026-08-31: amca-wind-tunnel was 405px wide, because
+   `AMCA WIND TUNNEL+Environmental Control Room` has no space at the `+` and
+   the line breaker treats it as one word. The notes already carried this
+   rule; the title did not, and the title is where the long token is. */
+.setup-study-hd h1 { overflow-wrap: break-word; }
+/* =========================================================================
+   JUSTIFIED FIGURE ROWS  —  the per-page composition vocabulary
+
+   A row is a flex line in which each figure carries `flex: aspect 1 0`. With
+   a zero basis the free space is shared out in proportion to flex-grow, so
+
+       width_i = (W - gaps) * a_i / sum(a)
+       height_i = width_i / a_i = (W - gaps) / sum(a)
+
+   and that second expression has no `i` in it: every figure in the row lands
+   at exactly the same height, whatever shapes are in the row, with nothing
+   cropped and no ragged bottom edge. This is the Flickr justified gallery,
+   done with no JavaScript and no measurement pass.
+
+   THE ROW IS CAPPED BY ITS MAX-WIDTH, NEVER BY THE IMAGE'S MAX-HEIGHT.
+   An image must never be painted wider than its own pixels. Slot width is
+   a_i x h, so the no-upscale condition a_i x h <= w_i reduces to h <= h_i,
+   and the largest safe row height is min(natural height) over the row. The
+   renderer emits that as --nat-h. Because h = (W - gaps) / sum(a), capping h
+   IS capping W, which is why the cap lands on the row.
+
+   A max-height on the <img> would look like it does the same job and does
+   not: it shrinks the picture inside a slot that is still the old width, so
+   the row goes ragged again and gains a letterbox.
+
+   --ar-w and --ar-h are the raw pixel integers, not a rounded ratio. Three
+   or more items accumulate the rounding error and the row then misses the
+   right-hand edge of its container.
+   ========================================================================= */
+.setup-rows {
+  --fig-gap: clamp(1rem, 0.736rem + 1.127vw, 1.75rem);
+  /* 2.5rem, not the 3.25rem the rest of the page uses between blocks. At
+     52px the four micrographs of boiler-surface-test-rig read as two
+     unrelated pairs; at 40px they read as one comparison set, and the
+     rig photograph below them is still clearly a different thing. */
+  --fig-row-gap: clamp(1.5rem, 1.148rem + 1.502vw, 2.5rem);
+  /* The tallest a row may be, and it is the number that decides how big
+     everything on these pages looks. 32rem was tried first and was too tight:
+     it holds the row of four tall rack pictures on
+     data-center-air-cooling-facility to 891px inside a 1320px container, so a
+     third of the line is left empty. 40rem gives it 1096px and still keeps a
+     lone portrait photograph inside a laptop viewport. */
+  --fig-max-h: 40rem;
+  /* A safety net, not a design value. A row that pairs a 0.30 dot grid with
+     a 2.9 wide photograph gives the grid 9% of the line, and no composition
+     should ever do that. If one does, the floor stops the picture vanishing;
+     the row loses its equal heights, which is the visible signal that the
+     grouping was wrong. */
+  --fig-floor: 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--fig-row-gap);
 }
+.fig-row {
+  --h-cap: min(var(--fig-max-h), var(--nat-h));
+  display: flex;
+  gap: var(--fig-gap);
+  align-items: flex-start;
+  width: 100%;
+  max-width: calc(var(--h-cap) * var(--sum-ar) + (var(--n) - 1) * var(--fig-gap));
+  margin-inline: auto;
+  /* CENTRE WHAT DOES NOT FILL.
+
+     .fig carries `flex: <aspect> 1 0`, so the grow factor IS the aspect ratio.
+     Per CSS Flexbox 9.7, when the grow factors on a line add up to less than 1
+     the items take only that fraction of the free space. So a lone TALL figure,
+     aspect below 1, leaves part of its track empty. Two rows on this site do:
+     immersion-cooling at 0.675 and two-phase-closed-loop at 0.684.
+
+     Left-aligned, all that slack lands on one side and reads as a mistake. A
+     row that fills has no free space, so this is a no-op on the other 46. The
+     split overrides it to flex-end, so its picture column still reaches the
+     page margin opposite the words. */
+  justify-content: center;
+}
+/* A LONE PICTURE FILLS THE ROW IT WAS GIVEN.
+
+   The row is already capped: max-width is --h-cap * --sum-ar, so a lone figure
+   of aspect 0.684 gets a 438px row and 640px of height, which is the ceiling.
+   But `flex: <aspect> 1 0` then hands it only 0.684 of that 438px, so it lands
+   at 300px inside a row sized for 438. The cap is applied twice.
+
+   Only outside a split. Inside one the row's max-width is replaced by 100%
+   (.setup-split > .fig-row below), so growing to 1 there would take the picture
+   to the full column height and past the 40rem ceiling. */
+.setup-rows > .fig-row--n1 > .fig { flex-grow: 1; }
+
+.fig {
+  flex: calc(var(--ar-w) / var(--ar-h)) 1 0;
+  min-width: min(var(--fig-floor), 100%);
+  margin: 0;
+}
+.fig-media {
+  display: block;
+  position: relative;
+  cursor: zoom-in;
+  /* The box, not the image, carries the shape. That is what makes the row
+     heights equal before a single byte of any picture has arrived, and it is
+     also what stops the page reflowing as they land. */
+  aspect-ratio: var(--ar-w) / var(--ar-h);
+  max-width: var(--nat-w);
+  margin-inline: auto;
+  overflow: hidden;
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--lab-shadow);
+}
+/*
+  The corner mark. Hidden until hover where there is a pointer to hover with,
+  and always shown on a touch screen, which has no hover to discover it with.
+  It is two strokes of a border, so it costs no image and no font.
+*/
+.fig-zoom {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid var(--lab-muted);
+  border-radius: 0.15rem;
+  background: color-mix(in srgb, var(--lab-surface-1) 82%, transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  pointer-events: none;
+}
+.fig-zoom::after {
+  content: "";
+  position: absolute;
+  inset: 0.24rem 0.14rem;
+  border-left: 2px solid var(--lab-muted);
+  border-bottom: 2px solid var(--lab-muted);
+  transform: rotate(-45deg);
+}
+.fig-media:hover .fig-zoom,
+.fig-media:focus-visible .fig-zoom { opacity: 1; }
+@media (hover: none) {
+  .fig-zoom { opacity: 1; }
+}
+.fig-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* `contain` and an exact aspect-ratio box are the same picture. It is here
+     as a guard: if a figure's recorded w/h ever drifts from the file, the
+     image letterboxes instead of stretching, and the gate catches it. */
+  object-fit: contain;
+  transition: transform 0.25s ease-out;
+}
+/*
+  Hover: the picture gains depth and the shadow deepens. Both numbers are the
+  card ones from .claude/rules/animation.md, unchanged: 2.5% should read as
+  depth and not as a zoom, and the shadow is the card's own value.
+
+  These are NOT gated on the motion flag, and that is the rule, not an
+  oversight. A hover effect is user-initiated and lasts a quarter of a second,
+  so it stays on when motion is paused, exactly like every other hover on this
+  site. Only the scroll reveal obeys the flag.
+
+  The box is `overflow: hidden`, so a scaled image is cropped by its own frame
+  and the row's equal heights cannot move.
+*/
+.fig-media:hover img { transform: scale(1.025) translateZ(0); }
+.fig-media:hover { box-shadow: 0 0.9375rem 1.5625rem 0 rgba(24, 24, 40, 0.15); }
+.fig--photo .fig-media { background: var(--lab-surface-2); }
+.fig--diagram .fig-media {
+  padding: clamp(0.55rem, 0.374rem + 0.751vw, 1.05rem);
+}
+.fig figcaption {
+  margin-top: 0.55rem;
+  color: var(--lab-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-tight);
+}
+
+/*
+  A row never re-justifies on a second line. It either stays on one line or
+  becomes a grid.
+
+  Wrapping and justifying are the same mechanism fighting: exact widths need
+  `flex-basis: 0`, and a line only breaks when an item cannot shrink further,
+  which needs a basis. Anything that forces a wrap therefore un-justifies the
+  line it wrapped, and the result is a row that is exactly right above the
+  breakpoint and subtly wrong below it.
+
+  So a row of three or more becomes two even columns on a tablet. For a
+  comparison set - four micrographs of one sample, which is the case this is
+  for - every item has the same shape, so equal widths ARE equal heights and
+  nothing is lost.
+*/
+@media (max-width: 991.98px) {
+  .fig-row:not(.fig-row--n1):not(.fig-row--n2) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: none;
+  }
+}
+@media (max-width: 575.98px) {
+  /* Both selectors, and the second one is not redundant. The tablet rule
+     above is `.fig-row:not(.fig-row--n1):not(.fig-row--n2)`, three classes
+     against this one, and specificity beats source order inside the same
+     cascade layer. Without the longer selector repeated here, a row of four
+     stayed two-up at 320px and gave each picture 150px. Measured on
+     data-center-air-cooling-facility. */
+  .fig-row,
+  .fig-row:not(.fig-row--n1):not(.fig-row--n2) {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+}
+
+/*
+  Notes.
+
+  Full width at 1320px is about 160 characters a line, and 160 characters is
+  not a measure anybody reads twice. The site's own rule is that a note block
+  fills whatever holds it, so the holder is what narrows here, and the text
+  still fills it edge to edge.
+
+  The rule that block came from was written against layout b, where the copy
+  WAS the container and a cap left the right half of the page empty. Nothing
+  sits beside these notes, so there is no empty half to create.
+*/
+.setup-notes {
+  /* THE NOTES FILL THE ROW. There is no width cap.
+
+     A capped block left the right half of the top row empty above a
+     full-width row of pictures, which reads as a missing cell rather than as
+     a margin. Site owner's call, 2026-08-31: merge it.
+
+     The measure is held by COLUMNS instead, so the words still break at a
+     readable line and the row is still full. `column-width` is a target, not
+     a count: one short paragraph stays in one column, and a long block
+     splits into two. */
+  column-width: 34rem;
+  /* The same gutter as the gap between two pictures, so the text columns
+     above a row sit on the same rhythm as the row under them. */
+  column-gap: var(--fig-gap);
+  min-width: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  /* A record title carries strings like TUNNEL+Environmental with no space to
+     break at, which at 320px pushed the page 82px wider than the screen. */
+  overflow-wrap: break-word;
+}
+/* JUSTIFY ON THE BLOCK, not only on <p>.
+
+   Franklin omits the <p> when a block holds exactly one paragraph, so a record
+   whose words are a single paragraph rendered as a bare text node and lost its
+   justification. Nothing said so: the audit's justify probe selects `p`, so a
+   page with no `p` reported nothing rather than reporting a fault. Measured on
+   air-cooler-wind-tunnel while moving it into its own page.
+
+   `.profile-narrative` already justifies this way, so this is the site's
+   existing pattern and not a new one. Headings keep their own alignment: a
+   heading that wraps to two lines would otherwise have its first line
+   stretched across the column. */
+.setup-notes { text-align: justify; }
+.setup-notes :is(h2, h3) { text-align: left; }
+.setup-notes p {
+  margin: 0 0 1rem;
+  text-align: justify;
+}
+/* A source URL is one unbreakable token, so it cannot start on the line that
+   introduces it, and a justified line with nothing after it to fill the gap
+   stretches four words across the whole column. Measured on
+   carvera-desktop-cnc: `Link to detailed information:` was spread over 494px
+   with the URL alone on the next line.
+
+   `anywhere` and not `break-word`: break-word only breaks a word that will
+   not fit on a line by ITSELF, which a 40-character URL always does. */
+.setup-notes a { overflow-wrap: anywhere; }
+.setup-notes p:last-child { margin-bottom: 0; }
+/* A heading may not be left at the foot of a column with its list in the
+   next one, and a list item may not be cut across the gutter.
+
+   A PARAGRAPH IS NOT ON THIS LIST, and that is the whole point. The first
+   version put `p` here, so the one paragraph on
+   gaming-laptop-hybrid-vapor-chamber could not break: it stayed whole in
+   column one and left column two empty, which is the fault this change was
+   made to remove, reproduced exactly. */
+.setup-notes :is(h2, h3, li) { break-inside: avoid; }
+.setup-notes :is(h2, h3) { break-after: avoid; }
+.setup-notes > section:first-child > :is(h2, h3):first-child { margin-top: 0; }
+
+/*
+  Notes beside one photograph, for a record whose words would otherwise sit
+  above a single capped picture with the rest of the line empty either side.
+  5/12 of 1320px is about 63 characters, which is a good measure.
+*/
+/*
+  FLEX, NOT GRID, AND THE REASON IS THE WHOLE POINT OF THE BLOCK.
+
+  A solved split holds two FIXED widths: the words at the width that gives a
+  readable measure, and the pictures at the width that makes them exactly as
+  tall as those words. Fixed is what makes it balance.
+
+  A ratio does not. The first build of this emitted
+  `grid-template-columns: minmax(0, 430fr) minmax(0, 802fr)`, which holds the
+  RATIO at every width and therefore holds the balance at exactly one. Measured
+  on gaming-laptop-hybrid-vapor-chamber, where the columns are level to 0.4px
+  at 1440:
+
+      viewport   1440    1400    1366    1280    1200    1024
+      apart       0.4    31.5    99.6    66.5    63.7   170.2   px
+
+  Fixed bases plus `flex-wrap` fix both halves of that at once. While the two
+  fit on one line they keep their solved widths, so the block is level at EVERY
+  width it is side by side at. When they no longer fit, the line breaks and the
+  block stacks. The width it stacks at falls out of the record's own numbers,
+  so no breakpoint has to be chosen, stored, or kept in step with the data.
+*/
+.setup-split {
+  display: flex;
+  flex-wrap: wrap;
+  /* The pictures are usually a little narrower than the space left over. This
+     puts that spare width in the GUTTER, so both columns reach the page
+     margins. Pushed to one side instead it leaves a ragged edge that reads as
+     a mistake. On gaming-laptop the spare is 68px and the gutter becomes 132. */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: clamp(2rem, 1.296rem + 3.005vw, 4rem);
+}
+/* The words of a split are ONE column, and a split may hold the lead plus one
+   section rather than the whole notes, so they need a wrapper to be one child
+   between them. */
+/* STACKED IS THE DEFAULT, and every rule below is a min-width that overrides
+   it. Written this way round because a stacked column must fill the width it
+   has: an item that keeps a 430px flex-basis on a line of its own leaves 500px
+   of a 936px container empty, which is what the first build did. */
+.setup-split-words {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+  /* THE SAME RHYTHM AS `.setup-rows`, and it is not decoration. A split may
+     hold a lead paragraph AND a section, which are two `.setup-notes` blocks.
+     Everywhere else on the page those two are flex children of `.setup-rows`
+     and that gap separates them; the first heading inside a block carries
+     `margin-top: 0`, so with no gap here the paragraph and the heading under
+     it TOUCH. Measured on chip-package-lid-thermal-spreading: the words came
+     out 272px instead of 312px, exactly one 40px gap short, and the block
+     read as one run-on column. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--fig-row-gap);
+}
+.setup-split > .fig-row {
+  flex: 1 1 100%;
+  max-width: 100%;
+  /* FLUSH RIGHT, so the pictures reach the page margin like the words reach it
+     on the other side. It only ever does anything on a row that does not fill
+     its own width, and exactly two rows on this site can:
+
+     `.fig` grows by its ASPECT RATIO. CSS Flexbox 9.7 says that when the grow
+     factors on a line sum to less than ONE, the items share only that fraction
+     of the free space. So a row whose total aspect is below 1 under-fills, by
+     (1 - aspect) of the track, and the leftover lands on one side.
+
+       thermal-fin  annotated chamber  aspect 0.749  167px short
+       immersion    annotated photo    aspect 0.675  216px short
+
+     48 rows on the site, 46 have a total aspect above 1 and fill exactly, so
+     `justify-content` is a no-op on all of them. Alignment and not `flex-grow: 1`
+     because growing would change how big those two pictures are, and both sit
+     on pages the site owner has already approved. */
+  justify-content: flex-end;
+}
+
+@media (min-width: 992px) {
+  /* Side by side, in the 5/7 proportion this block has always used. A solved
+     record uses it too, between 992px and 1399px, where the container is
+     narrower than the width its numbers were solved at. The columns are not
+     level there, and that is the right trade: measured on gaming-laptop the
+     5/7 split is about 18px out at 1200px, against 500px of empty column if
+     it stacked instead. */
+  .setup-split-words { flex: 5 1 20rem; }
+  .setup-split > .fig-row { flex: 7 1 20rem; }
+  /* A tall hero with no solved split: `auto` sizes the row to its own
+     max-width, which is the capped width of that one picture, so the
+     photograph sits flush right and the words take the rest. */
+  .setup-split--tall > .fig-row { flex: 0 1 auto; }
+}
+
+@media (min-width: 1400px) {
+  /* THE SOLVED WIDTHS, and only here. 1400px is where the container reaches
+     the 1296px content width every split was solved at, so this is exactly
+     the range where those two numbers are true. Below it the record falls
+     back to 5/7 above rather than pretending to a balance it does not have.
+
+     flex-grow AND flex-shrink are both 0. Growing spends the spare width on
+     the pictures and breaks the level bottom edge the widths were solved for.
+     Measured when only the shorthand's grow was overridden: the row came out
+     802px instead of 734px and the block sat 28px out of level, while the
+     markup still reported the right numbers. */
+  .setup-split--solved > .setup-split-words { flex: 0 0 var(--sp-words); }
+  .setup-split--solved > .fig-row { flex: 0 0 var(--sp-pics); }
+}
+/* The measure inside a split is set by the solved column width, so the
+   newspaper columns that hold the measure elsewhere must not fire in here.
+   carvera-desktop-cnc solves to a 590px column, which is wider than the 34rem
+   `column-width` above, so one paragraph would break into two columns inside
+   a block built to have exactly one. */
+.setup-split .setup-notes { column-width: auto; }
+/* The same thing, asked for by the page rather than implied by a split.
+   `words` splits above about 1116px of block width, which is right for a
+   long passage and wrong for a short one. `note` never splits. */
+.setup-notes--single { column-width: auto; }
+
 @media (max-width: 767.98px) {
   /* The container is full-bleed on phones, so the card would touch both edges
      and its rounded corners would be cut off. Give it a margin of its own. */
@@ -2108,21 +2752,11 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     margin: 0 0.9rem;
     padding: 1.75rem 1.4rem 1.5rem;
   }
-  .ns-nav-title { display: none; }
-  .ns-nav-line { width: 100%; }
-  .ns-nav {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--control-min), 1fr));
-    gap: 0.75rem;
-    margin-top: 1.75rem;
-  }
-  .ns-nav-item {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    max-width: none;
-  }
-  .ns-arrow { display: none; }
+  /* THE ARROWS STAY ON PHONES NOW. They were hidden here, and that was right
+     while the title navigation below them turned into a row of touch targets
+     and took over the steering. There is no title navigation any more, so
+     hiding them would leave a phone with a carousel that moves by itself and
+     no way to steer it. */
   .project-hero img { max-height: 240px; }
 }
 
@@ -2285,7 +2919,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
    at 0.43px per frame that is a visible step. See partners.js. */
 .pt-viewport {
   overflow: hidden;
-  min-height: 3rem;
+  min-height: 3.5rem;
   touch-action: pan-y;
   cursor: grab;
   user-select: none;
@@ -2316,7 +2950,7 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 3rem;
+  height: 3.5rem;
   flex: 0 0 auto;
 }
 .pt-name {
@@ -2328,20 +2962,47 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
   transition: color 0.2s ease-out;
 }
 .pt-item:hover .pt-name { color: var(--bs-emphasis-color); }
-/* Restore the original unified logo treatment: muted until hover, with the
-   prior dark-theme transform. The row controls remain arrowless. */
+/* Muted until hover, with the prior dark-theme transform. The row controls
+   remain arrowless.
+
+   EVERY LOGO CARRIES ITS OWN SIZE. Across this set the aspect ratio runs from
+   0.77:1 to 10:1 and the ink coverage from 17% to 100%, so a single max-height
+   paints a square badge at full weight and a wordmark as a thin sliver. The two
+   custom properties are written per file by scripts/prepare-partner-logos.py
+   and land inline on the <img>. The caps below are the fallback for a logo that
+   has no size yet, and the safety net if one is ever wrong. */
 .pt-logo {
-  max-height: 2.6rem;
-  max-width: 11rem;
-  width: auto;
+  width: var(--pt-w, auto);
+  height: var(--pt-h, auto);
+  max-height: 3rem;
+  max-width: 12rem;
   object-fit: contain;
   filter: grayscale(1);
   opacity: 0.62;
-  transition: filter 0.25s ease-out, opacity 0.25s ease-out;
+  /* The lift and the growth are ONE transform, so they ease together instead of
+     fighting. .25s ease-out is the site's hover timing everywhere. */
+  transform: translateY(0) scale(1);
+  transition: filter 0.25s ease-out, opacity 0.25s ease-out, transform 0.25s ease-out;
 }
-.pt-item:hover .pt-logo { filter: grayscale(0); opacity: 1; }
+/* Grey to colour, faint to solid, and a small rise and growth together.
+   9%, not the 2.5% the research cards use: that figure was measured on a card
+   image 320px wide, where 2.5% is 8px and reads as depth. On a mark 48px tall
+   2.5% is one pixel and nobody sees it. 9% of 48px is 4px, which is the same
+   apparent movement. Asked for by the site owner on 2026-09-01.
+   The 0.09 growth stays well inside the 3.25rem gap between items, so a logo
+   never touches its neighbour, and inside the 3.5rem row, so it is never
+   clipped. */
+.pt-item:hover .pt-logo {
+  filter: grayscale(0);
+  opacity: 1;
+  transform: translateY(-0.15rem) scale(1.09);
+}
 [data-bs-theme="dark"] .pt-logo { filter: grayscale(1) invert(1) brightness(1.6); }
 [data-bs-theme="dark"] .pt-item:hover .pt-logo { filter: grayscale(0) invert(0); }
+
+/* Dragging is a pointer gesture too, and 72 marks swelling under a drag is
+   noise. The row settles back the moment the pointer is released. */
+.pt-viewport.is-dragging .pt-logo { transform: none; }
 
 /* A short edge fade softens clipping without hiding a logo behind a control. */
 .pt-fade {
@@ -2354,6 +3015,84 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
 }
 .pt-fade-l { left: 0;  background: linear-gradient(90deg, var(--bs-body-bg) 12%, transparent 100%); }
 .pt-fade-r { right: 0; background: linear-gradient(270deg, var(--bs-body-bg) 12%, transparent 100%); }
+
+/* ---- The name on hover -------------------------------------------------
+
+   Half of these are Taiwanese firms whose mark alone does not say who they
+   are, and four of the Formosa group marks are the same blue frame with a
+   different glyph inside. So the name arrives on hover.
+
+   THE HARD PART IS THE CLIPPING BOX, not the tooltip.
+   `.pt-viewport` is `overflow: hidden` because it is a marquee, and a tooltip
+   above the row is outside that box, so it was cut in half. `overflow-x:
+   hidden` with `overflow-y: visible` does not help: CSS promotes the visible
+   axis to `auto` whenever the other axis is hidden, which puts a scrollbar in
+   the row.
+
+   The fix is to grow the CLIP box without growing the LAYOUT. Padding enlarges
+   the box that `overflow: hidden` cuts at, and an equal negative margin takes
+   the same amount back off the layout, so the row sits exactly where it did and
+   the tooltip has room above it. The band keeps its old height; only the
+   tooltip ever paints in the new space.
+
+   The tooltip is a hover effect, so it stays live when motion is paused - the
+   same rule as every other hover on this site. It hides while the row is being
+   dragged, because a label chasing the pointer through a drag is noise. */
+.pt-viewport {
+  padding-block: 2.75rem;
+  margin-block: -2.75rem;
+}
+.pt-item { position: relative; }
+.pt-tip {
+  position: absolute;
+  bottom: calc(100% + 0.45rem);
+  left: 50%;
+  z-index: 6;
+  padding: 0.3rem 0.6rem 0.32rem;
+  border-radius: 0.25rem;
+  background: var(--lab-ink);
+  color: #fdfcfa;
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: var(--lab-shadow-lift);
+  opacity: 0;
+  transform: translateX(-50%) translateY(0.3rem);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  pointer-events: none;
+}
+/* The little tail. A 0.3rem square rotated 45 degrees, half hidden behind the
+   bubble, is one element instead of a border trick that cannot take a shadow. */
+.pt-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0.44rem;
+  height: 0.44rem;
+  margin-top: -0.22rem;
+  background: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+[data-bs-theme="dark"] .pt-tip {
+  background: var(--lab-surface-2);
+  color: var(--bs-emphasis-color);
+  border: 1px solid var(--bs-border-color);
+}
+.pt-item:hover .pt-tip,
+.pt-item:focus-within .pt-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.pt-viewport.is-dragging .pt-tip { opacity: 0; transition: none; }
+
+/* Forced-colours mode paints its own system palette, so the bubble needs a
+   real border or it merges into the page. */
+@media (forced-colors: active) {
+  .pt-tip { border: 1px solid CanvasText; }
+}
 
 .pt-note {
   font-family: var(--font-ui);
@@ -2680,4 +3419,21 @@ html[lang^="zh"] .hero-title { max-width: 18em; }
     grid-row: 1 / span 2;
     margin-bottom: 0;
   }
+}
+
+/* The 404's one flourish: the professor, with two thumbs up.
+
+   `alt=""` on purpose. It carries no information a screen-reader user needs,
+   and describing a joke to somebody who cannot see it is worse than skipping
+   it. The page already says what happened in words above. */
+.nf-figure {
+  margin: 0 0 1.75rem;
+  max-width: 190px;
+}
+.nf-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.9rem;
+  border: var(--rule);
 }

@@ -314,6 +314,255 @@ fails the run. It caught this one on the first build. Its character class was wi
 
 ---
 
+## Why the detail-page figures are placed by space and not by name, 2026-08-31
+
+> **Superseded the same day by the section below.** Layouts `a`, `b` and `c` are gone and each
+> page composes itself. The fault this section records is the reason, so it stays.
+
+The 26 imported facility and project pages each pick a layout, `a`, `b` or `c`. The layout chose
+where the notes sat. The figures inside it were placed by rules naming four literal figure ids:
+`cabinet`, `dimensions`, `100w` and `500w`.
+
+**One record in the site carries those ids.** `falling-film-cooling-system`, and it is layout
+`c`. So the entire layout-`b` ruleset matched nothing at all, and 25 of the 26 records fell
+through to auto-placement in a track built for a different record. Every gate passed the whole
+time, because no gate could see it.
+
+Measured at 1440 px before the change:
+
+| Symptom | Records affected |
+|---|---|
+| 1 to 3 figures in a 4-column track, 25% to 75% of the row empty | **8** (every layout `b`) |
+| Narrow and wide columns alternating by source order | **7** (every other layout `c`) |
+| Four micrographs of one comparison set at two different sizes | `boiler-surface-test-rig` |
+| Each photo 136 px wide at a 320 px screen | every multi-figure record |
+
+The whole of it is now one rule with no figure id in it:
+
+```css
+grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--fig-min)), 1fr));
+```
+
+`auto-fit` collapses tracks nothing lands in, so an empty cell in a full row cannot happen.
+The floor decides the column count from the room available, so a 320 px screen gets exactly one
+column. A record added tomorrow needs no CSS.
+
+**Emphasis moved into the data**, as `span = "full"` on a `[[figure]]` row. It has to live there:
+CSS knows how many figures there are and how much room it has, and it cannot know that one of
+them is a wide schematic whose labels are unreadable at a quarter width. A person looking at the
+picture knows that. Ten figures across nine records carry it.
+
+*Rejected: keying emphasis off `kind = "diagram"`, which is what the old rule did. Five of the
+six figures on `boiler-surface-test-rig` are diagrams, so it stacked four micrographs full width
+in four near-empty boxes.*
+
+*Rejected: `span 2`. On a phone the track is one column, and a two-column span there creates an
+implicit second column and pushes the page wider than the screen. `1 / -1` is safe at any track
+count.*
+
+## Why the notes on a detail page have no width cap, 2026-08-31
+
+> **Reversed the same day.** The notes carry a measure again, and it is measured this time:
+> `58ch`. The reason it was removed and the reason it came back are different, and both are
+> below.
+
+`.setup-study-copy` carried `max-width: var(--measure)`, the site's 74ch reading measure. It was
+the only note block on the site that did, and `scripts/shoot.py --measure` fails any other note
+that carries a second cap.
+
+In layouts `a` and `c` the copy already sits in a grid column narrower than 74ch, so the cap
+could never bind. In layout `b` the copy **is** the container, so the cap was the only thing
+acting, and what it did was hold the notes to 700 px inside a 1320 px row and leave the right
+half of the page empty. On all eight layout-`b` records.
+
+The cap is gone. `check-setup-renderer.py` now asserts its absence, and asserts
+`overflow-wrap: break-word` alongside it.
+
+## The reading measure, measured at last, 2026-08-31
+
+`style.css` names **45 characters** as the floor below which justified text opens rivers. Nothing
+had ever measured against it, because the screenshot harness could not render below 492 px.
+
+Characters per line, counted as box width over the average character width of the element's own
+text in its own computed font:
+
+| Width | Characters per justified line | Under the floor |
+|---|---|---|
+| 320 px | 36 – 43 | **every page** |
+| 360 px | 41 – 49 | 6 pages |
+| **390 px** | **45 – 53** | none |
+| 768 px | 84 – 92 | none |
+| 1440 px | 51 – 92 | none |
+
+**Justification stays on at every width**, by the site owner's decision on 2026-08-31. The number
+is recorded here so the decision has its evidence attached, and so that anyone who revisits it
+starts from a measurement instead of an impression.
+
+*The first version of this measurement was wrong and reported 20 to 30 characters. It counted
+text length over line count, which undercounts twice: an inline `<strong>` sits a fraction of a
+pixel off its line and a rounded top invented an extra line, and the last line of a paragraph is
+short so it drags the average down. Both push the number the same way, so the check was reporting
+rivers that were not there.*
+
+## Why each detail page composes itself, 2026-08-31
+
+The section above replaced figure ids in the stylesheet with an auto-fit track. That fixed what a
+generic grid can fix, and it went as far as a generic grid can go. **What was left could not be
+fixed by any stylesheet, because the thing that decides the layout is what the pictures ARE.**
+
+One record is four micrographs of one comparison set. The next is a rack photograph beside a dot
+grid 497 px wide and 1600 px tall. No rule can tell those apart, and no third layout letter would
+have helped: the site would have had `d` and `e` and the same problem.
+
+So the record keeps the words and the pictures, and **the page keeps the layout**:
+
+```
+blocks = [
+  "row:test-rig",
+  "row:test-schematic",
+  "notes",
+  "row:sintered additively-manufactured",
+  "row:diamond acid-etched",
+]
+```
+
+### The arithmetic, because it is the whole idea
+
+Each figure is a flex item with `flex: aspect 1 0`. A zero basis means the free space is shared
+out in proportion to `flex-grow`, so
+
+```
+width_i  = (W - gaps) x a_i / sum(a)
+height_i = width_i / a_i = (W - gaps) / sum(a)
+```
+
+and the second line has no `i` in it. **Every picture in a row lands at exactly the same height**,
+whatever shapes are in it, filling the line with nothing cropped and no ragged bottom edge. It is
+the Flickr justified gallery with no JavaScript and no measuring pass.
+
+Measured across all 26 pages at 1440 px: **every row's height spread is 0.00 px.**
+
+### The cap goes on the row, never on the image
+
+A picture must never be painted wider than its own pixels. Slot width is `a_i x h`, so the
+no-upscale condition `a_i x h <= w_i` reduces to `h <= h_i`, and the largest safe row height is
+the smallest natural height in the row. The renderer emits that as `--nat-h` and the stylesheet
+applies it to the row's `max-width`, because `h = (W - gaps) / sum(a)` means capping the height
+IS capping the width.
+
+*Rejected: `max-height` on the `<img>`. It looks like the same thing and is not. It shrinks the
+picture inside a slot that is still the old width, so the row goes ragged again and gains a
+letterbox.*
+
+The ceiling above that is **`--fig-max-h: 40rem`**. 32rem was tried first and was too tight: it
+held the row of four tall rack pictures on `data-center-air-cooling-facility` to 891 px inside a
+1320 px container, so a third of the line sat empty.
+
+### Why the composition is front matter and not `{{figrow a b}}` in the body
+
+The approved plan said row calls in the page body. **An unknown hfun name does not throw.**
+Franklin logs a warning and substitutes an empty string, so `{{figrpw a b}}` builds green with two
+pictures missing and no `{{ }}` left in the HTML for CI to grep.
+
+That is the same silent-no-op that put 25 of 26 records into the wrong grid, and it is the fault
+this whole pass exists to remove. A front-matter list cannot misspell a function name, because
+there is no function name in it, and every id in it is checked at build time.
+
+**What the build refuses to compile**, each of them a mistake somebody can make while composing:
+
+| Refused | Because |
+|---|---|
+| a figure named in no block | it would silently vanish from the page |
+| a figure named twice | the same picture twice, in two sizes |
+| an id the record has not got | a typo in a figure id |
+| a section placed twice, or not at all | a heading lost, or repeated |
+| a lead on a record that has none | an empty `<p>` and a gap nobody can explain |
+
+`scripts/check-setup-pages.py` adds the one thing the build cannot see: **the English and Chinese
+pages must differ by exactly one line, the `lang` line**. It runs in CI, blocking. A composition
+applied to one language only is the failure this architecture exists to prevent.
+
+### `span = "full"` is retired with the layouts
+
+It said "give this figure the whole track" in a grid where the alternative was a quarter of one.
+A row already gives every figure a share proportional to its shape, and a row of one is the
+composer's way of saying this picture gets the width. Two mechanisms for one thing is how the
+last fault survived four gates.
+
+### The measure, reversed and then measured
+
+`58ch`, not the `72ch` that was tried first and not the `74ch` used elsewhere. **`ch` is the width
+of a zero**, and ET Book's zero is 9.39 px where its average character is 7.90 px, so a 72ch box
+held 85 to 90 characters a line across the 26 records. 58ch measures **60.7 to 72.3**, which is
+the band this is aiming at.
+
+The cap itself came back for a reason the earlier decision could not have known: under layout `b`
+the notes WERE the container, so a cap left the right half of the row empty. Under rows nothing
+sits beside the notes, so there is no half to leave empty, and without a cap the line runs to
+about 160 characters.
+
+### Every picture links to its own file
+
+Ten of these figures are apparatus schematics with twenty to thirty labels drawn into the pixels.
+At 320 px they are an overview and nothing else, and no layout changes that: the label text is
+8 px tall in the source.
+
+So `.fig-media` is an `<a>` to the image file. The phone's own viewer pinch-zooms and pans it, and
+the page gains no JavaScript, no lightbox and no second copy of the picture. A corner mark appears
+on hover where there is a pointer, and is always visible on a touch screen, which has no hover to
+discover it with.
+
+### What the harness checks now
+
+`shoot.py --measure` had **no upscale check at all**, and its three setup probes selected
+`.setup-study-figure`, which no longer exists: they reported "clean" while finding zero images on
+all 52 pages. They are replaced by one row audit that fails on the two properties the whole
+architecture rests on — a height spread over 1 px, and any picture painted above its natural
+width.
+
+### The composition rules, applied by eye to all 26
+
+Checked against an outside review before any page was composed:
+
+1. One idea to a row.
+2. Give every picture its minimum readable width before worrying about filling the line.
+3. A dense schematic or an extreme panorama goes in a row of its own.
+4. Keep a comparison set together, equally weighted, in its own order.
+5. Two or four to a row reads best; three is fine when the three belong together.
+6. Never let a narrow screen invent a full-width orphan. A row of three or more becomes two even
+   columns below 992 px and one below 576 px; it never re-justifies on a second line, because
+   wrapping and justifying are the same mechanism fighting.
+7. Photographs want a row 340 to 480 px tall, micrograph sets 250 to 340 px. Judge a schematic by
+   width instead.
+8. Keep the prose near 60 to 75 characters a line even above a full-width figure.
+9. Mix captioned and uncaptioned pictures in one row only when they clearly belong together.
+10. Order the page from orientation to inspection: overview, system, parts, then results.
+
+**Side by side needs a landscape hero.** `split:` puts the words beside one picture, and it was
+used on four records and then cut to three. On `thermal-fin-natural-convection-chamber` the hero
+is a portrait: the photograph came out 360 px inside a 733 px column with the text ending 174 px
+before it began. A portrait hero gets the words above it instead.
+
+## Why the screenshot harness drives a debug port, 2026-08-31
+
+`scripts/shoot.py` says never to pass `--remote-debugging-port`, because that is the flag that
+makes a Chromium binary attach to an instance already running. `scripts/cdp.py` passes it anyway,
+and the warning is still true.
+
+Chromium decides "am I already running?" from a lock inside `--user-data-dir`, not from the port.
+Every launch here gets a throwaway profile named after the process id, so there is no instance to
+attach to and a real browser always starts. The port is 0, so the OS picks a free one.
+
+**What it buys is the only honest phone width this project has ever had.** Headless Edge on
+Windows will not open a window narrower than about 508 DIP: ask for 320 and it lays the page out
+at 484 and crops the screenshot to 320. The picture looks like a phone and is a lie.
+`Emulation.setDeviceMetricsOverride` sets the layout viewport instead, so 320 is 320, and the
+harness asserts `window.innerWidth` matches before it will write a file.
+
+That assertion found a defect on its first run. `amca-wind-tunnel` could not fit 320 px, because
+`TUNNEL+Environmental` in its title has no break opportunity; the browser widened the viewport to
+402 px to fit it and the menu button fell off the screen.
+
 ## Three bugs from the source site that were not copied
 
 The client's own site carries these. They are fixed here, and each fix is commented in place.

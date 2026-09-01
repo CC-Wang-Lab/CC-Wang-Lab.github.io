@@ -33,19 +33,25 @@
 name_en = "National Science and Technology Council"
 name_zh = "國家科學及技術委員會"
 kind    = "government"
-logo    = ""
+logo    = "/assets/img/partners/national-science-and-technology-council.png"
+w       = 192
+h       = 29
 
 [[org]]
 name_en = "Taiwan Space Agency"
 name_zh = "國家太空中心"
 kind    = "government"
-logo    = ""
+logo    = "/assets/img/partners/taiwan-space-agency.png"
+w       = 192
+h       = 23
 
 [[org]]
 name_en = "Metal Industries Research & Development Centre"
 name_zh = "金屬工業研究發展中心"
 kind    = "government"
-logo    = ""
+logo    = "/assets/img/partners/metal-industries-research-development-centre.png"
+w       = 47
+h       = 48
 check   = true
 
 [[org]]
@@ -53,12 +59,34 @@ name_en = "CPC Corporation, Taiwan"
 name_zh = "台灣中油"
 kind    = "government"
 logo    = "/assets/img/partners/cpc.svg"
+w       = 163
+h       = 29
 
 [[org]]
 name_en = "Chunghwa Telecom Laboratories"
 name_zh = "中華電信研究院"
 kind    = "government"
-logo    = "/assets/img/partners/chunghwa.svg"
+logo    = "/assets/img/partners/chunghwa-telecom-laboratories.png"
+w       = 74
+h       = 48
+
+
+[[org]]
+name_en = "Industrial Technology Research Institute"
+name_zh = "工業技術研究院"
+kind    = "government"
+logo    = "/assets/img/partners/industrial-technology-research-institute.png"
+w       = 134
+h       = 31
+
+[[org]]
+name_en = "National Chung-Shan Institute of Science and Technology"
+name_zh = "國家中山科學研究院"
+kind    = "government"
+logo    = "/assets/img/partners/national-chung-shan-institute-of-science-and-technology.png"
+w       = 166
+h       = 32
+check   = true
 
 # --- industry ---------------------------------------------------------------
 
@@ -66,216 +94,284 @@ logo    = "/assets/img/partners/chunghwa.svg"
 name_en = "TSMC"
 name_zh = "台積電"
 kind    = "industry"
-logo    = "/assets/img/partners/tsmc.svg"
+logo    = "/assets/img/partners/tsmc.png"
+w       = 60
+h       = 47
 
 [[org]]
 name_en = "Intel"
 name_zh = "英特爾"
 kind    = "industry"
 logo    = "/assets/img/partners/intel.svg"
+w       = 97
+h       = 38
 
 [[org]]
 name_en = "Google"
 name_zh = "Google"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/google.png"
+w       = 47
+h       = 48
 
 [[org]]
 name_en = "Delta Electronics"
 name_zh = "台達電子"
 kind    = "industry"
 logo    = "/assets/img/partners/delta.svg"
+w       = 119
+h       = 37
 
 [[org]]
 name_en = "Toshiba"
 name_zh = "東芝"
 kind    = "industry"
 logo    = "/assets/img/partners/toshiba.svg"
+w       = 157
+h       = 24
 
 [[org]]
 name_en = "Hitachi"
 name_zh = "日立"
 kind    = "industry"
-logo    = "/assets/img/partners/hitachi.svg"
+logo    = "/assets/img/partners/hitachi.png"
+w       = 159
+h       = 25
 
 [[org]]
 name_en = "Pegatron"
 name_zh = "和碩聯合科技"
 kind    = "industry"
 logo    = "/assets/img/partners/pegatron.svg"
+w       = 176
+h       = 26
 
 [[org]]
 name_en = "ASE Holdings"
 name_zh = "日月光投控"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/ase-holdings.png"
+w       = 117
+h       = 36
 
 [[org]]
 name_en = "Wistron"
 name_zh = "緯創資通"
 kind    = "industry"
 logo    = "/assets/img/partners/wistron.svg"
+w       = 144
+h       = 27
 
 [[org]]
 name_en = "Inventec"
 name_zh = "英業達"
 kind    = "industry"
 logo    = "/assets/img/partners/inventec.svg"
+w       = 159
+h       = 26
 
 [[org]]
 name_en = "Advantech"
 name_zh = "研華科技"
 kind    = "industry"
 logo    = "/assets/img/partners/advantech.svg"
+w       = 117
+h       = 24
 
 [[org]]
 name_en = "Lite-On"
 name_zh = "光寶科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/lite-on.png"
+w       = 139
+h       = 29
 
 [[org]]
 name_en = "Cooler Master"
 name_zh = "訊凱國際"
 kind    = "industry"
 logo    = "/assets/img/partners/cooler-master.svg"
+w       = 61
+h       = 48
 
 [[org]]
 name_en = "Accton Technology"
 name_zh = "智邦科技"
 kind    = "industry"
 logo    = "/assets/img/partners/accton.svg"
+w       = 138
+h       = 31
 
 [[org]]
 name_en = "Novatek"
 name_zh = "聯詠科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/novatek.png"
+w       = 134
+h       = 40
 
 [[org]]
 name_en = "Chroma ATE"
 name_zh = "致茂電子"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/chroma-ate.png"
+w       = 136
+h       = 31
 
 [[org]]
 name_en = "TECO"
 name_zh = "東元電機"
 kind    = "industry"
 logo    = "/assets/img/partners/teco.svg"
+w       = 123
+h       = 29
 
 [[org]]
 name_en = "Sunon"
 name_zh = "建準電機"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/sunon.png"
+w       = 142
+h       = 28
 
 [[org]]
 name_en = "AVC"
 name_zh = "奇鋐科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/avc.png"
+w       = 138
+h       = 27
 check   = true
 
 [[org]]
 name_en = "Coretronic"
 name_zh = "中強光電"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/coretronic.png"
+w       = 154
+h       = 36
 
 [[org]]
 name_en = "Ansys"
 name_zh = "Ansys"
 kind    = "industry"
 logo    = "/assets/img/partners/ansys.svg"
+w       = 117
+h       = 36
 
 [[org]]
 name_en = "innodisk"
 name_zh = "宜鼎國際"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/innodisk.png"
+w       = 83
+h       = 34
 
 [[org]]
 name_en = "Kaori Heat Treatment"
 name_zh = "高力熱處理"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/kaori-heat-treatment.png"
+w       = 38
+h       = 48
 
 [[org]]
 name_en = "Celsia"
 name_zh = "Celsia"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/celsia.png"
+w       = 129
+h       = 36
 
 [[org]]
 name_en = "T-Global Technology"
-name_zh = "臺灣德懋"
+name_zh = "高柏科技"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/t-global-technology.png"
+w       = 150
+h       = 32
 
 [[org]]
 name_en = "Gigastorage Corporation"
 name_zh = "國碩科技工業"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/gigastorage-corporation.png"
+w       = 165
+h       = 29
 
 [[org]]
 name_en = "Chung Yo Materials"
 name_zh = "中佑精材"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/chung-yo-materials.png"
+w       = 53
+h       = 48
 
 [[org]]
 name_en = "Lanner Electronics"
 name_zh = "立端科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/lanner-electronics.png"
+w       = 154
+h       = 28
 
 [[org]]
 name_en = "Rayvatek"
 name_zh = "銳澤"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/rayvatek.png"
+w       = 137
+h       = 30
 check   = true
 
 [[org]]
 name_en = "Promise Technology"
 name_zh = "喬鼎資訊"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/promise-technology.png"
+w       = 158
+h       = 37
 
 [[org]]
-name_en = "ViSera Technologies"
+name_en = "VisEra Technologies"
 name_zh = "采鈺科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/visera-technologies.png"
+w       = 70
+h       = 48
 
 [[org]]
 name_en = "Hermes-Epitek"
 name_zh = "漢民科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/hermes-epitek.png"
+w       = 59
+h       = 48
 
 [[org]]
 name_en = "LemTech"
-name_zh = "良維科技"
+name_zh = "聯德控股"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/lemtech.png"
+w       = 192
+h       = 20
 
 [[org]]
 name_en = "Sakura"
 name_zh = "櫻花"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/sakura.png"
+w       = 50
+h       = 48
 check   = true
 
 [[org]]
 name_en = "Cryomax Cooling System"
 name_zh = "誠加興業"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/cryomax-cooling-system.png"
+w       = 72
+h       = 48
 check   = true
 
 [[org]]
@@ -289,118 +385,244 @@ check   = true
 name_en = "Jentech Precision"
 name_zh = "健策精密"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/jentech-precision.png"
+w       = 159
+h       = 33
 check   = true
 
 [[org]]
 name_en = "Meta Green Cooling Technology"
 name_zh = "元鈦科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/meta-green-cooling-technology.png"
+w       = 192
+h       = 19
 
 [[org]]
 name_en = "Sunwood Foundry Works"
-name_zh = "申佳鑄造"
+name_zh = "申伍鑄造"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/sunwood-foundry-works.png"
+w       = 134
+h       = 38
 
 [[org]]
 name_en = "Long Victory Instruments"
-name_zh = "長雲儀器"
+name_zh = "長聖儀器"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/long-victory-instruments.png"
+w       = 47
+h       = 48
 
 [[org]]
 name_en = "Taiwan Asahi Diamond Industrial"
-name_zh = "台灣旭鑽石工業"
+name_zh = "台灣鑽石工業"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/taiwan-asahi-diamond-industrial.png"
+w       = 192
+h       = 24
 
 [[org]]
 name_en = "Long Time Technology"
 name_zh = "榮炭科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/long-time-technology.png"
+w       = 165
+h       = 37
 
 [[org]]
 name_en = "Rechi Precision"
 name_zh = "瑞智精密"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/rechi-precision.png"
+w       = 119
+h       = 38
 
 [[org]]
 name_en = "JWS Technology"
-name_zh = "智微創富"
+name_zh = "智惠創富"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/jws-technology.png"
+w       = 51
+h       = 48
 
 [[org]]
 name_en = "Heatscape"
 name_zh = "Heatscape"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/heatscape.png"
+w       = 157
+h       = 35
 
 [[org]]
 name_en = "WavePro"
 name_zh = "WavePro"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/wavepro.png"
+w       = 170
+h       = 26
 
 [[org]]
 name_en = "Metropole Industrial"
-name_zh = "大都工業"
+name_zh = "利邦"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/metropole-industrial.png"
+w       = 144
+h       = 34
 
 [[org]]
 name_en = "Vigour Group"
 name_zh = "偉喬集團"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/vigour-group.png"
+w       = 68
+h       = 48
 check   = true
 
 [[org]]
 name_en = "ChangYang"
-name_zh = "長陽"
+name_zh = "彰洋"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/changyang.png"
+w       = 141
+h       = 29
 
 [[org]]
 name_en = "Patech Fine Chemicals"
-name_zh = "百泰精細化工"
+name_zh = "百達精密化學"
 kind    = "industry"
-logo    = ""
-check   = true
+logo    = "/assets/img/partners/patech-fine-chemicals.png"
+w       = 83
+h       = 34
 
 [[org]]
 name_en = "Ritex Machinery"
 name_zh = "Ritex"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/ritex-machinery.png"
+w       = 77
+h       = 38
 check   = true
 
 [[org]]
 name_en = "SWICO"
-name_zh = "SWICO"
+name_zh = "崇瑋工業"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/swico.png"
+w       = 102
+h       = 43
+
+[[org]]
+name_en = "Hon.Precision"
+name_zh = "鴻勁精密"
+kind    = "industry"
+logo    = "/assets/img/partners/hon-precision.png"
+w       = 76
+h       = 48
 check   = true
 
 [[org]]
-name_en = "Hon Tech"
-name_zh = "宏塑技術"
-kind    = "industry"
-logo    = ""
-check   = true
-
-[[org]]
-name_en = "PMC"
+name_en = "Precision Machinery Research & Development Center"
 name_zh = "精密機械研究發展中心"
+kind    = "government"
+logo    = "/assets/img/partners/precision-machinery-research-development-center.png"
+w       = 113
+h       = 44
+
+[[org]]
+name_en = "Taiwan Hodaka Technology"
+name_zh = "台灣穗高科技"
 kind    = "industry"
-logo    = ""
+logo    = "/assets/img/partners/taiwan-hodaka-technology.png"
+w       = 51
+h       = 48
+
+[[org]]
+name_en = "Chaun-Choung Technology"
+name_zh = "超眾科技"
+kind    = "industry"
+logo    = "/assets/img/partners/chaun-choung-technology.png"
+w       = 106
+h       = 36
+
+[[org]]
+name_en = "Taiwan Heat Transfer"
+name_zh = "臺灣熱傳"
+kind    = "industry"
+logo    = "/assets/img/partners/taiwan-heat-transfer.png"
+w       = 37
+h       = 48
+
+[[org]]
+name_en = "Liangchi Group"
+name_zh = "良機集團"
+kind    = "industry"
+logo    = "/assets/img/partners/liangchi-group.png"
+w       = 119
+h       = 34
+
+[[org]]
+name_en = "FAR Tech Engineering"
+name_zh = "遠技工程"
+kind    = "industry"
+logo    = "/assets/img/partners/far-tech-engineering.png"
+w       = 85
+h       = 33
+
+[[org]]
+name_en = "Expert International"
+name_zh = "伊士博國際"
+kind    = "industry"
+logo    = "/assets/img/partners/expert-international.png"
+w       = 117
+h       = 35
+
+[[org]]
+name_en = "SATTI"
+name_zh = "超尊科技"
+kind    = "industry"
+logo    = "/assets/img/partners/satti.png"
+w       = 145
+h       = 34
 check   = true
+
+[[org]]
+name_en = "Hot Cool"
+name_zh = "高揚國際實業"
+kind    = "industry"
+logo    = "/assets/img/partners/hot-cool.png"
+w       = 80
+h       = 48
+check   = true
+
+[[org]]
+name_en = "Formosa Plastics"
+name_zh = "台灣塑膠"
+kind    = "industry"
+logo    = "/assets/img/partners/formosa-plastics.png"
+w       = 74
+h       = 48
+
+[[org]]
+name_en = "Formosa Chemicals & Fibre"
+name_zh = "台灣化學纖維"
+kind    = "industry"
+logo    = "/assets/img/partners/formosa-chemicals-fibre.png"
+w       = 74
+h       = 48
+
+[[org]]
+name_en = "Formosa Petrochemical"
+name_zh = "台塑石化"
+kind    = "industry"
+logo    = "/assets/img/partners/formosa-petrochemical.png"
+w       = 74
+h       = 48
+
+[[org]]
+name_en = "Formosa Heavy Industries"
+name_zh = "台朔重工"
+kind    = "industry"
+logo    = "/assets/img/partners/formosa-heavy-industries.png"
+w       = 74
+h       = 48
